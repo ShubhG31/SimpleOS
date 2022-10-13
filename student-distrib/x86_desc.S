@@ -8,6 +8,10 @@
 
 .globl ldt_size, tss_size
 .globl gdt_desc, ldt_desc, tss_desc
+
+# defining the global gdt pointer 
+.globl gdt_desc_ptr
+
 .globl tss, tss_desc_ptr, ldt, ldt_desc_ptr
 .globl gdt_ptr
 .globl idt_desc_ptr, idt
@@ -36,14 +40,6 @@ tss_bottom:
 
     .align  16
 
-# specifies the size of the gdt and has a pointer to the gdt 
-gdt_desc_ptr:
-    .word 0                         # padding the struct with 0, in order for loading to work
-    .word gdt_bottom - gdt - 1      # size of the gdt 
-    .long gdt                       # 32 bit pointer to the gdt
-
-
-    .align  16                      # align the memory addresses because of the word and long
 gdt:
 _gdt:
 
@@ -92,7 +88,14 @@ ldt_desc_ptr:
     .quad 0
 
 gdt_bottom:
+# specifies the size of the gdt and has a pointer to the gdt 
+gdt_desc_ptr:
+    .word 0                         # padding the struct with 0, in order for loading to work
+    .word gdt_bottom - gdt - 1      # size of the gdt 
+    .long gdt                       # 32 bit pointer to the gdt
 
+
+    .align  16                      # align the memory addresses because of the word and long
     .align 16
 ldt:
     .rept 4
