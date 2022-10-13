@@ -90,7 +90,7 @@ ldt_desc_ptr:
 gdt_bottom:
 # specifies the size of the gdt and has a pointer to the gdt 
 gdt_desc_ptr:
-    .word 0                         # padding the struct with 0, in order for loading to work
+    # .word 0                         # padding the struct with 0, in order for loading to work
     .word gdt_bottom - gdt - 1      # size of the gdt 
     .long gdt                       # 32 bit pointer to the gdt
 
