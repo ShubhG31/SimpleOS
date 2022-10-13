@@ -94,9 +94,7 @@ gdt_desc_ptr:
     .word gdt_bottom - gdt - 1      # size of the gdt 
     .long gdt                       # 32 bit pointer to the gdt
 
-
-    .align  16                      # align the memory addresses because of the word and long
-    .align 16
+    .align 16                       # align the memory addresses because of the word and long
 ldt:
     .rept 4
     .quad 0
