@@ -35,6 +35,15 @@ _tss:
 tss_bottom:
 
     .align  16
+
+# specifies the size of the gdt and has a pointer to the gdt 
+gdt_desc_ptr:
+    .word 0                         # padding the struct with 0, in order for loading to work
+    .word gdt_bottom - gdt - 1      # size of the gdt 
+    .long gdt                       # 32 bit pointer to the gdt
+
+
+    .align  16                      # align the memory addresses because of the word and long
 gdt:
 _gdt:
 
@@ -101,8 +110,8 @@ idt_desc_ptr:
     .align  16
 idt:
 _idt:
-    .rept NUM_VEC
+    .rept NUM_VEC       # repeats the next line for NUM_VEC(256) times 
     .quad 0
-    .endr
+    .endr               # end repeat
 
 idt_bottom:

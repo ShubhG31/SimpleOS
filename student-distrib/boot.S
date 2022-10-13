@@ -26,6 +26,10 @@ _start:
 continue:
     # Load the GDT
 
+    ## line added 
+    lgdt gdt_desc_ptr # loading the GDT register with gdt description pointer defined in x86_desc.S
+                      # ldgt loads the gdt register using a pointer 
+
     # Load CS with the new descriptor value
     ljmp    $KERNEL_CS, $keep_going
 
