@@ -14,7 +14,7 @@
 static inline void assertion_failure(){
 	/* Use exception #15 for assertions, otherwise
 	   reserved by Intel */
-	asm volatile("int $15");
+	asm volatile("int $0");
 }
 
 
@@ -37,11 +37,13 @@ int idt_test(){
 	for (i = 0; i < 10; ++i){
 		if ((idt[i].offset_15_00 == NULL) && 
 			(idt[i].offset_31_16 == NULL)){
-			// assertion_failure();
-			// result = FAIL;
+			assertion_failure();
+			result = FAIL;
 			// result =PASS;
 		}
 	}
+	int n = 0;
+	n = 1/n;
 
 	return result;
 }
