@@ -3,6 +3,8 @@
 #include "lib.h"
 #include "i8259.h"
 
+#define RTC_itr_num 8
+
 //REMEMBER MAGIC NUMBERS
 extern void RTC_init(){
 // You will have to enable interrupt generating mode, and set the init frequency
@@ -16,7 +18,7 @@ extern void RTC_init(){
     outb( prev | 0x40, 0x71);
 
     //sti();
-    enable_irq(8);
+    enable_irq(RTC_itr_num);
     return;
 }
 
@@ -27,6 +29,6 @@ extern void RTC_handler(){
     outb(0x0C,0x70);
     inb(0x71);
     //test_interrupts();
-    send_eoi(8);
+    send_eoi(RTC_itr_num);
     return;
 }
