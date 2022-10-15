@@ -9,7 +9,7 @@
 
 
 void keyboard_init_irq(); // intialize the 
-void keyboard_handler();
+extern void keyboard_handler();
 
 void keyboard_helper();
 // #define keyboard_link(name, func)

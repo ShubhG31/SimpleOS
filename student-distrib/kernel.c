@@ -12,7 +12,7 @@
 #include "idt.h"
 #include "keyboard.h"
 
-#define RUN_TESTS
+// #define RUN_TESTS
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -139,9 +139,9 @@ void entry(unsigned long magic, unsigned long addr) {
         ltr(KERNEL_TSS);
     }
 
+    idt_initialization();
     /* Init the PIC */
     i8259_init();
-
     keyboard_init_irq();
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
@@ -151,7 +151,7 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
-    idt_initialization();
+    // idt_initialization();
     printf("Enabling Interrupts\n");
     sti();
 

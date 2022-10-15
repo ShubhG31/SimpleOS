@@ -1,7 +1,8 @@
 #include "idt.h"
 // #include ""
 
-#define LAST_EXCEPTION 0xF  // defined as the last software generated exception which is 15  
+#define LAST_EXCEPTION 19  // defined as the last software generated exception which is 15  
+#define keyboard 0x21
 
 // typedef void (*functions);
 
@@ -10,11 +11,11 @@
 //                   "single_step_int",
 //                   "non_maskable_int",
 //                   "breakpoint",
-//                   "overflow"
-//                   "bound_range_exceeds"
-//                   "invalid_opcode"
-//                   "coprocessor_not_avail"
-//                   "double_fault"
+//                   "overflow",
+//                   "bound_range_exceeds",
+//                   "invalid_opcode",
+//                   "coprocessor_not_avail",
+//                   "double_fault",
 //                   ""
 //                   ""
 //                   ""
@@ -31,26 +32,38 @@
 void idt_initialization(){
     int i;
     for(i = 0; i<256; i++){
-        if ( i != 0xF){
-            idt[i].dpl = 0;
-            idt[i].present = 1;
-        }
-        else{
-            idt[i].present = 0;
-        }
+        // if ( i != 0xF){
+        //     idt[i].dpl = 0;
+        //     idt[i].present = 1;
+        // }
+        // else{
+        //     idt[i].present = 0;
+        // }
         idt[i].reserved0 = 0;   
         idt[i].size = 1 ;       // D bit is set to 1, look above
         idt[i].reserved1 = 1 ;
         idt[i].reserved2 = 1 ;
         idt[i].reserved3 = 0 ;
-        idt[i].reserved4 &= 0x1F;
-        if(i == 0x80){
+        idt[i].reserved4 = 0;//0x1F;
+        
+        idt[i].present = 0;
+        idt[i].dpl = 0;
+
+        if(i == 0x80 ){
             idt[i].dpl = 3;
+            idt[i].present = 1;
+            // idt[i].reserved3 = 1;
+        }
+        if(i == 0x21 || i<=LAST_EXCEPTION){
+            // idt[i].dpl = 3;
             idt[i].present = 1;
             // idt[i].reserved3 = 1;
         }
         idt[i].seg_selector = KERNEL_CS; // setting the segment selector to the kernel code segment
     }
+    /*
+    Setting up the first 19 exceptions in IDT, these are not magic numbers
+    */
     SET_IDT_ENTRY(idt[0], divide_by_zero);
     SET_IDT_ENTRY(idt[1], single_step_int);
     SET_IDT_ENTRY(idt[2], non_maskable_int);  
@@ -68,9 +81,11 @@ void idt_initialization(){
     SET_IDT_ENTRY(idt[14], page_fault);
     // SET_IDT_ENTRY(idt[15], handler);
     SET_IDT_ENTRY(idt[16], floating_point_exception);
-
+    SET_IDT_ENTRY(idt[17], alignment_check );
+    SET_IDT_ENTRY(idt[18], machine_check);
+    SET_IDT_ENTRY(idt[19], SIMD_floating_point);
     // Setting the keyboard handler
-    SET_IDT_ENTRY(idt[0x21], keyboard_handler);
+    SET_IDT_ENTRY(idt[keyboard], keyboard_handler);
     lidt(idt_desc_ptr);
     return;
 }
@@ -158,26 +173,20 @@ extern void page_fault(){
 extern void floating_point_exception(){
     printf("Exception: Floating Point Exception\n");
     while(1);
-   
 }
-// int main(){
-// SET_IDT_ENTRY(idt[0], divide_by_zero);
-// SET_IDT_ENTRY(idt[1], single_step_int);
-// SET_IDT_ENTRY(idt[2], non_maskable_int);  
-// SET_IDT_ENTRY(idt[3], breakpoint);
-// SET_IDT_ENTRY(idt[4], overflow);
-// SET_IDT_ENTRY(idt[5], bound_range_exceeds);
-// SET_IDT_ENTRY(idt[6], invalid_opcode);
-// SET_IDT_ENTRY(idt[7], coprocessor_not_avail);
-// SET_IDT_ENTRY(idt[8], double_fault);
-// SET_IDT_ENTRY(idt[9], coprocessor_segment_overrun);
-// SET_IDT_ENTRY(idt[10], invalid_task_state);
-// SET_IDT_ENTRY(idt[11], segment_not_present);
-// SET_IDT_ENTRY(idt[12], stack_segment_fault);
-// SET_IDT_ENTRY(idt[13], general_protection_fault);
-// SET_IDT_ENTRY(idt[14], page_fault);
-// // SET_IDT_ENTRY(idt[15], handler);
-// SET_IDT_ENTRY(idt[16], floating_point_exception);
-// lidt(idt_desc_ptr);
-// return 0;
-// }
+
+// 0x11
+void alignment_check(){
+    printf("Exception: alignment Exception\n");
+    while(1);
+}
+//0x12
+void machine_check(){
+    printf("Exception: Machine Check Exception\n");
+    while(1);
+}
+//0x13
+void SIMD_floating_point(){
+    printf("Exception: SIMD Floating Point Exception\n");
+    while(1);
+}

@@ -11,32 +11,33 @@ uint8_t slave_mask;  /* IRQs 8-15 */
 
 /* Initialize the 8259 PIC */
 void i8259_init(void) {
-    unsigned char mask1, mask2;
 
-    // saving masks 
+    // initializing the masks to having all IRQs are set to 1s 
     master_mask = 0xff;//inb(MASTER_8259_PORT+1);
     slave_mask = 0xff;//inb(SLAVE_8259_PORT+1);
-    outb( 0xff,MASTER_8259_PORT+1);
-    outb(0xff,SLAVE_8259_PORT+1);
+    outb(master_mask,MASTER_8259_PORT+1);
+    outb(slave_mask,SLAVE_8259_PORT+1);
 
+    // master_mask= inb(MASTER_8259_PORT+1);
+    // slave_mask= inb(SLAVE_8259_PORT+1);
     // ICW1 - 1 = 0x10
-    outb((ICW1) | ICW4, MASTER_8259_PORT);  // starts the initialization sequence (in cascade mode)
-	// io_wait();
-	outb((ICW1) | ICW4, SLAVE_8259_PORT);
-	// io_wait();
+    outb((ICW1), MASTER_8259_PORT);  // starts the initialization sequence (in cascade mode)
+	
+	outb((ICW1), SLAVE_8259_PORT);
+	
 	outb(ICW2_MASTER,MASTER_8259_PORT+1);                 // ICW2: Master PIC vector offset
-	// io_wait();
+	
 	outb(ICW2_SLAVE, SLAVE_8259_PORT+1);                 // ICW2: Slave PIC vector offset
-	// io_wait();
+	
 	outb(ICW3_MASTER, MASTER_8259_PORT+1);                       // ICW3: tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
-	// io_wait();
+	
 	outb(ICW3_SLAVE,SLAVE_8259_PORT+1);                       // ICW3: tell Slave PIC its cascade identity (0000 0010)
-	// io_wait();
+	
  
 	outb(ICW4,MASTER_8259_PORT+1);
-	// io_wait();
+
 	outb(ICW4,SLAVE_8259_PORT+1);
-	// io_wait();
+
  
     // restore saved masks.
 	outb(master_mask,MASTER_8259_PORT+1);   
@@ -47,6 +48,9 @@ void i8259_init(void) {
 void enable_irq(uint32_t irq_num) {
     uint16_t port;
     uint16_t value; 
+    if(irq_num>=16){
+        return;
+    }
     // Primary PIC interupt is set
     if(irq_num<8){
         port = MASTER_8259_PORT+1;
