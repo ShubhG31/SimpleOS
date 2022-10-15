@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "multiboot.h"
 #include "lib.h"
+#include "keyboard.h"
 
 
 
@@ -25,6 +26,7 @@ extern void general_protection_fault(); // 0xD
 extern void page_fault(); // 0xE
 // 0xF reserved 
 extern void floating_point_exception(); // 0x10 
+
 
 
 

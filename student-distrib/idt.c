@@ -68,6 +68,9 @@ void idt_initialization(){
     SET_IDT_ENTRY(idt[14], page_fault);
     // SET_IDT_ENTRY(idt[15], handler);
     SET_IDT_ENTRY(idt[16], floating_point_exception);
+
+    // Setting the keyboard handler
+    SET_IDT_ENTRY(idt[0x21], keyboard_handler);
     lidt(idt_desc_ptr);
     return;
 }
