@@ -10,10 +10,10 @@ extern void RTC_init(){
 
     cli();//disable_irq(8);
     
-    outb(0x70,0x8b);
+    outb(0x8b,0x70);
     char prev = inb(0x71);
-    outb(0x70,0x8b);
-    outb(0x71, prev | 0x40);
+    outb(0x8b,0x70);
+    outb( prev | 0x40, 0x71);
 
     //sti();
     enable_irq(8);
@@ -24,7 +24,7 @@ extern void RTC_handler(){
 // Basic for now, likely will have to come back to later
 // Read contents of Reg C - RTC will not generate another interrupt if this is not done
 // Send EOI - PIC will not handle another interrupt until then
-    outb(0x70,0x0C);
+    outb(0x0C,0x70);
     inb(0x71);
     //test_interrupts();
     send_eoi(8);
