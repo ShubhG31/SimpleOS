@@ -14,13 +14,15 @@ void i8259_init(void) {
     unsigned char mask1, mask2;
 
     // saving masks 
-    mask1 = inb(MASTER_8259_PORT+1);
-    mask2 = inb(SLAVE_8259_PORT+1);
+    master_mask = 0xff;//inb(MASTER_8259_PORT+1);
+    slave_mask = 0xff;//inb(SLAVE_8259_PORT+1);
+    outb( 0xff,MASTER_8259_PORT+1);
+    outb(0xff,SLAVE_8259_PORT+1);
 
     // ICW1 - 1 = 0x10
-    outb(ICW1-1 | ICW4, MASTER_8259_PORT);  // starts the initialization sequence (in cascade mode)
+    outb((ICW1) | ICW4, MASTER_8259_PORT);  // starts the initialization sequence (in cascade mode)
 	// io_wait();
-	outb(ICW1-1 | ICW4, SLAVE_8259_PORT);
+	outb((ICW1) | ICW4, SLAVE_8259_PORT);
 	// io_wait();
 	outb(ICW2_MASTER,MASTER_8259_PORT+1);                 // ICW2: Master PIC vector offset
 	// io_wait();
@@ -37,8 +39,8 @@ void i8259_init(void) {
 	// io_wait();
  
     // restore saved masks.
-	outb( mask1,MASTER_8259_PORT+1);   
-	outb(mask2,SLAVE_8259_PORT+1);
+	outb(master_mask,MASTER_8259_PORT+1);   
+	outb(slave_mask,SLAVE_8259_PORT+1);
 }
 
 /* Enable (unmask) the specified IRQ */
@@ -51,6 +53,12 @@ void enable_irq(uint32_t irq_num) {
     }
     // Secondary PIC interupt is set 
     else{
+        // primary port irq2 is set 
+        uint16_t primary_port = MASTER_8259_PORT+1;
+        uint16_t primary_value;
+        primary_value = inb(primary_port) & ~(0x4);
+        outb(primary_value, primary_port);
+
         port = SLAVE_8259_PORT+1;
         irq_num -= 8;
     }
@@ -77,8 +85,12 @@ void disable_irq(uint32_t irq_num) {
 
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
+    // printf("eoi");
     if(irq_num > 7){
-        outb(EOI,SLAVE_8259_PORT);
+        outb((EOI | (irq_num-8)),SLAVE_8259_PORT);
+        outb(EOI | 0x2, MASTER_8259_PORT);
     }
-    outb(EOI, MASTER_8259_PORT);
+    else{
+    outb(EOI | irq_num, MASTER_8259_PORT);
+    }
 }

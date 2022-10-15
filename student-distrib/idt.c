@@ -31,7 +31,7 @@
 void idt_initialization(){
     int i;
     for(i = 0; i<256; i++){
-        if (i <= LAST_EXCEPTION && i != 0xF){
+        if ( i != 0xF){
             idt[i].dpl = 0;
             idt[i].present = 1;
         }
@@ -75,79 +75,80 @@ void idt_initialization(){
     return;
 }
 extern void divide_by_zero(){
+    clear();
     printf("Exception: Division by Zero\n");
     while(1);
    
 }
 // 0x1
 extern void single_step_int(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: single step interrupt\n");
     while(1);
    
 }     
 // 0x2
 extern void non_maskable_int(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: NMI\n");
     while(1);
    
 }      
 extern void breakpoint(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: breakpoint\n");
     while(1);
    
 }     
 extern void overflow(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: overflow\n");
     while(1);
    
 }  
 extern void bound_range_exceeds(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: bound range exceeds\n");
     while(1);
    
 }      
 extern void invalid_opcode(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: Invalid Opcode\n");
     while(1);
    
 }     
 extern void coprocessor_not_avail(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: Coprocessor not available\n");
     while(1);
    
 }   
 extern void double_fault(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: double fault\n");
     while(1);
    
 }      
 extern void coprocessor_segment_overrun(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: Coprocessor segment overrun \n");
     while(1);
    
 }     
 extern void invalid_task_state(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: invalid task state \n");
     while(1);
    
 }  
 extern void segment_not_present(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: segment not present\n");
     while(1);
    
 }      
 extern void stack_segment_fault(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: stack segment fault\n");
     while(1);
    
 }  
 extern void general_protection_fault(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: general protection fault\n");
     while(1);
    
 }
 extern void page_fault(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: Page Fault\n");
     while(1);
    
 }
@@ -155,7 +156,7 @@ extern void page_fault(){
 
 //0x10
 extern void floating_point_exception(){
-    printf("Exception: Division by Zero\n");
+    printf("Exception: Floating Point Exception\n");
     while(1);
    
 }

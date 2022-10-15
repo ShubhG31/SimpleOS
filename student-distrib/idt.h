@@ -1,3 +1,7 @@
+#ifndef _IDT_H_
+#define _IDT_H_
+
+
 #include "types.h"
 #include "x86_desc.h"
 #include "multiboot.h"
@@ -27,6 +31,8 @@ extern void page_fault(); // 0xE
 // 0xF reserved 
 extern void floating_point_exception(); // 0x10 
 
+
+#endif // _IDT_H
 
 
 

@@ -1,26 +1,31 @@
 #include "keyboard.h"
 
 
-extern void keyboard_handler(){
-    asm volatile("
-                pushal 
-                pushfl  
-                call keyboard_helper  
-                popfl  
-                popal 
-                iret 
+ void keyboard_handler(){
+    asm volatile(" \n\
+                pushal \n\
+                pushfl  \n\
+                call keyboard_helper \n\
+                popfl  \n\
+                popal \n\
+                iret \n\
                 "   
-    )
+    );
 }
 
-extern void keyboard_helper(){
+void keyboard_helper(){
     int port = keyboard_port;
-    asm volatile("
-            inb port
-            
-    
-    
-    "
+    char read = inb(port);
+    // send_eoi(End);
+    clear();
+    // putc('a');
+    printf('Hellooooo');
 
-    )
+    send_eoi(keyboard_irq_num);
+    return;
+}
+
+void keyboard_init_irq(){
+    enable_irq(keyboard_irq_num);
+    return;
 }
