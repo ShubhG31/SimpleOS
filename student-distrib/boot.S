@@ -25,6 +25,7 @@ _start:
 
 continue:
     # Load the GDT
+
  
     lgdt gdt_desc_ptr # loading the GDT register with gdt description pointer defined in x86_desc.S
                       # ldgt loads the gdt register using a pointer to size and pointer to table
@@ -32,6 +33,7 @@ continue:
     # call idt_initialization
     # lidt idt_desc_ptr # loading the IDT register with idt description pointer definsed in x86_desc.S
                       # lidt loads the idt register using a pointer to size and pointer to table
+
     # Load CS with the new descriptor value
     ljmp    $KERNEL_CS, $keep_going
 
