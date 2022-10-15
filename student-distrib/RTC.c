@@ -1,0 +1,32 @@
+#include "RTC.h"
+#include "types.h"
+#include "lib.h"
+#include "i8259.h"
+
+//REMEMBER MAGIC NUMBERS
+extern void RTC_init(){
+// You will have to enable interrupt generating mode, and set the init frequency
+// You will have to select registers (CMD port), send data to registers with data port
+
+    cli();//disable_irq(8);
+    
+    outb(0x70,0x8b);
+    char prev = inb(0x71);
+    outb(0x70,0x8b);
+    outb(0x71, prev | 0x40);
+
+    //sti();
+    enable_irq(8);
+    return;
+}
+
+extern void RTC_handler(){
+// Basic for now, likely will have to come back to later
+// Read contents of Reg C - RTC will not generate another interrupt if this is not done
+// Send EOI - PIC will not handle another interrupt until then
+    outb(0x70,0x0C);
+    inb(0x71);
+    //test_interrupts();
+    send_eoi(8);
+    return;
+}
