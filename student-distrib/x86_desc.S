@@ -89,12 +89,7 @@ ldt_desc_ptr:
 
 gdt_bottom:
 # specifies the size of the gdt and has a pointer to the gdt 
-gdt_desc_ptr:
-    # .word 0                         # padding the struct with 0, in order for loading to work
-    .word gdt_bottom - gdt - 1      # size of the gdt 
-    .long gdt                       # 32 bit pointer to the gdt
-
-    .align 16                       # align the memory addresses because of the word and long
+    .align 16 
 ldt:
     .rept 4
     .quad 0
@@ -116,3 +111,11 @@ _idt:
     .endr               # end repeat
 
 idt_bottom:
+.align 4
+    .word 0 # Padding
+gdt_desc_ptr:
+    # .word 0                         # padding the struct with 0, in order for loading to work
+    .word gdt_bottom - gdt - 1      # size of the gdt 
+    .long gdt                       # 32 bit pointer to the gdt
+
+    .align 16                       # align the memory addresses because of the word and long

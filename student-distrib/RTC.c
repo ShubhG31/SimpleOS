@@ -9,26 +9,32 @@
 extern void RTC_init(){
 // You will have to enable interrupt generating mode, and set the init frequency
 // You will have to select registers (CMD port), send data to registers with data port
-
-    cli();//disable_irq(8);
     
+    cli();//disable_irq(8);
     outb(0x8b,0x70);
     char prev = inb(0x71);
     outb(0x8b,0x70);
     outb( prev | 0x40, 0x71);
-
-    //sti();
+    outb(inb(0x70) & 0x7F ,0x70);
+    inb(0x71);
+    sti();
     enable_irq(RTC_itr_num);
+    // 
+    // enable_irq(RTC_itr_num);
     return;
 }
 
-extern void RTC_handler(){
+extern void RTC_handle(){
 // Basic for now, likely will have to come back to later
 // Read contents of Reg C - RTC will not generate another interrupt if this is not done
 // Send EOI - PIC will not handle another interrupt until then
+// test_interrupts();
     outb(0x0C,0x70);
+    // outb(inb(0x70) & 0x7F ,0x70);
     inb(0x71);
-    //test_interrupts();
+    // RTC test to see frequency of clock 
+        // printf("Hisdjihdfihdjfhujduhn");
+        // test_interrupts();
     send_eoi(RTC_itr_num);
     return;
 }

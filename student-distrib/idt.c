@@ -54,7 +54,7 @@ void idt_initialization(){
             idt[i].present = 1;
             // idt[i].reserved3 = 1;
         }
-        if(i == 0x21 || i<=LAST_EXCEPTION){
+        if(i == 0x28|| i == 0x21 || i<=LAST_EXCEPTION){
             // idt[i].dpl = 3;
             idt[i].present = 1;
             // idt[i].reserved3 = 1;
@@ -86,6 +86,7 @@ void idt_initialization(){
     SET_IDT_ENTRY(idt[19], SIMD_floating_point);
     // Setting the keyboard handler
     SET_IDT_ENTRY(idt[keyboard], keyboard_handler);
+    SET_IDT_ENTRY(idt[0x28], RTC_handler);
     lidt(idt_desc_ptr);
     return;
 }

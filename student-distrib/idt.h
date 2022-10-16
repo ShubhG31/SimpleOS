@@ -7,6 +7,7 @@
 #include "multiboot.h"
 #include "lib.h"
 #include "keyboard.h"
+#include "RTC.h"
 
 
 

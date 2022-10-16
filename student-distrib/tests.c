@@ -42,10 +42,18 @@ int idt_test(){
 			// result =PASS;
 		}
 	}
-	// asm volatile("int $0x21;");
-	// int n = 0;
-	// n = 1/n;
+	// checks the keyboard handler 
+		// asm volatile("int $0x21;");
 
+	// checks the divide by 0 exception
+		// int n = 0;
+		// n = 1/n;
+	// Tests dereferencing video memory address
+		// int * j = 0xB8000;
+		// i = *j;
+	// Tests page fault when dereferencing null pointer 
+		// j = NULL;
+		// i = *j;
 	return result;
 }
 
