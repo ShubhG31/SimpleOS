@@ -9,6 +9,11 @@
 uint8_t master_mask; /* IRQs 0-7  */
 uint8_t slave_mask;  /* IRQs 8-15 */
 
+/* void i8259_init();
+ * Inputs: none
+ * Return Value: void but makes sure to initialize the pic
+ * Function: initializes the pic by initializing the master and slave then enabling irq */
+
 /* Initialize the 8259 PIC */
 void i8259_init(void) {
 
@@ -33,16 +38,19 @@ void i8259_init(void) {
 	
 	outb(ICW3_SLAVE,SLAVE_8259_PORT+1);                       // ICW3: tell Slave PIC its cascade identity (0000 0010)
 	
- 
 	outb(ICW4,MASTER_8259_PORT+1);
 
 	outb(ICW4,SLAVE_8259_PORT+1);
 
- 
     // restore saved masks.
 	outb(master_mask,MASTER_8259_PORT+1);   
 	outb(slave_mask,SLAVE_8259_PORT+1);
 }
+
+/* void enable_irq();
+ * Inputs: irq_num whatever needs to be enabled
+ * Return Value: void
+ * Function: enables the particular irq that was given in the input */
 
 /* Enable (unmask) the specified IRQ */
 void enable_irq(uint32_t irq_num) {
@@ -70,6 +78,11 @@ void enable_irq(uint32_t irq_num) {
     outb (value,port);
 }
 
+/* void disable_irq();
+ * Inputs: irq_num whatever needs to be disabled
+ * Return Value: void
+ * Function: disables the particular irq that was given in the input */
+
 /* Disable (mask) the specified IRQ */
 void disable_irq(uint32_t irq_num) {
     uint16_t port;
@@ -86,6 +99,11 @@ void disable_irq(uint32_t irq_num) {
     value = inb(port) | (1 << irq_num);
     outb (value, port);
 }
+
+/* void send_eoi();
+ * Inputs: irq_num whatever interrupt needs to be ended
+ * Return Value: void
+ * Function: sends a signal saying it in the end of the interrupt for the particular irq given */
 
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
