@@ -8,7 +8,7 @@
 #define keyboard_irq_num 0x01
 
 
-void keyboard_init_irq(); // intialize the 
+void keyboard_init_irq(); // intialize the keyboard
 extern void keyboard_handler();
 
 void keyboard_helper();

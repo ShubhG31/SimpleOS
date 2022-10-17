@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "paging.h": "c",
+        "rtc.h": "c"
+    }
+}

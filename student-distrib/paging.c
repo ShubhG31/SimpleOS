@@ -4,6 +4,11 @@
 /* The Pages Table and Directory itself (declared in paging.c */
 
 /* initialization */
+/* extern void paging_init();
+ * Inputs: void
+ * Return Value: the complete initialization of paging including the page table and directory
+ * Function: initializes paging, page table and directory, in order to be used within virtual memory compared to the typical physical memory */
+
 extern void paging_init(){
     int i;
     // printf("function start\n");

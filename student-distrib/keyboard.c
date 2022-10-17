@@ -16,6 +16,10 @@
 #define Ascii_0 48
 static int keyboard_keycodes[249];
 
+/* void init_keycodes();
+ * Inputs: none
+ * Return Value: makes sure the keycodes are initialized
+ * Function: initializes the keycodes to use for all of the keyboard drivers*/
 
 void init_keycodes(){
     int i,pt;
@@ -37,6 +41,12 @@ void init_keycodes(){
         }
     }
 }
+
+/* void keyboard_helper();
+ * Inputs: none
+ * Return Value: writes a particular keycode given a scan code
+ * Function: overall sees which key uses the particular scan code set and writes it to the screen. it then sends an end of interrupt because the function is over */
+
 void keyboard_helper(){
     int port = keyboard_port;
     int scan_code = inb(port);
@@ -53,6 +63,11 @@ void keyboard_helper(){
     send_eoi(keyboard_irq_num);
     return;
 }
+
+/* void keyboard_init_irq();
+ * Inputs: none
+ * Return Value: none
+ * Function: initializes the keyboard and enables the interrupt irq */
 
 void keyboard_init_irq(){
     init_keycodes();

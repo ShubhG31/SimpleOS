@@ -5,7 +5,11 @@
 
 #define RTC_itr_num 8
 
-//REMEMBER MAGIC NUMBERS
+/* extern void RTC_init();
+ * Inputs: void
+ * Return Value: void
+ * Function: initializes RTC by turning on the IRQ with the default 1024 Hz rate */
+
 extern void RTC_init(){
 // You will have to enable interrupt generating mode, and set the init frequency
 // You will have to select registers (CMD port), send data to registers with data port
@@ -23,6 +27,11 @@ extern void RTC_init(){
     // enable_irq(RTC_itr_num);
     return;
 }
+
+/* extern void RTC_handle();
+ * Inputs: void
+ * Return Value: void
+ * Function: represents the RTC handler which handles what heppens when there is an interrupt */
 
 extern void RTC_handle(){
 // Basic for now, likely will have to come back to later

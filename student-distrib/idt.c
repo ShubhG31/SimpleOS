@@ -29,6 +29,11 @@
 // |               |   | L |           |       |          |
 // --------------------------------------------------------
 
+/* void idt_initialization();
+ * Inputs: none
+ * Return Value: none just makes sure the idt is initialized
+ * Function: initializes the idt with the 256 interrupt vectors making the idt have 256 entries */
+
 void idt_initialization(){
     int i;
     for(i = 0; i<256; i++){
@@ -49,6 +54,7 @@ void idt_initialization(){
         idt[i].present = 0;
         idt[i].dpl = 0;
 
+        // interrupt gate 
         if(i == 0x80 ){
             idt[i].dpl = 3;
             idt[i].present = 1;
@@ -90,6 +96,12 @@ void idt_initialization(){
     lidt(idt_desc_ptr);
     return;
 }
+
+/* extern void ____();
+ * Inputs: void
+ * Return Value: prints what the exception is
+ * Function: represents 19 different exceptions and prints it based on the exception it is and has a constant while loop looping through */
+
 extern void divide_by_zero(){
     clear();
     printf("Exception: Division by Zero\n");

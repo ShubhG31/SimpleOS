@@ -9,8 +9,7 @@
 #include "keyboard.h"
 #include "RTC.h"
 
-
-
+// these declare the 19 exceptions that are used in idt.c
 
 extern void idt_initialization();
 
@@ -35,8 +34,6 @@ extern void floating_point_exception();     // 0x10
 void alignment_check();                     // 0x11
 void machine_check();                       //0x12
 void SIMD_floating_point();                 //0x13
-
-
 
 #endif // _IDT_H
 

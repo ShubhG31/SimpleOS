@@ -3,6 +3,11 @@
 .globl page_table, page_directory
 
 .align 4
+
+# uses address of the page directory
+# registers used: eax
+# function: loads the page directory in the cr3 register
+
 LoadPagingDirectory:
     pushl %ebp
     movl %esp, %ebp
@@ -11,6 +16,10 @@ LoadPagingDirectory:
     movl %ebp, %esp
     popl %ebp
     ret
+
+# uses address of the page directory like before
+# registers used: eax 
+# function: enables paging, specifically setting registers and bits to enable paging
 
 EnablePaging:
     pushl %ebp
@@ -24,6 +33,9 @@ EnablePaging:
     movl %ebp, %esp
     popl %ebp
     ret
+
+# takes the number of entries that can go in a page table and page directory
+# both tables contain 1024 entries each of 4 bytes hence .rept 1024
 
 .align 4096
 page_table:

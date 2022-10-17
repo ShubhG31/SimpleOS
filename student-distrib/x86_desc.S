@@ -113,6 +113,9 @@ _idt:
 idt_bottom:
 .align 4
     .word 0 # Padding
+
+# added in order to initialize the gdt pointer
+# contains information and entries about memory to CPU
 gdt_desc_ptr:
     # .word 0                         # padding the struct with 0, in order for loading to work
     .word gdt_bottom - gdt - 1      # size of the gdt 
