@@ -4,6 +4,7 @@
 #define NUM_DIR (1024)
 #define NUM_TABLE (1024)
 #define NUM_PAGE (1024*1024*4096)
+#define ENTRIES 184
 
 /* page directory entry */
 typedef union page_directory_4k {

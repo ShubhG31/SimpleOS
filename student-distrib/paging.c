@@ -63,7 +63,7 @@ extern void paging_init(){
     }
     // clear();
     // printf("before the wacky loop\n");
-    for( i = 184; i <= 184 ; i++){
+    for( i = ENTRIES; i <= ENTRIES ; i++){
         page_table[i].present=1;
         page_table[i].RW=0;
         page_table[i].US=0;

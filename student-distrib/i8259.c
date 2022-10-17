@@ -5,6 +5,15 @@
 #include "i8259.h"
 #include "lib.h"
 
+// ALL MAGIC NUMBER LABELS
+#define maskinit 0xff
+#define number 16
+#define primary 8
+#define irq2num 0x4
+#define eoisignal 7
+#define eoinum 0x2
+// ALL MAGIC NUMBER LABELS
+
 /* Interrupt masks to determine which interrupts are enabled and disabled */
 uint8_t master_mask; /* IRQs 0-7  */
 uint8_t slave_mask;  /* IRQs 8-15 */
@@ -18,8 +27,8 @@ uint8_t slave_mask;  /* IRQs 8-15 */
 void i8259_init(void) {
 
     // initializing the masks to having all IRQs are set to 1s 
-    master_mask = 0xff;//inb(MASTER_8259_PORT+1);
-    slave_mask = 0xff;//inb(SLAVE_8259_PORT+1);
+    master_mask = maskinit;//inb(MASTER_8259_PORT+1);
+    slave_mask = maskinit;//inb(SLAVE_8259_PORT+1);
     outb(master_mask,MASTER_8259_PORT+1);
     outb(slave_mask,SLAVE_8259_PORT+1);
 
@@ -56,7 +65,7 @@ void i8259_init(void) {
 void enable_irq(uint32_t irq_num) {
     uint16_t port;
     uint16_t value; 
-    if(irq_num>=16){
+    if(irq_num>=number){
         return;
     }
     // Primary PIC interupt is set
@@ -68,11 +77,11 @@ void enable_irq(uint32_t irq_num) {
         // primary port irq2 is set 
         uint16_t primary_port = MASTER_8259_PORT+1;
         uint16_t primary_value;
-        primary_value = inb(primary_port) & ~(0x4);
+        primary_value = inb(primary_port) & ~(irq2num);
         outb(primary_value, primary_port);
 
         port = SLAVE_8259_PORT+1;
-        irq_num -= 8;
+        irq_num -= primary;
     }
     value = inb(port) & ~(1 << irq_num);
     outb (value,port);
@@ -94,7 +103,7 @@ void disable_irq(uint32_t irq_num) {
     // Secondary PIC interupt is set 
     else{
         port = SLAVE_8259_PORT+1;
-        irq_num -= 8;
+        irq_num -= primary;
     }
     value = inb(port) | (1 << irq_num);
     outb (value, port);
@@ -108,9 +117,9 @@ void disable_irq(uint32_t irq_num) {
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
     // printf("eoi");
-    if(irq_num > 7){
-        outb((EOI | (irq_num-8)),SLAVE_8259_PORT);
-        outb(EOI | 0x2, MASTER_8259_PORT);
+    if(irq_num > eoisignal){
+        outb((EOI | (irq_num-primary)),SLAVE_8259_PORT);
+        outb(EOI | eoinum, MASTER_8259_PORT);
     }
     else{
     outb(EOI | irq_num, MASTER_8259_PORT);

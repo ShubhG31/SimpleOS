@@ -12,8 +12,22 @@
 //                 "   
 //     );
 // }
+
+// ALL MAGIC NUMBER LABELS
 #define keycode_0 0xB
 #define Ascii_0 48
+#define Q 0x10
+#define A 0x1E
+#define Z 0x2C
+#define keys 249
+#define space 39
+#define range 47
+#define low 2
+#define low1 3
+#define high 11
+#define high1 10
+//ALL MAGIC NUMBER LABELS
+
 static int keyboard_keycodes[249];
 
 /* void init_keycodes();
@@ -24,18 +38,18 @@ static int keyboard_keycodes[249];
 void init_keycodes(){
     int i,pt;
     char ch[3][10] =  {"qwertyuiop","asdfghjkl","zxcvbnm"};
-    int port[3]={0x10,0x1E,0x2C};
-    for(i=0;i<249;i++){
-        keyboard_keycodes[i]= 39;
+    int port[3]={Q,A,Z};
+    for(i=0;i<keys;i++){
+        keyboard_keycodes[i]= space;
     }
-    for(i=2; i< 11; i++){
-        keyboard_keycodes[i]= 47+i;
+    for(i=low; i< high; i++){
+        keyboard_keycodes[i]= range+i;
     }
     keyboard_keycodes[keycode_0] = Ascii_0;
 
     // clear();
-    for(pt=0;pt<3;pt++){
-        for(i=0;i<10;i++){
+    for(pt=0;pt<low1;pt++){
+        for(i=0;i<high1;i++){
             if(ch[pt][i]==0)break;
             keyboard_keycodes[port[pt]+i]=(int)ch[pt][i];
         }
@@ -53,7 +67,7 @@ void keyboard_helper(){
     // send_eoi(End);
     // clear();
     // printf("Hellooooo");
-    if(keyboard_keycodes[scan_code] != 39){
+    if(keyboard_keycodes[scan_code] != space){
     putc(keyboard_keycodes[scan_code]);
     }
     //clear();
