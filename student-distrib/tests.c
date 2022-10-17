@@ -39,7 +39,6 @@ int idt_test(){
 			(idt[i].offset_31_16 == NULL)){
 			assertion_failure();
 			result = FAIL;
-			// result =PASS;
 		}
 	}
 	// checks the keyboard handler 
@@ -49,9 +48,10 @@ int idt_test(){
 		// int n = 0;
 		// n = 1/n;
 	// Tests dereferencing video memory address
-		// int * j = 0xB8000;
-		// i = *j;
+		// int *j = (int*)0xB8000;
+		// i = (int)*j;
 	// Tests page fault when dereferencing null pointer 
+		// int *j;
 		// j = NULL;
 		// i = *j;
 	return result;

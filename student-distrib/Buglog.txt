@@ -1,0 +1,19 @@
+## Oct 13th 
+    (1) When initializing the GDT, the system was boot looping, so we realized our GDT initialize was incorrect, due to the padding not taken into account. After that fix, 
+        the system was booting as intended. Finding the bug took 30 mins, as we only had to comment out some kernel code to find it. Fixing it only took 3 lines of code, and was 
+        fixed within 5 mins, as we could compare it to the idt intialization code.  
+
+
+## Oct 15th
+    (2) First i include the header file #include “paging.h” in paging.S file, which is unnecessary and causes the assembly code crash. 
+        Besides, i wrote #include “paging.c” in the paging.h, and wrote #include “paging.h” in paging .c. This causes that two files copy each other, making the file excessively large.
+
+        Fixed: we only need to add #include “paging.h” in paging.c file.
+
+    (3) The RTC was not triggering interrupts as intended. TAs had told us what the intended output of the RTC is suppose to be. After comparing with our Keyboard interrupt, we realized 
+        that we forgot to make an assembly handler for the RTC, so it was not working as intended. The fix took 10 lines of code, but took an hour and a half to find. 
+
+
+
+## Oct 16th
+    (4) It is a misunderstanding not a bug. We only need to initialize the table pointing to video memory and the directory pointing to 4MB pages, instead of all 4GB pages.

@@ -5,10 +5,10 @@
 #define LAST_EXCEPTION 19  // defined as the last software generated exception which is 15  
 #define keyboard 0x21
 #define entries 256
-#define interruptgate 0x80
+#define systemCall 0x80
 #define dplnum 3
-#define exceptionvalue1 0x28
-#define exceptionvalue2 0x21
+#define RTCint 0x28
+#define keyboardInt 0x21
 // ALL MAGIC NUMBER LABELS
 
 // typedef void (*functions);
@@ -62,12 +62,12 @@ void idt_initialization(){
         idt[i].dpl = 0;
 
         // interrupt gate 
-        if(i == interruptgate ){
+        if(i == systemCall ){
             idt[i].dpl = dplnum;
             idt[i].present = 1;
             // idt[i].reserved3 = 1;
         }
-        if(i == exceptionvalue1|| i == exceptionvalue2 || i<=LAST_EXCEPTION){
+        if(i == RTCint || i == keyboardInt || i<=LAST_EXCEPTION){
             // idt[i].dpl = 3;
             idt[i].present = 1;
             // idt[i].reserved3 = 1;
