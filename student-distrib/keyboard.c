@@ -26,6 +26,7 @@
 #define low1 3
 #define high 11
 #define high1 10
+
 //ALL MAGIC NUMBER LABELS
 
 static int keyboard_keycodes[249];
