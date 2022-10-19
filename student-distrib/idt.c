@@ -183,6 +183,7 @@ extern void general_protection_fault(){
    
 }
 extern void page_fault(){
+    // clear();
     printf("Exception: Page Fault\n");
     while(1);
    

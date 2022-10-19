@@ -20,12 +20,18 @@
 #define A 0x1E
 #define Z 0x2C
 #define keys 249
-#define space 39
+#define space 32
 #define range 47
 #define low 2
 #define low1 3
 #define high 11
 #define high1 10
+
+#define enter 0x1C
+#define new_line 10 
+
+#define backspace 0x0E
+#define BS_ascii 8
 
 //ALL MAGIC NUMBER LABELS
 
@@ -55,6 +61,9 @@ void init_keycodes(){
             keyboard_keycodes[port[pt]+i]=(int)ch[pt][i];
         }
     }
+    keyboard_keycodes[enter] = new_line;
+
+    keyboard_keycodes[backspace] = BS_ascii;
 }
 
 /* void keyboard_helper();
