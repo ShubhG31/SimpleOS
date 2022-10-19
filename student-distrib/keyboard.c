@@ -14,17 +14,18 @@
 // }
 
 // ALL MAGIC NUMBER LABELS
+#define print_screen 0xE0
 #define keycode_0 0xB
 #define Ascii_0 48
 #define Q 0x10
 #define A 0x1E
 #define Z 0x2C
-#define keys 249
+#define keys 256
 #define space 32
-#define range 47
-#define low 2
+#define ascii_num_conversion 47
+#define key_1 2
 #define low1 3
-#define high 11
+#define key_9 11
 #define high1 10
 
 #define enter 0x1C
@@ -33,9 +34,23 @@
 #define backspace 0x0E
 #define BS_ascii 8
 
+#define space_keycode 0x39 
+
+#define caps_keycode_pressed 0x3A
+#define caps_keycode_released 0xBA
+
+#define l_shift_keycode_pressed 0x2A
+#define l_shift_keycode_released 0xAA
+
+#define r_shift_keycode_pressed 0x36
+#define r_shift_keycode_released 0xB6
+
+static int caps_log_flag = 0;
+static int shift_flag = 0;
+
 //ALL MAGIC NUMBER LABELS
 
-static int keyboard_keycodes[249];
+static int keyboard_keycodes[256];
 
 /* void init_keycodes();
  * Inputs: none
@@ -47,10 +62,10 @@ void init_keycodes(){
     char ch[3][10] =  {"qwertyuiop","asdfghjkl","zxcvbnm"};
     int port[3]={Q,A,Z};
     for(i=0;i<keys;i++){
-        keyboard_keycodes[i]= space;
+        keyboard_keycodes[i]= print_screen;
     }
-    for(i=low; i< high; i++){
-        keyboard_keycodes[i]= range+i;
+    for(i=key_1; i< key_9; i++){
+        keyboard_keycodes[i]= ascii_num_conversion+i;
     }
     keyboard_keycodes[keycode_0] = Ascii_0;
 
@@ -64,6 +79,9 @@ void init_keycodes(){
     keyboard_keycodes[enter] = new_line;
 
     keyboard_keycodes[backspace] = BS_ascii;
+
+    keyboard_keycodes[space_keycode] = space;
+
 }
 
 /* void keyboard_helper();
@@ -77,7 +95,7 @@ void keyboard_helper(){
     // send_eoi(End);
     // clear();
     // printf("Hellooooo");
-    if(keyboard_keycodes[scan_code] != space){
+    if(keyboard_keycodes[scan_code] != print_screen){
     putc(keyboard_keycodes[scan_code]);
     }
     //clear();
