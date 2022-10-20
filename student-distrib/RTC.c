@@ -4,18 +4,23 @@
 #include "i8259.h"
 
 #define RTC_itr_num 8
-#define REGISTER_B 0x8b
 #define REGISTER_A 0x8a
+#define REGISTER_B 0x8b
+#define REGISTER_C 0x0c
 #define INDEX_NUM 0x70
 #define BITSIX 0x40
 #define READandWRITE 0x71
 #define VALUE 0x7F
-#define LOWRANGE 0x0C
 #define MAX_FREQ 1024
 #define MIN_FREQ 2
 #define OPEN_RTC_RATE 0x0F
 #define RTC_RATE_MASK 0x0F
 #define TOP_4BITS 0xF0
+static int8_t flag = 0;
+static uint16_t Hz_rate = 0;
+static uint16_t Hz_counter = 0;
+static uint32_t buffer_rate = 0;
+
 /* extern void RTC_init();
  * Inputs: void
  * Return Value: void
@@ -32,6 +37,7 @@ extern void RTC_init(){
     outb( prev | BITSIX, READandWRITE);
     outb(inb(INDEX_NUM) & VALUE ,INDEX_NUM);
     inb(READandWRITE);
+    rate = 1024;
     sti();
     enable_irq(RTC_itr_num);
     // 
@@ -40,43 +46,53 @@ extern void RTC_init(){
 }
 
 /* extern void RTC_open();
- * Inputs: void
- * Return Value: void
- * Function: should reset the frequency to 2Hz
+ * Inputs: const uint8_t* filename
+ * Return Value: 0
+ * Function: should reset the frequency to 2Hz. Input not used
  */
-int32_t RTC_open(){
-
-return Changing_RTC_rate(OPEN_RTC_RATE);
+int32_t RTC_open(const uint8_t* filename){
+Hz_rate = 2;
+return 0;
 }
 
 /* extern void RTC_read();
- * Inputs: void
- * Return Value: void
+ * Inputs: int32_t fd, void* buf, int32_t nbytes
+ * Return Value: 0 if successful
  * Function: Make sure that rtc read must only return once the RTC interrupt 
    occurs. You might want to use some sort of flag here 
-   (you will not need spinlocks. Why?)
+   (you will not need spinlocks. Why?) inputs not used
  */
-extern void RTC_read(){
+extern void RTC_read(int32_t fd, void* buf, int32_t nbytes){
+while(!flag){
 
+}
+flag = 0;
+return 0;
 }
 
 /* extern void RTC_write();
- * Inputs: void
- * Return Value: void
+ * Inputs: int32_t fd, const void* buf, int32_t nbytes
+ * Return Value: -1 if failed and 0 if successfule
  * Function: must get its input parameter through a buffer 
              and not read the value directly.
  */
-extern void RTC_write(){
-
+int32_t RTC_write(int32_t fd, const void* buf, int32_t nbytes){
+buffer_rate = (int) *buf;
+//if statement check if buf int is between 0-1024 and power of 2
+if(buffer_rate > 1024 && ((buffer_rate != 0) && ((buffer_rate & (buffer_rate - 1)) == 0))){
+return -1;//invalid input
+}else{
+Hz_rate = buffer_rate;
+return 4;//number of bytes changed
+}
 }
 
 /* extern void RTC_close();
- * Inputs: void
- * Return Value: void
- * Function: must get its input parameter through a buffer 
-             and not read the value directly.
+ * Inputs: int32_t fd
+ * Return Value: 0
+ * Function: Don't need to do anything for RTC
  */
-int32_t RTC_close(){
+int32_t RTC_close(int32_t fd){
 
 return 0;
 }
@@ -91,6 +107,7 @@ int32_t Changing_RTC_rate(int8_t rate){
     outb(inb(INDEX_NUM) & VALUE ,INDEX_NUM);
     inb(READandWRITE);
     sti();
+    enable_irq(RTC_itr_num);
     return 0;
 }
 
@@ -104,12 +121,25 @@ extern void RTC_handle(){
 // Read contents of Reg C - RTC will not generate another interrupt if this is not done
 // Send EOI - PIC will not handle another interrupt until then
 // test_interrupts();
-    outb(LOWRANGE,INDEX_NUM);
+    outb(REGISTER_C,INDEX_NUM);
     // outb(inb(0x70) & 0x7F ,0x70);
     inb(READandWRITE);
+    Hz_counter = 1024/Hz_rate;
+    while(1){
+        outb(REGISTER_C,INDEX_NUM);     // select register C, and disable NMI
+        char prev = inb(READandWRITE);	// get initial value of register C
+        outb(REGISTER_C,INDEX_NUM);     // set the index again (a read will reset the index to register D)
+        if(prev & BITSIX == BITSIX){ //if bit 6 in C is a Periodic Interrupt Flag
+            Hz_counter--;
+            if(counter == 0){ 
+                flag = 1;
+                break;
+            }
+        }
+    }
     // RTC test to see frequency of clock 
         // printf("Hisdjihdfihdjfhujduhn");
-        // test_interrupts();
+        //test_interrupts();
     send_eoi(RTC_itr_num);
     return;
 }
