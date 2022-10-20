@@ -63,9 +63,7 @@ return 0;
    (you will not need spinlocks. Why?) inputs not used
  */
 extern void RTC_read(int32_t fd, void* buf, int32_t nbytes){
-while(!flag){
-
-}
+while(!flag){}
 flag = 0;
 return 0;
 }
@@ -125,6 +123,7 @@ extern void RTC_handle(){
     // outb(inb(0x70) & 0x7F ,0x70);
     inb(READandWRITE);
     Hz_counter = 1024/Hz_rate;
+    cli();
     while(1){
         outb(REGISTER_C,INDEX_NUM);     // select register C, and disable NMI
         char prev = inb(READandWRITE);	// get initial value of register C
@@ -137,6 +136,7 @@ extern void RTC_handle(){
             }
         }
     }
+    sti();
     // RTC test to see frequency of clock 
         // printf("Hisdjihdfihdjfhujduhn");
         //test_interrupts();
