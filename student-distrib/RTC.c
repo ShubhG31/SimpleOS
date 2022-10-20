@@ -5,12 +5,17 @@
 
 #define RTC_itr_num 8
 #define REGISTER_B 0x8b
+#define REGISTER_A 0x8a
 #define INDEX_NUM 0x70
 #define BITSIX 0x40
 #define READandWRITE 0x71
 #define VALUE 0x7F
 #define LOWRANGE 0x0C
-
+#define MAX_FREQ 1024
+#define MIN_FREQ 2
+#define OPEN_RTC_RATE 0x0F
+#define RTC_RATE_MASK 0x0F
+#define TOP_4BITS 0xF0
 /* extern void RTC_init();
  * Inputs: void
  * Return Value: void
@@ -39,16 +44,17 @@ extern void RTC_init(){
  * Return Value: void
  * Function: should reset the frequency to 2Hz
  */
-int32_t void RTC_open(){
+int32_t RTC_open(){
 
-return 0;
+return Changing_RTC_rate(OPEN_RTC_RATE);
 }
 
 /* extern void RTC_read();
  * Inputs: void
  * Return Value: void
- * Function: Make sure that rtc read must only return once the RTC interrupt occurs. 
-   You might want to use some sort of flag here (you will not need spinlocks. Why?)
+ * Function: Make sure that rtc read must only return once the RTC interrupt 
+   occurs. You might want to use some sort of flag here 
+   (you will not need spinlocks. Why?)
  */
 extern void RTC_read(){
 
@@ -70,8 +76,22 @@ extern void RTC_write(){
  * Function: must get its input parameter through a buffer 
              and not read the value directly.
  */
-extern void RTC_close(){
+int32_t RTC_close(){
 
+return 0;
+}
+
+int32_t Changing_RTC_rate(int8_t rate){
+    rate &= RTC_RATE_MASK;			// rate must be above 2 and not over 15
+    cli();
+    outb(REGISTER_A, INDEX_NUM);     // set index to register A, disable NMI
+    char prev = inb(READandWRITE);	// get initial value of register A
+    outb(REGISTER_A, INDEX_NUM);		// reset index to A
+    outb((prev & TOP_4BITS) | rate, READandWRITE)
+    outb(inb(INDEX_NUM) & VALUE ,INDEX_NUM);
+    inb(READandWRITE);
+    sti();
+    return 0;
 }
 
 /* extern void RTC_handle();
