@@ -34,11 +34,51 @@ extern void RTC_init(){
     return;
 }
 
+/* extern void RTC_open();
+ * Inputs: void
+ * Return Value: void
+ * Function: should reset the frequency to 2Hz
+ */
+int32_t void RTC_open(){
+
+return 0;
+}
+
+/* extern void RTC_read();
+ * Inputs: void
+ * Return Value: void
+ * Function: Make sure that rtc read must only return once the RTC interrupt occurs. 
+   You might want to use some sort of flag here (you will not need spinlocks. Why?)
+ */
+extern void RTC_read(){
+
+}
+
+/* extern void RTC_write();
+ * Inputs: void
+ * Return Value: void
+ * Function: must get its input parameter through a buffer 
+             and not read the value directly.
+ */
+extern void RTC_write(){
+
+}
+
+/* extern void RTC_close();
+ * Inputs: void
+ * Return Value: void
+ * Function: must get its input parameter through a buffer 
+             and not read the value directly.
+ */
+extern void RTC_close(){
+
+}
+
 /* extern void RTC_handle();
  * Inputs: void
  * Return Value: void
- * Function: represents the RTC handler which handles what heppens when there is an interrupt */
-
+ * Function: represents the RTC handler which handles what heppens when there is an interrupt 
+ */
 extern void RTC_handle(){
 // Basic for now, likely will have to come back to later
 // Read contents of Reg C - RTC will not generate another interrupt if this is not done
