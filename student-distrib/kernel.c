@@ -159,7 +159,7 @@ void entry(unsigned long magic, unsigned long addr) {
     // printf("%d\n",RTC_write(NULL, NULL, NULL));
 
     // testing read
-    // printf("%d\n",RTC_read(NULL, NULL, NULL));
+    printf("%d\n",RTC_read(NULL, NULL, NULL));
 
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
@@ -170,7 +170,7 @@ void entry(unsigned long magic, unsigned long addr) {
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     // idt_initialization();
-    printf("Enabling Interrupts\n");
+    //printf("Enabling Interrupts\n");
     sti();
 
 #ifdef RUN_TESTS

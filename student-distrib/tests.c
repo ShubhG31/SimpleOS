@@ -69,13 +69,20 @@ int RTC_open_test(){
 
 int RTC_write_and_read_test(){
 	int i;
+	int count = 80;
+	int32_t write_ret;
 	//while(1){
-	printf("b\n");
+	//printf("b\n");
 	for(i = 2; i < 1025; i++){
-    	int buf_int = 2;
-		RTC_write(NULL, (void*) (&buf_int), NULL);
-		// RTC_read(NULL, NULL, NULL);
-		printf("a");
+    	int buf_int = i;
+		write_ret = RTC_write(NULL, (void*) (&buf_int), NULL);
+		RTC_read(NULL, NULL, NULL);
+		count--;
+		if(write_ret != -1){
+			printf("a\n");
+		}else{
+			printf("a");
+		}
 		}
 	// }
 	return PASS;
@@ -88,7 +95,7 @@ int RTC_write_and_read_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	//TEST_OUTPUT("idt_test", idt_test());
+	// TEST_OUTPUT("idt_test", idt_test());
 	TEST_OUTPUT("RTC_write_and_read_test", RTC_write_and_read_test());
 	// launch your tests here
 }
