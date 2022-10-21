@@ -79,7 +79,16 @@ int RTC_write_and_read_test(){
 		RTC_read(NULL, NULL, NULL);
 		count--;
 		if(write_ret != -1){
-			printf("a\n");
+			count = 80;
+			printf("\n");
+			printf("\n");
+			printf("a");
+			// printf("a\n");
+		}else if(count == 0){
+			count = 80;
+			printf("\n");
+			printf("a");
+			// printf("a\n");
 		}else{
 			printf("a");
 		}
