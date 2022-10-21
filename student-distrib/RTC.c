@@ -18,7 +18,7 @@
 #define TOP_4BITS 0xF0
 #define PASS 1
 #define FAIL 0
-static int8_t flag = 0;
+static volatile int8_t flag = 0;
 static uint16_t Hz_rate = 0;
 static uint16_t Hz_counter = 0;
 static uint32_t buffer_rate = 0;
@@ -55,6 +55,7 @@ extern void RTC_init(){
  */
 int32_t RTC_open(const uint8_t* filename){
 Hz_rate = MIN_FREQ;
+Hz_counter = MAX_FREQ/Hz_rate;
 // printf("1");
 return 0;
 }
@@ -93,6 +94,7 @@ if((buffer_rate > 1024 || !((buffer_rate != 0) && ((buffer_rate & (buffer_rate -
 return -1;//invalid input
 }else{
 Hz_rate = buffer_rate;
+Hz_counter = MAX_FREQ/Hz_rate;
 return 4;//number of bytes changed
 }
 //return 4;
@@ -134,24 +136,35 @@ extern void RTC_handle(){
 // Read contents of Reg C - RTC will not generate another interrupt if this is not done
 // Send EOI - PIC will not handle another interrupt until then
 // test_interrupts();
+    cli();
     outb(REGISTER_C, INDEX_NUM);
     // outb(inb(0x70) & 0x7F ,0x70);
     inb(READandWRITE);
-    Hz_counter = MAX_FREQ/Hz_rate;
-    cli();
-    while(1){
-        outb(REGISTER_C,INDEX_NUM);     // select register C, and disable NMI
-        char prev = inb(READandWRITE);	// get initial value of register C
-        outb(REGISTER_C,INDEX_NUM);     // set the index again (a read will reset the index to register D)
-        if((prev & BITSIX) == BITSIX){ //if bit 6 in C is a Periodic Interrupt Flag
+        // outb(REGISTER_C,INDEX_NUM);     // select register C, and disable NMI
+        // char prev = inb(READandWRITE);	// get initial value of register C
+        // outb(REGISTER_C,INDEX_NUM);     // set the index again (a read will reset the index to register D)
+        // if((prev & BITSIX) == BITSIX){ //if bit 6 in C is a Periodic Interrupt Flag
             Hz_counter--;
             if(Hz_counter == 0){ 
                 flag = 1;
                 // printf("flag = 1\n");
-                break;
             }
-        }
-    }
+        // }
+    sti();
+    // cli();
+    // while(1){
+    //     outb(REGISTER_C,INDEX_NUM);     // select register C, and disable NMI
+    //     char prev = inb(READandWRITE);	// get initial value of register C
+    //     outb(REGISTER_C,INDEX_NUM);     // set the index again (a read will reset the index to register D)
+    //     if((prev & BITSIX) == BITSIX){ //if bit 6 in C is a Periodic Interrupt Flag
+    //         Hz_counter--;
+    //         if(Hz_counter == 0){ 
+    //             flag = 1;
+    //             // printf("flag = 1\n");
+    //             break;
+    //         }
+    //     }
+    // }
     sti();
     // RTC test to see frequency of clock 
         // printf("Hisdjihdfihdjfhujduhn");

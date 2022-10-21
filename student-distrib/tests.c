@@ -70,10 +70,11 @@ int RTC_open_test(){
 int RTC_write_and_read_test(){
 	int i;
 	//while(1){
+	printf("b\n");
 	for(i = 2; i < 1025; i++){
-    	const int buf_int = i;
+    	int buf_int = 2;
 		RTC_write(NULL, (void*) (&buf_int), NULL);
-		RTC_read(NULL, NULL, NULL);
+		// RTC_read(NULL, NULL, NULL);
 		printf("a");
 		}
 	// }
