@@ -37,7 +37,7 @@ extern void RTC_init(){
     outb( prev | BITSIX, READandWRITE);
     outb(inb(INDEX_NUM) & VALUE ,INDEX_NUM);
     inb(READandWRITE);
-    //Hz_rate = 1024;
+    Hz_rate = 1024;
     sti();
     enable_irq(RTC_itr_num);
     // 
@@ -65,8 +65,11 @@ return 0;
    (you will not need spinlocks. Why?) inputs not used
  */
 int32_t RTC_read(int32_t fd, void* buf, int32_t nbytes){
-while(!flag){}
+while(!flag){
+//    printf("flag = 0\n");
+}
 flag = 0;
+// printf("flag = 0\n");
 return 0;
 }
 
@@ -77,16 +80,16 @@ return 0;
              and not read the value directly.
  */
 int32_t RTC_write(int32_t fd, const void* buf, int32_t nbytes){
-// buffer_rate = (int*) buf;
-// printf("buffer_rate = %d\n", buffer_rate);
-// //if statement check if buf int is between 0-1024 and power of 2
-// if(buffer_rate > 1024 && ((buffer_rate != 0) && ((buffer_rate & (buffer_rate - 1)) == 0))){
-// return -1;//invalid input
-// }else{
-// Hz_rate = buffer_rate;
-// return 4;//number of bytes changed
-// }
-return 4;
+buffer_rate =*((int*)buf);
+printf("buffer_rate = %d\n",buffer_rate);
+//if statement check if buf int is between 0-1024 and power of 2
+if(buffer_rate > 1024 || !((buffer_rate != 0) && ((buffer_rate & (buffer_rate - 1)) == 0))){
+return -1;//invalid input
+}else{
+Hz_rate = buffer_rate;
+return 4;//number of bytes changed
+}
+//return 4;
 }
 
 /* extern void RTC_close();
@@ -128,24 +131,25 @@ extern void RTC_handle(){
     outb(REGISTER_C, INDEX_NUM);
     // outb(inb(0x70) & 0x7F ,0x70);
     inb(READandWRITE);
-    // Hz_counter = 1024/Hz_rate;
-    // cli();
-    // while(1){
-    //     outb(REGISTER_C,INDEX_NUM);     // select register C, and disable NMI
-    //     char prev = inb(READandWRITE);	// get initial value of register C
-    //     outb(REGISTER_C,INDEX_NUM);     // set the index again (a read will reset the index to register D)
-    //     if((prev & BITSIX) == BITSIX){ //if bit 6 in C is a Periodic Interrupt Flag
-    //         Hz_counter--;
-    //         if(Hz_counter == 0){ 
-    //             flag = 1;
-    //             break;
-    //         }
-    //     }
-    // }
-    // sti();
+    Hz_counter = 1024/Hz_rate;
+    cli();
+    while(1){
+        outb(REGISTER_C,INDEX_NUM);     // select register C, and disable NMI
+        char prev = inb(READandWRITE);	// get initial value of register C
+        outb(REGISTER_C,INDEX_NUM);     // set the index again (a read will reset the index to register D)
+        if((prev & BITSIX) == BITSIX){ //if bit 6 in C is a Periodic Interrupt Flag
+            Hz_counter--;
+            if(Hz_counter == 0){ 
+                flag = 1;
+                // printf("flag = 1\n");
+                break;
+            }
+        }
+    }
+    sti();
     // RTC test to see frequency of clock 
         // printf("Hisdjihdfihdjfhujduhn");
-        test_interrupts();
+        // test_interrupts();
     send_eoi(RTC_itr_num);
     return;
 }

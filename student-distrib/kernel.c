@@ -149,17 +149,17 @@ void entry(unsigned long magic, unsigned long addr) {
     paging_init();
 
     //testing open
-    // uint8_t* filename = 0;
-    // printf("%d",RTC_open(filename));
+    uint8_t* filename = 0;
+    printf("%d",RTC_open(filename));
 
 
     //testing write
-    // int32_t fd = 0;
-    // const void* buf;
-    // const int buf_int = 8;
-    // buf = &buf_int;
-    // int32_t nbytes = 0;
-    // printf("%d\n",RTC_write(fd, buf, nbytes));
+    int32_t fd = 0;
+    const void* buf;
+    const int buf_int = 5;
+    buf = &buf_int;
+    int32_t nbytes = 0;
+    printf("%d\n",RTC_write(fd, (void*) (&buf_int), nbytes));
 
     //testing read
     // int32_t fd = 0;
