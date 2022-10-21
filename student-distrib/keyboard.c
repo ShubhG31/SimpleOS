@@ -73,6 +73,7 @@ static int ctrl_flag = 0;
 
 static int keyboard_keycodes[keys];
 static char special_num_char[10]=")!@#$%^&*(";
+char buffer[128] = {0};
 
 /* void init_keycodes();
  * Inputs: none
@@ -124,16 +125,36 @@ void keyboard_helper(){
     // send_eoi(End);
     // clear();
     // printf("Hellooooo");
-
+    if(scan_code != keyboard_keycodes[enter]){
+        newline_flag = 0;
+    }
     // if backspace return print backspace
-    if(keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
+    //buffer_cur_location != 0 &&
+    if( buffer_cur_location == 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
+        send_eoi(keyboard_irq_num);
+        return;
+    }
+    if( buffer_cur_location > 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
         putc(BS_ascii);
+        buffer[buffer_cur_location] = 0;
+        buffer_cur_location--;
         send_eoi(keyboard_irq_num);
         return;
     }
     // if enter is pressed, print newline and return 
-    if(keyboard_keycodes[scan_code] == keyboard_keycodes[enter]){
+    if( keyboard_keycodes[scan_code] == keyboard_keycodes[enter]){
+        // put new line into the buffer 
+        buffer[buffer_cur_location] = '\n';
+        // buffer location is now set to 0 
+        buffer_cur_location = 0;
+        // new line flag is set for terminal read 
+        newline_flag = 1;
+        // print out new line
         putc(keyboard_keycodes[enter]);
+        // print buffer
+        printf("%s",buffer);
+        // clear buffer 
+        memset(buffer,0,strlen(buffer));
         send_eoi(keyboard_irq_num);
         return;
     }
@@ -170,68 +191,101 @@ void keyboard_helper(){
     // if ctrl is pressed and l is pressed, clear screen and return 
     if (ctrl_flag==1 && keyboard_keycodes[scan_code]=='l'){
         clear();
+        // strncpy(buffer,"hello",5);
+        // clear buffer 
+        memset(buffer,0,strlen(buffer));
+        buffer_cur_location = 0;
         send_eoi(keyboard_irq_num); 
+        // printf("%s",buffer);
         return;
     }
-    if(keyboard_keycodes[scan_code] != print_screen){
+    if(buffer_cur_location <127 && keyboard_keycodes[scan_code] != print_screen){
        if(shift_flag){
             // prints out the special characters in the number row
             if(keyboard_keycodes[scan_code]>= '0' && keyboard_keycodes[scan_code]<='9'){
                 int special_character_index = keyboard_keycodes[scan_code] - 48;
                 putc(special_num_char[special_character_index]);
+                buffer[buffer_cur_location]=special_num_char[special_character_index];
+                buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]=='`'){
                 putc(tilde);
+                buffer[buffer_cur_location] = tilde;
+                buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]=='['){
                 putc('{');
+                buffer[buffer_cur_location] = '{';
+                buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]==']'){
                 putc('}');
+                buffer[buffer_cur_location] = '}';
+                buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]== backslash_ascii){
                 putc(straight_line);
+                buffer[buffer_cur_location] = straight_line;
+                buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]==','){
                 putc('<');
+                buffer[buffer_cur_location] = '<';
+                buffer_cur_location++;
                 goto end;
             }          
             if(keyboard_keycodes[scan_code]=='.'){
                 putc('>');
+                buffer[buffer_cur_location] = '>';
+                buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]=='/'){
                 putc('?');
+                buffer[buffer_cur_location] = '?';
+                buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]==';'){
                 putc(':');
+                buffer[buffer_cur_location] = ':';
+                buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]==apostrophe){
                 putc('"');
+                buffer[buffer_cur_location] = '"';
+                buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]=='-'){
                 putc('_');
+                buffer[buffer_cur_location] = '_';
+                buffer_cur_location++;
                 goto end;
 
             }
             if(keyboard_keycodes[scan_code]=='='){
                 putc('+');
+                buffer[buffer_cur_location] = '+';
+                buffer_cur_location++;
                 goto end;
             }
         }
         if((shift_flag ^ caps_lock_flag) && (keyboard_keycodes[scan_code]>=lower_a_ascii && keyboard_keycodes[scan_code]<=lower_z_ascii)){
                 putc(keyboard_keycodes[scan_code]-uppercase_conversion);
+                buffer[buffer_cur_location] = keyboard_keycodes[scan_code]-uppercase_conversion;
+                buffer_cur_location++;
         }
         else{
             putc(keyboard_keycodes[scan_code]);
+            buffer[buffer_cur_location] = keyboard_keycodes[scan_code];
+            buffer_cur_location++;
         }
     }
     

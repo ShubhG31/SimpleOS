@@ -244,7 +244,10 @@ void putc(uint8_t c) {
     else if(c == BS_ascii){
             //  *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1)) = ' ';
             // if previous value is in previous row, set y to previous row and set x to last value in row
-             if(screen_x-1 < 0){
+            if(screen_x==0 && screen_y==0){
+                return;
+            }
+             if( screen_x-1 < 0 && screen_y-1>0){
                 screen_y--;
                 screen_x = NUM_COLS;
              }

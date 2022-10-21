@@ -60,6 +60,17 @@ int idt_test(){
 // add more tests here
 
 /* Checkpoint 2 tests */
+int terminal_test(){
+	int result = PASS;
+	char buf[128] = " dfojsdfkha";
+	int terminal = terminal_read(0,buf,128);
+	printf("%s",buf);
+	if (terminal != 128){
+		assertion_failure();
+		result = FAIL;
+	}
+	return result;
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -67,6 +78,8 @@ int idt_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
+	// TEST_OUTPUT("idt_test", idt_test());
+	//  TEST_OUTPUT("Term test", terminal_test());
+	
 	// launch your tests here
 }
