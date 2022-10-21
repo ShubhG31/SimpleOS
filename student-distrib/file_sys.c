@@ -17,6 +17,9 @@ static uint32_t dir_count, inode_count, data_count;
 struct dentry test;
 
 void test_file_driver();
+void test_dir_driver();
+void test_show_files();
+void test_show_frame();
 
 int32_t load_fss(unsigned int mod_start){
     boot    = mod_start;
@@ -91,10 +94,11 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
 }
 
 int32_t show_ls (){
-    test_file_driver();
+    // test_file_driver();
     test_dir_driver();
-    test_show_files();
-    test_show_frame();
+    // test_show_files();
+    // test_show_frame();
+    return 0;
 }
 
 
@@ -105,12 +109,12 @@ void test_dir_driver(){
     fd=dir_open(".");
     printf("open finish\n");
     for( i = 1; i < dir_count; i++ ){
-        re=dir_read(fd,buf,0);
         printf("%d: ",i);
+        re=dir_read(fd,buf,0);
         for( j=0;j<re;j++ )putc(buf[j]);
         putc('\n');
     }
-    return 0;
+    return;
 }
 void test_file_driver(){
     int fd,i,re;
@@ -186,6 +190,13 @@ void test_show_frame(){
     return;
 }
 
+int32_t get_length(struct dentry dt){
+    return *((uint32_t*)(node + block_size*(dt.inode_num) + length_off));
+}
+
+int32_t get_dir_number(){
+    return dir_count;
+}
 /*
 some questions:
 1. read_data, check inode is within the valid range (0~boot.inode_count)
