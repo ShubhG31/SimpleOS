@@ -16,6 +16,8 @@
 #define OPEN_RTC_RATE 0x0F
 #define RTC_RATE_MASK 0x0F
 #define TOP_4BITS 0xF0
+#define PASS 1
+#define FAIL 0
 static int8_t flag = 0;
 static uint16_t Hz_rate = 0;
 static uint16_t Hz_counter = 0;
@@ -37,7 +39,7 @@ extern void RTC_init(){
     outb( prev | BITSIX, READandWRITE);
     outb(inb(INDEX_NUM) & VALUE ,INDEX_NUM);
     inb(READandWRITE);
-    Hz_rate = 1024;
+    Hz_rate = MAX_FREQ;
     sti();
     enable_irq(RTC_itr_num);
     // 
@@ -52,8 +54,8 @@ extern void RTC_init(){
  Works need better test
  */
 int32_t RTC_open(const uint8_t* filename){
-Hz_rate = 2;
-printf("1");
+Hz_rate = MIN_FREQ;
+// printf("1");
 return 0;
 }
 
@@ -65,10 +67,10 @@ return 0;
    (you will not need spinlocks. Why?) inputs not used
  */
 int32_t RTC_read(int32_t fd, void* buf, int32_t nbytes){
+flag = 0;
 while(!flag){
 //    printf("flag = 0\n");
 }
-flag = 0;
 // printf("flag = 0\n");
 return 0;
 }
@@ -80,10 +82,14 @@ return 0;
              and not read the value directly.
  */
 int32_t RTC_write(int32_t fd, const void* buf, int32_t nbytes){
+if(buf == NULL){
+    printf("NULL\n");
+    return -1;
+}
 buffer_rate =*((int*)buf);
-printf("buffer_rate = %d\n",buffer_rate);
+//printf("buffer_rate = %d\n",buffer_rate);
 //if statement check if buf int is between 0-1024 and power of 2
-if(buffer_rate > 1024 || !((buffer_rate != 0) && ((buffer_rate & (buffer_rate - 1)) == 0))){
+if((buffer_rate > 1024 || !((buffer_rate != 0) && ((buffer_rate & (buffer_rate - 1)) == 0)))){
 return -1;//invalid input
 }else{
 Hz_rate = buffer_rate;
@@ -131,7 +137,7 @@ extern void RTC_handle(){
     outb(REGISTER_C, INDEX_NUM);
     // outb(inb(0x70) & 0x7F ,0x70);
     inb(READandWRITE);
-    Hz_counter = 1024/Hz_rate;
+    Hz_counter = MAX_FREQ/Hz_rate;
     cli();
     while(1){
         outb(REGISTER_C,INDEX_NUM);     // select register C, and disable NMI

@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "RTC.h"
 
 #define PASS 1
 #define FAIL 0
@@ -60,6 +61,25 @@ int idt_test(){
 // add more tests here
 
 /* Checkpoint 2 tests */
+int RTC_open_test(){
+	uint8_t* filename = 0;
+    // printf("%d",RTC_open(filename));
+	return RTC_open(filename);
+}
+
+int RTC_write_and_read_test(){
+	int i;
+	//while(1){
+	for(i = 2; i < 1025; i++){
+    	const int buf_int = i;
+		RTC_write(NULL, (void*) (&buf_int), NULL);
+		RTC_read(NULL, NULL, NULL);
+		printf("a");
+		}
+	// }
+	return PASS;
+}
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -68,5 +88,6 @@ int idt_test(){
 /* Test suite entry point */
 void launch_tests(){
 	//TEST_OUTPUT("idt_test", idt_test());
+	TEST_OUTPUT("RTC_write_and_read_test", RTC_write_and_read_test());
 	// launch your tests here
 }

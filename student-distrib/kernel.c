@@ -148,26 +148,18 @@ void entry(unsigned long magic, unsigned long addr) {
     RTC_init();
     paging_init();
 
-    //testing open
-    uint8_t* filename = 0;
-    printf("%d",RTC_open(filename));
+    // testing open
+    // uint8_t* filename = 0;
+    // printf("%d",RTC_open(filename));
 
 
-    //testing write
-    int32_t fd = 0;
-    const void* buf;
-    const int buf_int = 5;
-    buf = &buf_int;
-    int32_t nbytes = 0;
-    printf("%d\n",RTC_write(fd, (void*) (&buf_int), nbytes));
-
-    //testing read
-    // int32_t fd = 0;
-    // const void* buf;
+    // testing write
     // const int buf_int = 8;
-    // buf = &buf_int;
-    // int32_t nbytes = 0;
-    // printf("%d\n",RTC_read(fd,(void*) buf, nbytes));
+    // printf("%d\n",RTC_write(NULL, (void*) (&buf_int), NULL));
+    // printf("%d\n",RTC_write(NULL, NULL, NULL));
+
+    // testing read
+    // printf("%d\n",RTC_read(NULL, NULL, NULL));
 
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
