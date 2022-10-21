@@ -9,7 +9,6 @@
 #define ATTRIB      0x2//0x7
 
 #define BS_ascii 8
-static int BS_end;
 
 static int screen_x;
 static int screen_y;
@@ -176,54 +175,8 @@ static char scroll_buf[2*(NUM_ROWS*NUM_COLS)];
 void putc(uint8_t c) {
     // added to terminal scroll
     int i;
-    /*if(c == BS_ascii){
-        for(i=screen_x;i<NUM_COLS-1;i++){
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + i) << 1)) = *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + i+1) << 1));
-        // *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        }
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + NUM_COLS-1) << 1)) = ' ';
-        if(screen_x-1 < 0){
-            screen_y--;
-            screen_x = NUM_COLS-1;
-            screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
-        }
-        else{
-        screen_x--;
-        screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
-        }
-    }
-
-    else if( (c == '\n'|| screen_x+1 == NUM_COLS) ){
-        if( screen_y+1 == NUM_ROWS){
-        // for
-            memcpy(scroll_buf,video_mem+(NUM_COLS*2),2*80*24);
-            for(i=0;i<NUM_COLS;i++){
-                *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = 0x20;
-                *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
-            }
-            memcpy(video_mem,scroll_buf, 2*80*25);
-            // for(i=0;i<NUM_COLS;i++){
-            //     *(video_mem+((NUM_COLS*(NUM_ROWS-2)+i)<<1)) = 0x20;
-            //     *(video_mem+((NUM_COLS*(NUM_ROWS-2)+i)<<1)+1) = ATTRIB;
-            // }
-            // if(c == '\n' || c == '\r'){
-            screen_x = 0;
-            screen_y = NUM_ROWS-1;
-        // }
-         }
-        else{
-            screen_y = (screen_y + 1) % NUM_ROWS; // fixes the first character to show up
-            screen_x = 0;
-         }
-    }
-    // added else 
-    else*/
      if(c == '\n' || c == '\r') {
-        if(c=='\n'){
-            BS_end = screen_y;
-        }
-
+        
         if(c== '\n' && screen_y == NUM_ROWS-1){
 
             memcpy(scroll_buf,video_mem+(NUM_COLS*2),2*80*24);
@@ -242,8 +195,6 @@ void putc(uint8_t c) {
     }
     //  when backspace is pressed
     else if(c == BS_ascii){
-            //  *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1)) = ' ';
-            // if previous value is in previous row, set y to previous row and set x to last value in row
             if(screen_x==0 && screen_y==0){
                 return;
             }
@@ -253,8 +204,6 @@ void putc(uint8_t c) {
              }
              *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1)) = ' ';
              screen_x--;
-            //  screen_x%=NUM_COLS;
-            // }
     }
     
     else {
@@ -269,14 +218,16 @@ void putc(uint8_t c) {
                 memcpy(video_mem,scroll_buf, 2*80*25);
                 screen_x = 0;
                 screen_y = NUM_ROWS-1;
+            }else{
+                if(screen_x == NUM_COLS){
+                    screen_y ++;
+                    screen_x = 0;
+                }
             }
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
-        // else{
-        // screen_x %= NUM_COLS;
-        // screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
-        // }
+        
     }
 }
 

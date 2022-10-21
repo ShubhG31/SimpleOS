@@ -61,11 +61,41 @@ int idt_test(){
 
 /* Checkpoint 2 tests */
 int terminal_test(){
+	// int result = PASS;
+	// char buf[128] = " dfojsdfkha";
+	// int terminal = terminal_read(0,buf,128);
+	// printf("%s",buf);
+	// if (terminal != 128){
+	// 	assertion_failure();
+	// 	result = FAIL;
+	// }
+	// return result;
+
+	while(1){
+		puts("391OS>");
+		char buf[500] = {0};
+		terminal_read(0,(void *)buf,0);
+		int i;
+		for(i = 0; i<strlen(buf);i++){
+			putc(buf[i]);
+		}
+		// putc(buf);
+		putc('\n');
+	}
+}
+
+int terminal_write_test(){
 	int result = PASS;
-	char buf[128] = " dfojsdfkha";
-	int terminal = terminal_read(0,buf,128);
-	printf("%s",buf);
-	if (terminal != 128){
+	char buf[11] = "dfojsdfkha";
+	buf[10] = 10;
+	int terminal = terminal_write(0,(void*)buf,11);
+	// printf("%s",buf);
+	// puts(buf);
+	int i;
+	for(i = 0; i<11;i++){
+		putc(buf[i]);
+	}
+	if (terminal != 11){
 		assertion_failure();
 		result = FAIL;
 	}
@@ -80,6 +110,7 @@ int terminal_test(){
 void launch_tests(){
 	// TEST_OUTPUT("idt_test", idt_test());
 	//  TEST_OUTPUT("Term test", terminal_test());
-	
+	TEST_OUTPUT("Term test", terminal_write_test());
 	// launch your tests here
+	terminal_test();
 }

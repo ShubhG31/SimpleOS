@@ -125,9 +125,9 @@ void keyboard_helper(){
     // send_eoi(End);
     // clear();
     // printf("Hellooooo");
-    if(scan_code != keyboard_keycodes[enter]){
-        newline_flag = 0;
-    }
+    // if(scan_code != keyboard_keycodes[enter]){
+    //     newline_flag = 0;
+    // }
     // if backspace return print backspace
     //buffer_cur_location != 0 &&
     if( buffer_cur_location == 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
@@ -147,13 +147,12 @@ void keyboard_helper(){
         buffer[buffer_cur_location] = '\n';
         // buffer location is now set to 0 
         buffer_cur_location = 0;
-        // new line flag is set for terminal read 
-        newline_flag = 1;
         // print out new line
+        // if(screen_y != 0 ){
         putc(keyboard_keycodes[enter]);
-        // print buffer
-        printf("%s",buffer);
+        // }
         // clear buffer 
+        copy_buffer(buffer);
         memset(buffer,0,strlen(buffer));
         send_eoi(keyboard_irq_num);
         return;
@@ -162,12 +161,10 @@ void keyboard_helper(){
     // if scan code is shift key then set flag to high 
     if(scan_code == l_shift_keycode_pressed || scan_code == r_shift_keycode_pressed){
         shift_flag = 1;
-        // putc('?');
     }
     // if shift is releaased then set flag to low
     if(scan_code == l_shift_keycode_released || scan_code == r_shift_keycode_released){
         shift_flag = 0;
-        // putc('!');
     }
     //if caps lock is pressed check if flag is set to high
     if(scan_code == caps_keycode_pressed){
@@ -191,14 +188,10 @@ void keyboard_helper(){
     // if ctrl is pressed and l is pressed, clear screen and return 
     if (ctrl_flag==1 && keyboard_keycodes[scan_code]=='l'){
         clear();
-        // strncpy(buffer,"hello",5);
-        // clear buffer 
-        memset(buffer,0,strlen(buffer));
-        buffer_cur_location = 0;
         send_eoi(keyboard_irq_num); 
-        // printf("%s",buffer);
         return;
     }
+
     if(buffer_cur_location <127 && keyboard_keycodes[scan_code] != print_screen){
        if(shift_flag){
             // prints out the special characters in the number row
