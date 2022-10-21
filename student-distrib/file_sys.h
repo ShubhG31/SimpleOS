@@ -1,6 +1,14 @@
 #include "lib.h"
 #include "types.h"
 
+#define name_length 32
+#define block_size 4096
+#define dentry_size 64
+#define file_name_off 0
+#define file_type_off 32
+#define inode_off 36
+#define length_off 0
+
 struct dentry{
     uint8_t filename[32];
     int32_t filetype;

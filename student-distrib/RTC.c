@@ -10,13 +10,17 @@
 #define READandWRITE 0x71
 #define VALUE 0x7F
 #define LOWRANGE 0x0C
+#define Base_f 1024
+
+int f_now;
+uint32_t flags;
 
 /* extern void RTC_init();
  * Inputs: void
  * Return Value: void
  * Function: initializes RTC by turning on the IRQ with the default 1024 Hz rate */
 
-extern void RTC_init(){
+void RTC_init(){
 // You will have to enable interrupt generating mode, and set the init frequency
 // You will have to select registers (CMD port), send data to registers with data port
     
@@ -27,6 +31,7 @@ extern void RTC_init(){
     outb( prev | BITSIX, READandWRITE);
     outb(inb(INDEX_NUM) & VALUE ,INDEX_NUM);
     inb(READandWRITE);
+    f=2;
     sti();
     enable_irq(RTC_itr_num);
     // 
@@ -39,7 +44,7 @@ extern void RTC_init(){
  * Return Value: void
  * Function: represents the RTC handler which handles what heppens when there is an interrupt */
 
-extern void RTC_handle(){
+void RTC_handle(){
 // Basic for now, likely will have to come back to later
 // Read contents of Reg C - RTC will not generate another interrupt if this is not done
 // Send EOI - PIC will not handle another interrupt until then
@@ -52,4 +57,31 @@ extern void RTC_handle(){
         // test_interrupts();
     send_eoi(RTC_itr_num);
     return;
+}
+
+
+uint32_t RTC_open(const uint8_t* filename){
+    RTC_init();
+    return 0;
+}
+uint32_t RTC_close(int32_t fd){
+    // revert virtualizing RTC
+    return 0;
+}
+uint32_t RTC_read(int32_t fd, void* buf, int32_t nbytes){
+    while(1);
+    return 0;
+}
+uint32_t RTC_write(int32_t fd, const void* buf, int32_t nbytes){
+    int f_new;
+    f_new=*((uint32_t*)buf);
+    if((f_new&(f_new-1))!=0)return -1;
+    return 0;
+}
+void sleep(int32_t t){
+    int i;
+    for( i=0;i<Base_f/f_now;i++ ){
+        RTC_read(0,NULL,0);
+    }
+    return 0;
 }
