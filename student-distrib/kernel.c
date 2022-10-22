@@ -159,7 +159,7 @@ void entry(unsigned long magic, unsigned long addr) {
     // printf("%d\n",RTC_write(NULL, NULL, NULL));
 
     // testing read
-    printf("%d\n",RTC_read(NULL, NULL, NULL));
+    // printf("%d\n",RTC_read(NULL, NULL, NULL));
 
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
