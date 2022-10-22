@@ -41,3 +41,10 @@ extern int32_t get_length();
 extern int32_t get_dir_number();
 extern void put_number();
 
+void test_file_driver_small_file();
+void test_file_driver_large_file();
+void test_file_driver_executable_file();
+void test_dir_driver();
+void test_show_files();
+void test_show_frame();
+void test_file_driver_read_twice();

@@ -16,13 +16,7 @@ static unsigned int data_b;
 static uint32_t dir_count, inode_count, data_count;
 struct dentry test;
 
-void test_file_driver_small_file();
-void test_file_driver_large_file();
-void test_file_driver_executable_file();
-void test_dir_driver();
-void test_show_files();
-void test_show_frame();
-void test_file_driver_read_twice();
+
 
 int32_t load_fss(unsigned int mod_start){
     boot    = mod_start;

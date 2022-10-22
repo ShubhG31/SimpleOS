@@ -77,6 +77,7 @@ static int ctrl_flag = 0;
 static int keyboard_keycodes[keys];
 static char special_num_char[10]=")!@#$%^&*(";
 char buffer[128] = {0};
+static unsigned int buffer_cur_location = 0;
 
 /* void init_keycodes();
  * Inputs: none
