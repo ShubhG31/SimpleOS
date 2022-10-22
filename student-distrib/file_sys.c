@@ -96,12 +96,12 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
     return -1;
 }
 
-int32_t test_cases (){
-    test_file_driver_small_file();
+int32_t file_sys_test_cases (){
+    // test_file_driver_small_file();
     // test_file_driver_large_file();
     // test_file_driver_executable_file();
     // test_file_driver_read_twice();
-    // test_dir_driver();
+    test_dir_driver();
     // test_show_files();
     // test_show_frame();
     return 0;

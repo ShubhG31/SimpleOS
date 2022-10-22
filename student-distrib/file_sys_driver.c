@@ -27,7 +27,7 @@ int dir_open(const int8_t* filename){
     FD[head].file_pos=0;
     FD[head].flags=1;
     use[head]=1;
-    dir_p=-1;
+    dir_p=0;
     return head;
 }
 
