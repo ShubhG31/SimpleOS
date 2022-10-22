@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "Terminal.h"
+#include "file_sys.h"
 
 #define PASS 1
 #define FAIL 0
@@ -124,9 +125,19 @@ int terminal_read_test(){
 void launch_tests(){
 	// TEST_OUTPUT("idt_test", idt_test());
 	//  TEST_OUTPUT("Term test", terminal_test());
-	clear();
+	// clear();
 	TEST_OUTPUT("Terminal Write test", terminal_write_test());
 	TEST_OUTPUT("Terminal Read test", terminal_read_test());
+
+	// File System Tests
+	    // test_file_driver_small_file();
+		test_file_driver_large_file();
+		// test_file_driver_executable_file();
+		// test_file_driver_read_twice();
+		// test_dir_driver();
+		// test_show_files();
+		// test_show_frame();
+
 	// launch your tests here
 	terminal_test();
 }

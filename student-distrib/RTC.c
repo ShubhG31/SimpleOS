@@ -31,7 +31,6 @@ void RTC_init(){
     outb( prev | BITSIX, READandWRITE);
     outb(inb(INDEX_NUM) & VALUE ,INDEX_NUM);
     inb(READandWRITE);
-    f=2;
     sti();
     enable_irq(RTC_itr_num);
     // 

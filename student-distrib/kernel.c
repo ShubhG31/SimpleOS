@@ -13,6 +13,8 @@
 #include "keyboard.h"
 #include "RTC.h"
 #include "paging.h"
+#include "file_sys.h"
+#include "file_sys_driver.h"
 
 #define RUN_TESTS
 
@@ -57,6 +59,8 @@ void entry(unsigned long magic, unsigned long addr) {
         int mod_count = 0;
         int i;
         module_t* mod = (module_t*)mbi->mods_addr;
+        load_fss(mod->mod_start);
+        file_sys_init();
         while (mod_count < mbi->mods_count) {
             printf("Module %d loaded at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_start);
             printf("Module %d ends at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_end);
@@ -147,6 +151,10 @@ void entry(unsigned long magic, unsigned long addr) {
     keyboard_init_irq();
     RTC_init();
     paging_init();
+
+    file_sys_test_cases ();
+
+
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 
