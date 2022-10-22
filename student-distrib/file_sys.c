@@ -17,77 +17,134 @@ static uint32_t dir_count, inode_count, data_count;
 struct dentry test;
 
 
-
+/*
+ * load_fss
+ *   DESCRIPTION: initialize the pointer to each block to enable the latter function.
+ *   INPUTS: mod_start
+ *   OUTPUTS: start address of boot, dentry, node and data block
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */ 
 int32_t load_fss(unsigned int mod_start){
     boot    = mod_start;
     dentry  = mod_start+dentry_size;
     node    = mod_start+block_size;
     dir_count   = *((int*)mod_start);
-    inode_count = *((int*)(mod_start+4));
-    data_count  = *((int*)(mod_start+8));
-    data_b  = mod_start + block_size*(1+inode_count);
+    inode_count = *((int*)(mod_start+4));      // inode_count is stored at 4 offset places
+    data_count  = *((int*)(mod_start+8));      // data_count is stoded at 8 offset places
+    data_b  = mod_start + block_size*(1+inode_count);   // the offset blocks are all node block and first boot block
     // clear();
     // printf("%u %u %u\n",dir_count,inode_count,data_b);
     // printf("finish loading file system structre\n");
     return 0;
 }
+
+/*
+ * cmp_name
+ *   DESCRIPTION: compare two strings and evaluate they are equal or not.
+ *   INPUTS: A,B pointers which point two comparing string
+ *   OUTPUTS: none
+ *   RETURN VALUE: 1 for they are equal, 0 for they are not
+ *   SIDE EFFECTS: none
+ */ 
 int cmp_name(const uint8_t* A, const uint8_t* B){
     int i;
     for(i=0;i<name_length;i++){
-        if(A[i]==0&&B[i]==0)return 1;
-        if(A[i]!=B[i])return 0;
+        if(A[i]==0&&B[i]==0)return 1;   // once they meet the \0, it means the sting ends. Return true
+        if(A[i]!=B[i])return 0;         // once two strings have one character different, they are not equal. return false.
     }
-    return 1;
+    return 1;   // finish comparing all string, they are the same. return true
 }
+
+/*
+ * read_dentry_by_name
+ *   DESCRIPTION: we get the filename, update the info in pointer dt
+ *   INPUTS: fname: pointer to the filename in a char array
+ *           dt: pointer to the dentry which we need to update the reading file's info
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 for success, -1 for error happens (like file doesn't exist, dt pointer is NULL)
+ *   SIDE EFFECTS: none
+ */ 
 int32_t read_dentry_by_name (const uint8_t* fname, struct dentry* dt){
     int i;
     if( dentry == NULL )return -1;
     (*dt).filetype=-1;
-    (*dt).inode_num=-1;
+    (*dt).inode_num=-1;             // initialize the dentry with impossible filetype and inode_num to indicate failure in reading
     if( fname == NULL )return -1;
     for( i = 0; i < dir_count; i++ ){
-        if(cmp_name((uint8_t*) (dentry + i*dentry_size + file_name_off),fname)){
+        if(cmp_name((uint8_t*) (dentry + i*dentry_size + file_name_off),fname)){    // compare the name
             // (*dt).filetype=*((uint32_t*)(dentry + i*dentry_size + file_type_off));
             // (*dt).inode_num=*((uint32_t*)(dentry + i*dentry_size + inode_off));
             // return 0;
-            return read_dentry_by_index(i,dt);
+            return read_dentry_by_index(i,dt);  // use read_dentry_by_index to update info, i is the dentry info now
         }
     }
     return -1;
 }
+
+/*
+ * read_dentry_by_index
+ *   DESCRIPTION: we get the dentry index, update the info in pointer dt
+ *   INPUTS: index: the index number of dentry (dentries are in the first boot block)
+ *           dt: pointer to the dentry which we need to update the reading file's info
+ *   OUTPUTS: none
+ *   RETURN VALUE: 0 for success, -1 for error happens (like index out of range, dt pointer is NULL)
+ *   SIDE EFFECTS: none
+ */ 
 int32_t read_dentry_by_index (uint32_t index, struct dentry* dt){
     int i;
     if( dentry == NULL )return -1;
     (*dt).filetype=-1;
-    (*dt).inode_num=-1;
+    (*dt).inode_num=-1;     // initialize the dentry with impossible filetype and inode_num to indicate failure in reading
     if( index < 0 || index > dir_count )return -1;
-    (*dt).filetype=*((uint32_t*)(dentry + index*dentry_size + file_type_off));
-    (*dt).inode_num=*((uint32_t*)(dentry + index*dentry_size + inode_off));
+    // dentry is starting address of dentry part
+    // index*dentry_size is to move to the dentry we are looking for right now
+    (*dt).filetype=*((uint32_t*)(dentry + index*dentry_size + file_type_off));  //copy filetype
+    (*dt).inode_num=*((uint32_t*)(dentry + index*dentry_size + inode_off)); //copy inode_num
     for( i=0; i<32; i++){
-        (*dt).filename[i]=*((uint8_t*)(dentry + index*dentry_size+i ));
+        (*dt).filename[i]=*((uint8_t*)(dentry + index*dentry_size+i )); //copy filename
     }
     return 0;
 }
+
+/*
+ * read_data
+ *   DESCRIPTION: we get the file's inode, we need to get length byte info starting at 'offset' bytes
+ *   INPUTS: inode: the index number of node
+ *           offset: the offset bytes that we will ignore for data
+ *           buf: return data are store in buf          
+ *           length: the number of bytes we need to read
+ *   OUTPUTS: the data they read are stored in buf
+ *   RETURN VALUE: the length of successful reading, -1 for error happens (like inode out of range)
+ *   SIDE EFFECTS: none
+ */ 
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
     int i,j,l_read,st,data_idx,inode_length;
     if( buf == NULL )return -1;
-    if( inode < 0 || inode > inode_count )return -1;
-    l_read=0;
-    inode_length=*((uint32_t*)(node + block_size*inode + length_off));
+    if( inode < 0 || inode > inode_count )return -1;        // edge cases
+    l_read=0;   // l_read stores the length that we read, initializa it to be zero
+    inode_length=*((uint32_t*)(node + block_size*inode + length_off));  // total bytes for this file
     //printf("%d\n",inode_length);
-    for( i = (1+offset / block_size); i < block_size/4; i++ ){                              // inode line-length
 
+    // offset/block_size is the number of data block we gonna ignore
+    // +1 is we need to locate the (1+offset/block_size)th block in inode block (to read the index of that data block)
+    // for loop ends at block_size/4, 4 means 4 bytes, there are only block_size/4 entries in one inode block
+    for( i = (1+offset / block_size); i < block_size/4; i++ ){  // in inode block
+
+        // if the data is the first one in our reading process, it is necessay to consider remaining offset
+        // if not, we start from 0 offset in this data block
         st= (i == 1+offset / block_size)?(offset-offset/block_size*block_size):0;
         //printf("%d %d\n",i,st);
-        data_idx=*((uint32_t*)(node + block_size*inode + i*4));
-        if( data_idx<0 || data_idx>data_count )return -1;
+        data_idx=*((uint32_t*)(node + block_size*inode + i*4)); // the index of the data block
+        if( data_idx<0 || data_idx>data_count )return -1;   // sanity check
         
-        for ( j = st ; j< block_size; j++ ){                                                   // in data_block    
-            buf[l_read++]=*((uint8_t*)( data_b+block_size*data_idx+j ));//data_b[ node[inode].data[i] ].d[j];
+        for ( j = st ; j< block_size; j++ ){             // in data_block    
+            buf[l_read++]=*((uint8_t*)( data_b+block_size*data_idx+j ));//data_b[ node[inode].data[i] ].d[j]; // copy info
             if(l_read==length || inode_length == (i-1)*block_size+j+1 )return l_read;
+            // if we have already read length bytes OR we reach the end of the file, return
         }
     }
-    return -1;
+    return -1;  // we should return before, if everything works well, so here return -1 for any trouble
 }
 
 int32_t file_sys_test_cases (){
