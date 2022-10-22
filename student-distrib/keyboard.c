@@ -65,6 +65,9 @@
 #define minus_keycode 0x0C
 #define equal_keycode 0x0D
 
+#define tab_keycode 0x0F
+#define tab_ascii 9
+
 static int caps_lock_flag = 0;
 static int shift_flag = 0;
 static int ctrl_flag = 0;
@@ -130,16 +133,25 @@ void keyboard_helper(){
     // }
     // if backspace return print backspace
     //buffer_cur_location != 0 &&
+    // if( keyboard_keycodes[scan_code] == keyboard_keycodes[backspace] && buffer[buffer_cur_location] == tab_ascii){
+    //     putc(BS_ascii);
+    //     putc(BS_ascii);
+    //     putc(BS_ascii);
+    //     buffer[buffer_cur_location] = 0;
+    //     buffer_cur_location--;
+    //     send_eoi(keyboard_irq_num);
+    //     return;
+    // }
     if( buffer_cur_location == 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
         send_eoi(keyboard_irq_num);
         return;
     }
     if( buffer_cur_location > 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
-        putc(BS_ascii);
-        buffer[buffer_cur_location] = 0;
-        buffer_cur_location--;
-        send_eoi(keyboard_irq_num);
-        return;
+            putc(BS_ascii);
+            buffer[buffer_cur_location] = 0;
+            buffer_cur_location--;
+            send_eoi(keyboard_irq_num);
+            return;
     }
     // if enter is pressed, print newline and return 
     if( keyboard_keycodes[scan_code] == keyboard_keycodes[enter]){
@@ -191,6 +203,18 @@ void keyboard_helper(){
         send_eoi(keyboard_irq_num); 
         return;
     }
+
+    // if tab is pressed then update buffer
+    // if(scan_code == tab_keycode){
+    //     putc(tab_ascii);
+    //     // putc(' ');
+    //     // putc(' ');
+    //     // putc(' ');
+    //     buffer[buffer_cur_location] = tab_ascii;
+    //     buffer_cur_location++;
+    //     goto end;
+    // }
+
 
     if(buffer_cur_location <127 && keyboard_keycodes[scan_code] != print_screen){
        if(shift_flag){

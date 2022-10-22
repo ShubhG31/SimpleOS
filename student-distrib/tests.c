@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "Terminal.h"
 
 #define PASS 1
 #define FAIL 0
@@ -60,6 +61,15 @@ int idt_test(){
 // add more tests here
 
 /* Checkpoint 2 tests */
+
+/* Terminal Test
+ * 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: Lets the user test terminal, with Terminal_read and Terminal_write functions that echos typed strings 
+ * Files: Terminal.h/S
+ */
 int terminal_test(){
 	// int result = PASS;
 	// char buf[128] = " dfojsdfkha";
@@ -74,12 +84,9 @@ int terminal_test(){
 	while(1){
 		puts("391OS>");
 		char buf[500] = {0};
-		terminal_read(0,(void *)buf,0);
 		int i;
-		for(i = 0; i<strlen(buf);i++){
-			putc(buf[i]);
-		}
-		// putc(buf);
+		i = terminal_read(0,(void *)buf,0);
+		terminal_write(0,(void*)buf,i);
 		putc('\n');
 	}
 }
@@ -89,12 +96,19 @@ int terminal_write_test(){
 	char buf[11] = "dfojsdfkha";
 	buf[10] = 10;
 	int terminal = terminal_write(0,(void*)buf,11);
-	// printf("%s",buf);
-	// puts(buf);
-	int i;
-	for(i = 0; i<11;i++){
-		putc(buf[i]);
+	if (terminal != 11){
+		assertion_failure();
+		result = FAIL;
 	}
+	return result;
+}
+
+int terminal_read_test(){
+	int result = PASS;
+	char buf_test[500] = "HELLO WORLD\n";
+	copy_buffer(buf_test);
+	char buf[500];
+	int terminal = terminal_read(0,(void*)buf,0);
 	if (terminal != 11){
 		assertion_failure();
 		result = FAIL;
@@ -110,7 +124,9 @@ int terminal_write_test(){
 void launch_tests(){
 	// TEST_OUTPUT("idt_test", idt_test());
 	//  TEST_OUTPUT("Term test", terminal_test());
-	TEST_OUTPUT("Term test", terminal_write_test());
+	clear();
+	TEST_OUTPUT("Terminal Write test", terminal_write_test());
+	TEST_OUTPUT("Terminal Read test", terminal_read_test());
 	// launch your tests here
 	terminal_test();
 }

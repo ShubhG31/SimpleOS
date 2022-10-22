@@ -10,6 +10,14 @@
 
 #define BS_ascii 8
 
+#define tab_ascii 9
+
+#define cursor_mask 0xff
+#define cursor_port 0x3D4 
+#define cursor_port2 0x3D5
+#define cursor_port_mask 0x0f
+#define cursor_port_mask2 0x0e
+
 static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
@@ -26,6 +34,7 @@ void clear(void) {
     }
     screen_x = 0;
     screen_y = 0;
+    update_cursor(screen_x, screen_y);
 }
 
 /* Standard printf().
@@ -205,6 +214,14 @@ void putc(uint8_t c) {
              *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1)) = ' ';
              screen_x--;
     }
+    else if(c == tab_ascii){
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
+        screen_x++;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
+        screen_x++;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
+        screen_x++;
+    }
     
     else {
             // when at the bottom right corner, then scroll
@@ -229,6 +246,8 @@ void putc(uint8_t c) {
         screen_x++;
         
     }
+    // sets the value of the cursor after character has been outputted on screen
+    update_cursor(screen_x, screen_y);
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
@@ -524,4 +543,18 @@ void test_interrupts(void) {
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         video_mem[i << 1]++;
     }
+}
+
+/* void update_cursor(int screenx, int screeny)
+ * Inputs: screenx -- video memory screen x value
+           screeny -- video memory screen y value
+ * Return Value: void
+ * Function: sets the cursor value to screen_x and screen_y value*/
+void update_cursor(int screenx, int screeny)
+{
+	uint16_t i = screeny * NUM_COLS + screenx;
+	outb(cursor_port_mask,cursor_port);
+	outb((uint8_t) (i & cursor_mask),cursor_port2);
+	outb(cursor_port_mask2,cursor_port);
+	outb((uint8_t) ((i >> 8) & cursor_mask),cursor_port2);
 }
