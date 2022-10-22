@@ -17,3 +17,18 @@
 
 ## Oct 16th
     (4) It is a misunderstanding not a bug. We only need to initialize the table pointing to video memory and the directory pointing to 4MB pages, instead of all 4GB pages.
+
+
+## Oct. 20th
+    (5) verylargetextwithverylongname.txt
+        For comparing and open file, we need to take care that this file name exceeds 32 length. If we simply use printf to print out its name, there will be a smile character behind it. This is because printf will stop only when meeting the \0, so it will keeps going to the next memory space and print out the smile face.
+        Therefore, i write my own compare function to only compare at most 32 characters. 
+
+## Oct. 20th
+    (6) file_open(“frame0.txt”);
+	There is a warning.
+	The reason of this is, in c, the string is stored as char array which is counted as int8_t type, but the parameter type should be uint8_t as required, so we need to add some casting when we process the function.
+
+## Oct. 21th
+    (7) For testing cases, we need to separate them into functions.
+	I did not set set test cases for read_dentry_by_index, because i will call this function when i use read_dentry_by_name. If that works, it means both of two functions works well.
