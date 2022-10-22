@@ -148,20 +148,6 @@ void entry(unsigned long magic, unsigned long addr) {
     RTC_init();
     paging_init();
 
-    // testing open
-    // uint8_t* filename = 0;
-    // printf("%d",RTC_open(filename));
-
-
-    // testing write
-    // const int buf_int = 8;
-    // printf("%d\n",RTC_write(NULL, (void*) (&buf_int), NULL));
-    // printf("%d\n",RTC_write(NULL, NULL, NULL));
-
-    // testing read
-    printf("%d\n",RTC_read(NULL, NULL, NULL));
-
-
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 
@@ -170,7 +156,7 @@ void entry(unsigned long magic, unsigned long addr) {
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     // idt_initialization();
-    //printf("Enabling Interrupts\n");
+    printf("Enabling Interrupts\n");
     sti();
 
 #ifdef RUN_TESTS
