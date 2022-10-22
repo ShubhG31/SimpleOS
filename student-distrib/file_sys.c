@@ -16,10 +16,13 @@ static unsigned int data_b;
 static uint32_t dir_count, inode_count, data_count;
 struct dentry test;
 
-void test_file_driver();
+void test_file_driver_small_file();
+void test_file_driver_large_file();
+void test_file_driver_executable_file();
 void test_dir_driver();
 void test_show_files();
 void test_show_frame();
+void test_file_driver_read_twice();
 
 int32_t load_fss(unsigned int mod_start){
     boot    = mod_start;
@@ -90,30 +93,62 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
             if(l_read==length || inode_length == (i-1)*block_size+j+1 )return l_read;
         }
     }
-    return 0;
+    return -1;
 }
 
-int32_t show_ls (){
-    // test_file_driver();
+int32_t file_sys_test_cases (){
+    // test_file_driver_small_file();
+    // test_file_driver_large_file();
+    // test_file_driver_executable_file();
+    // test_file_driver_read_twice();
     test_dir_driver();
     // test_show_files();
     // test_show_frame();
     return 0;
 }
 
+void put_number(int x){
+    int bit[7],l,i;
+    l=0;
+    if(x==0){
+        putc('0');
+        return;
+    }
+    if(x<0)putc('-'),x=-x;
+    while(x){
+        bit[l++]=x%10;
+        x/=10;
+    }
+    for( i=l-1;i>=0;i-- ){
+        putc((char)(bit[i]+'0'));
+    }return;
+}
 
 void test_dir_driver(){
     int fd,i,j,re;
     char buf[32];
     clear();
     fd=dir_open(".");
-    printf("open finish\n");
+    puts("return value of dir_open:");
+    put_number(fd);
+    putc('\n');
+    // puts("open finish\n");
     for( i = 1; i < dir_count; i++ ){
-        printf("  file_name: %d: ",i);
+        put_number(i);
+        putc(':');
         re=dir_read(fd,buf,0);
+        puts("  file_name: ");
         for( j=0;j<re;j++ )putc(buf[j]);
         putc('\n');
     }
+    re=dir_write(fd,NULL,0);
+    puts("return value of dir_write:");
+    put_number(re);
+    putc('\n');
+    fd=dir_close(fd);
+    puts("return value of dir_close:");
+    put_number(fd);
+    putc('\n');
     return;
 }
 void test_file_driver(){
@@ -123,34 +158,204 @@ void test_file_driver(){
     // test_show_frame();
     clear();
     // fd=file_open((uint8_t*)ch);
-    fd=file_open("verylargetextwithverylongname.tx");
+    // fd=file_open("verylargetextwithverylongname.tx");
     // fd=file_open("frame1.txt");
     // fd=file_open("ls");
     // fd=file_open("frame2.txt"); //dont exist
-    // fd=file_open("fish");       //dont exist
-
-    if(fd==0)printf("\n Cannot find the file \n");
+    fd=file_open("fish");       //dont exist
+    puts("return value of file_open:");
+    put_number(fd);
+    putc('\n');
+    if(fd==-1)puts("\n Cannot find the file \n");
     // printf("fd: %d /// open finish\n",fd);
 
-    // re=file_read(fd,(void*)buf,60000);
+    re=file_read(fd,(void*)buf,60000);
+    // re=file_read(fd,(void*)buf,600);
+    puts("read finish: read_length: ");
+    put_number(re);
+    putc('\n');
+    puts("---------------------------------------------------------------\n");
+    for(i=0;i<re;i++){
+        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+        // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
+            putc(buf[i]);
+    }
+    puts("\n---------------------------------------------------------------\n");
+    // puts("i finish reading the fisrt part\n");
+    // re=file_read(fd,(void*)buf,100);
+    // //printf("read finish: read_length: %d\n",re);
+    // puts("read finish: read_length: ");
+    // put_number(re);
+    // putc('\n');
+    // puts("---------------------------------------------------------------\n");
+    // for(i=0;i<re;i++){
+    //     if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+    //     // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
+    //         putc(buf[i]);
+    // }
+    // putc('\n');
+    // puts("---------------------------------------------------------------\n");
+    re=file_write(fd,NULL,0);
+    puts("return value of file_write:");
+    put_number(re);
+    putc('\n');
+    fd=file_close(fd);
+    puts("return value of file_close:");
+    put_number(fd);
+    putc('\n');
+
+    return;
+}
+void test_file_driver_small_file(){
+    int fd,i,re;
+    char buf[50000];
+    clear();
+    // fd=file_open("frame1.txt");
+    fd=file_open("frame0.txt");
+    // fd=file_open("frame2.txt");
+    puts("return value of file_open:");
+    put_number(fd);
+    putc('\n');
+    if(fd==-1)puts("\n Cannot find the file \n");
+    // printf("fd: %d /// open finish\n",fd);
+
+    re=file_read(fd,(void*)buf,60000);
+    // re=file_read(fd,(void*)buf,600);
+    puts("read finish: read_length: ");
+    put_number(re);
+    putc('\n');
+    puts("---------------------------------------------------------------\n");
+    for(i=0;i<re;i++){
+        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+        // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
+            putc(buf[i]);
+    }
+    puts("\n---------------------------------------------------------------\n");
+    re=file_write(fd,NULL,0);
+    puts("return value of file_write:");
+    put_number(re);
+    putc('\n');
+    fd=file_close(fd);
+    puts("return value of file_close:");
+    put_number(fd);
+    putc('\n');
+
+    return;
+}
+void test_file_driver_large_file(){
+    int fd,i,re;
+    char buf[50000];
+    clear();
+    fd=file_open("verylargetextwithverylongname.tx");
+    // fd=file_open("hello");
+    // fd=file_open("fish");       //dont exist
+    puts("return value of file_open:");
+    put_number(fd);
+    putc('\n');
+    if(fd==-1)puts("\n Cannot find the file \n");
+
+    re=file_read(fd,(void*)buf,60000);
+    // re=file_read(fd,(void*)buf,600);
+    puts("read finish: read_length: ");
+    put_number(re);
+    putc('\n');
+    puts("---------------------------------------------------------------\n");
+    for(i=0;i<re;i++){
+        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+        // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
+            putc(buf[i]);
+    }
+    puts("\n---------------------------------------------------------------\n");
+    re=file_write(fd,NULL,0);
+    puts("return value of file_write:");
+    put_number(re);
+    putc('\n');
+    fd=file_close(fd);
+    puts("return value of file_close:");
+    put_number(fd);
+    putc('\n');
+
+    return;
+}
+void test_file_driver_executable_file(){
+    int fd,i,re;
+    char buf[50000];
+    clear();
+    // fd=file_open("ls");
+    fd=file_open("grep");
+    puts("return value of file_open:");
+    put_number(fd);
+    putc('\n');
+    if(fd==-1)puts("\n Cannot find the file \n");
+    // printf("fd: %d /// open finish\n",fd);
+
+    re=file_read(fd,(void*)buf,60000);
+    // re=file_read(fd,(void*)buf,600);
+    puts("read finish: read_length: ");
+    put_number(re);
+    putc('\n');
+    puts("---------------------------------------------------------------\n");
+    for(i=0;i<re;i++){
+        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+        // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
+            putc(buf[i]);
+    }
+    puts("\n---------------------------------------------------------------\n");
+    re=file_write(fd,NULL,0);
+    puts("return value of file_write:");
+    put_number(re);
+    putc('\n');
+    fd=file_close(fd);
+    puts("return value of file_close:");
+    put_number(fd);
+    putc('\n');
+
+    return;
+}
+void test_file_driver_read_twice(){
+    int fd,i,re;
+    char buf[50000];
+    clear();
+    fd=file_open("verylargetextwithverylongname.tx");
+    puts("return value of file_open:");
+    put_number(fd);
+    putc('\n');
+    if(fd==-1)puts("\n Cannot find the file \n");
+
     re=file_read(fd,(void*)buf,100);
-    printf("read finish: read_length: %d\n",re);
+    puts("read finish: read_length: ");
+    put_number(re);
+    putc('\n');
+    puts("---------------------------------------------------------------\n");
+    for(i=0;i<re;i++){
+        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+        // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
+            putc(buf[i]);
+    }
+    puts("\n---------------------------------------------------------------\n");
+    puts("i finish reading the fisrt part\n");
+    re=file_read(fd,(void*)buf,100);
+    //printf("read finish: read_length: %d\n",re);
+    puts("read finish: read_length: ");
+    put_number(re);
+    putc('\n');
+    puts("---------------------------------------------------------------\n");
     for(i=0;i<re;i++){
         if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
         // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
             putc(buf[i]);
     }
     putc('\n');
-    printf("\ni finish reading the fisrt part\n");
+    puts("---------------------------------------------------------------\n");
+    re=file_write(fd,NULL,0);
+    puts("return value of file_write:");
+    put_number(re);
     putc('\n');
-    re=file_read(fd,(void*)buf,100);
-    printf("read finish: read_length: %d\n",re);
-    for(i=0;i<re;i++){
-        if((buf[i]>31 && buf[i]<127)||(buf[i]==10)||(buf[i]=='\n'))
-        // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
-            putc(buf[i]);
-    }
+    fd=file_close(fd);
+    puts("return value of file_close:");
+    put_number(fd);
     putc('\n');
+
     return;
 }
 void test_show_files(){
@@ -158,24 +363,30 @@ void test_show_files(){
     clear();
     for( i=0; i<dir_count; i++){
         for( j=0;j<name_length;j++ ){
-            printf("%c",*((char*)(dentry+i*dentry_size+j)));
+            // printf("%c",*((char*)(dentry+i*dentry_size+j)));
+            putc(*((char*)(dentry+i*dentry_size+j)));
         }
-        printf("\n");
+        putc('\n');
     }
-    printf("LOOOOOOK WHAT I FOUND: %d\n",read_dentry_by_index(10,&test));
+    // printf("LOOOOOOK WHAT I FOUND: %d\n",read_dentry_by_index(10,&test));
     return;
 }
 void test_show_frame(){
     int i,re;
-    char ch[32]="verylargetextwithverylongname.tx";
-    // char ch[32]="ls";
+    // char ch[32]="verylargetextwithverylongname.tx";
+    char ch[32]="ls";
     char buf[20000];
     clear();
-    printf("LOOOOOOK WHAT I FOUND: %d\n",read_dentry_by_name ((uint8_t*)ch,(&test)));
-    // printf("LOOOOOOK WHAT I FOUND: %d\n",read_data(test.inode_num,0,buf,6000));
-    printf("%d\n",test.inode_num);
-    // read_dentry_by_name ((uint8_t*)ch,&test);
-    re=read_data(test.inode_num,0,(void*)buf,600);
+    re=read_dentry_by_name ((uint8_t*)ch,(&test));
+    puts("open_file: ");
+    put_number(re);
+    putc('\n');
+    // printf("LOOOOOOK WHAT I FOUND: %d\n",read_dentry_by_name ((uint8_t*)ch,(&test)));
+    puts("index: ");
+    put_number(test.inode_num);
+    putc('\n');
+    // printf("%d\n",test.inode_num);
+    re=read_data(test.inode_num,0,(void*)buf,6000);
     for(i=0;i<re;i++){
         if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
         // if(buf[i]!='\0' && buf[i]!=' ')
