@@ -109,7 +109,7 @@ void test_dir_driver(){
     fd=dir_open(".");
     printf("open finish\n");
     for( i = 1; i < dir_count; i++ ){
-        printf("%d: ",i);
+        printf("  file_name: %d: ",i);
         re=dir_read(fd,buf,0);
         for( j=0;j<re;j++ )putc(buf[j]);
         putc('\n');
@@ -126,13 +126,24 @@ void test_file_driver(){
     fd=file_open("verylargetextwithverylongname.tx");
     // fd=file_open("frame1.txt");
     // fd=file_open("ls");
-    //fd=file_open("frame2.txt");  //dont exist
-    // fd=file_open("fish");  //dont exist
+    // fd=file_open("frame2.txt"); //dont exist
+    // fd=file_open("fish");       //dont exist
 
     if(fd==0)printf("\n Cannot find the file \n");
     // printf("fd: %d /// open finish\n",fd);
 
-    re=file_read(fd,(void*)buf,40000);
+    // re=file_read(fd,(void*)buf,60000);
+    re=file_read(fd,(void*)buf,100);
+    printf("read finish: read_length: %d\n",re);
+    for(i=0;i<re;i++){
+        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+        // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
+            putc(buf[i]);
+    }
+    putc('\n');
+    printf("\ni finish reading the fisrt part\n");
+    putc('\n');
+    re=file_read(fd,(void*)buf,100);
     printf("read finish: read_length: %d\n",re);
     for(i=0;i<re;i++){
         if((buf[i]>31 && buf[i]<127)||(buf[i]==10)||(buf[i]=='\n'))
@@ -140,15 +151,6 @@ void test_file_driver(){
             putc(buf[i]);
     }
     putc('\n');
-    // putc('\n');
-    // re=file_read(fd,(void*)buf,100);
-    // printf("read finish: read_length: %d\n",re);
-    // for(i=0;i<re;i++){
-    //     if((buf[i]>31 && buf[i]<127)||(buf[i]==10)||(buf[i]=='\n'))
-    //     // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
-    //         putc(buf[i]);
-    // }
-    // putc('\n');
     return;
 }
 void test_show_files(){
@@ -165,21 +167,30 @@ void test_show_files(){
 }
 void test_show_frame(){
     int i,re;
-    // char ch[32]="verylargetextwithverylongname.tx";
-    char ch[32]="ls";
+    char ch[32]="verylargetextwithverylongname.tx";
+    // char ch[32]="ls";
     char buf[20000];
     clear();
     printf("LOOOOOOK WHAT I FOUND: %d\n",read_dentry_by_name ((uint8_t*)ch,(&test)));
     // printf("LOOOOOOK WHAT I FOUND: %d\n",read_data(test.inode_num,0,buf,6000));
     printf("%d\n",test.inode_num);
     // read_dentry_by_name ((uint8_t*)ch,&test);
-    re=read_data(test.inode_num,0,(void*)buf,6000);
+    re=read_data(test.inode_num,0,(void*)buf,600);
     for(i=0;i<re;i++){
         if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
         // if(buf[i]!='\0' && buf[i]!=' ')
             putc(buf[i]);
     }
     putc('\n');
+    // printf("\nfinish first part\n\n");
+    // re=read_data(test.inode_num,0,(void*)buf,600);
+    // for(i=0;i<re;i++){
+    //     if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+    //     // if(buf[i]!='\0' && buf[i]!=' ')
+    //         putc(buf[i]);
+    //     if(re%80==0)putc('\n');
+    // }
+    // putc('\n');
     // printf("\n");
     // printf("%d %d %d\n",buf[1],buf[2],buf[3]);
     // putc(buf[1]);

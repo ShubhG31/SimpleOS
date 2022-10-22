@@ -48,7 +48,7 @@ int dir_read(int32_t fd, void* buf, int32_t nbytes){
     l_read=0;
     for( dir_p=dir_p+1; dir_p<get_dir_number(); dir_p++ ){
         re=read_dentry_by_index (dir_p, &dt_dir);
-        //if(dt_dir.filetype==2||dt_dir.filetype==1){
+        // if(dt_dir.filetype==2||dt_dir.filetype==1){
             printf("file_type: %d   length: %d //",dt_dir.filetype, get_length(dt_dir));
             for( j=0;j<name_length;j++ ){
                 // printf("%c",dt_dir.filename[j]);
@@ -58,7 +58,7 @@ int dir_read(int32_t fd, void* buf, int32_t nbytes){
             }
             // printf("\n");
             return l_read;
-        //}
+        // }
     }
     return -1;
 }
