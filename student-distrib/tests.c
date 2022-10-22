@@ -148,26 +148,27 @@ int RTC_write_and_read_test(){
 	int i;
 	int count = 80;//used for when characters should go on a new line
 	int32_t write_ret;
-	for(i = 2; i < 1025; i++){//1024 is the max feq so we can visibly see change in how fast character is printed
+	for(i = 2; i < 2048; i++){//1024 is the max feq so we can visibly see change in how fast character is printed
     	int buf_int = i;
 		write_ret = RTC_write(NULL, (void*) (&buf_int), NULL);//we write a new freq each time
 		RTC_read(NULL, NULL, NULL);
 		count--;
 		if(write_ret != -1){//if the freq is a valid for write
 			count = 80;
-			printf("\n");
-			printf("\n");
-			printf("a");
-			// printf("a\n");
+			putc('\n');
+			putc('\n');
+			putc('a');
+			// putc("a\n");
 		}else if(count == 0){//if we filled the entire line with characters
 			count = 80;
-			printf("\n");
-			printf("a");
-			// printf("a\n");
+			putc('\n');
+			putc('a');
+			// putc("a\n");
 		}else{
-			printf("a");
+			putc('a');
 		}
 	}
+	putc('\n');
 	RTC_write(NULL, NULL, NULL);//checking if we pass NULL into the write
 	return PASS;
 }
