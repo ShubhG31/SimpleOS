@@ -106,6 +106,34 @@ int terminal_test(){
 	}
 }
 
+/* Terminal Oen Test
+ * 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Files: Terminal.h/S
+ */
+int terminal_open_test(){
+	int result = PASS;
+	char buf[11] = "dfojsdfkha";
+	result=terminal_open(buf);
+	if(result==0)return PASS;
+	else return FAIL;
+}
+
+/* Terminal Close Test
+ * 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Files: Terminal.h/S
+ */
+int terminal_close_test(){
+	int result = PASS;
+	result=terminal_close(0); // randon number for fd
+	return result;
+}
+
 /* Terminal Write Test
  * 
  * Inputs: None
@@ -151,7 +179,20 @@ int terminal_read_test(){
 	return result;
 }
 // RTC test section----------------------------------------------------------
+/* RTC open and close Test
+ * 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: Checks all possible frequencies that RTC can be set to
+ * Files: RTC.h/S
+ */
 int RTC_open_test(){
+	uint8_t* filename = 0;
+    // printf("%d",RTC_open(filename));
+	return RTC_open(filename);
+}
+int RTC_close_test(){
 	uint8_t* filename = 0;
     // printf("%d",RTC_open(filename));
 	return RTC_open(filename);
@@ -218,11 +259,14 @@ void launch_tests(){
 	// Terminal Tests 
 	TEST_OUTPUT("Terminal Write test", terminal_write_test());
 	TEST_OUTPUT("Terminal Read test", terminal_read_test());
+	TEST_OUTPUT("Terminal Open test", terminal_open_test());
+	TEST_OUTPUT("Terminal Close test", terminal_close_test());
 	terminal_test();
 
 	// RTC Tests 
 	// TEST_OUTPUT("RTC_write_and_read_test", RTC_write_and_read_test());
 	// TEST_OUTPUT("RTC_open_test", RTC_open_test());
+	// TEST_OUTPUT("RTC_close_test", RTC_close_test());
 		// File System Tests
 			// test_file_driver_small_file();
 			// test_file_driver_large_file();
