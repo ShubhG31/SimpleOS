@@ -190,7 +190,7 @@ int terminal_read_test(){
 int RTC_open_test(){
 	uint8_t* filename = 0;
     // printf("%d",RTC_open(filename));
-	return RTC_open(filename);
+	return RTC_open(filename)==0?PASS:FAIL;
 }
 int RTC_close_test(){
 	uint8_t* filename = 0;
