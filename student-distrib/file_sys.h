@@ -8,6 +8,7 @@
 #define file_type_off 32
 #define inode_off 36
 #define length_off 0
+#define MAX_digits 7
 
 struct dentry{
     uint8_t filename[32];

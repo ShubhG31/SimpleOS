@@ -147,6 +147,8 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
     return -1;  // we should return before, if everything works well, so here return -1 for any trouble
 }
 
+
+// blank test cases now
 int32_t file_sys_test_cases (){
     // test_file_driver_small_file();
     // test_file_driver_large_file();
@@ -158,8 +160,16 @@ int32_t file_sys_test_cases (){
     return 0;
 }
 
+/*
+ * put_number
+ *   DESCRIPTION: use putc to print a number
+ *   INPUTS: x: the number we need to print in the screen (we assume the number is not greater than 7 digits)
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */ 
 void put_number(int x){
-    int bit[7],l,i;
+    int bit[MAX_digits],l,i;
     l=0;
     if(x==0){
         putc('0');
@@ -175,9 +185,17 @@ void put_number(int x){
     }return;
 }
 
+/*
+ * test_dir_driver
+ *   DESCRIPTION: test cases for dir_driver part
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: show the PASS or FAIL for open/close/read/write function, also we print out all files name with read function
+ */ 
 void test_dir_driver(){
     int fd,i,j,re;
-    char buf[32];
+    char buf[name_length];
     clear();
     fd=dir_open(".");
     puts("return value of dir_open:");
@@ -202,9 +220,18 @@ void test_dir_driver(){
     putc('\n');
     return;
 }
+
+/*
+ * test_file_driver
+ *   DESCRIPTION: test cases for file_driver part
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: show the PASS or FAIL for open/close/read/write function, also we print out the data that we read from read function
+ */ 
 void test_file_driver(){
     int fd,i,re;
-    char buf[50000];
+    char buf[60000];            // we pick up this number just for test cases not for functionality
     // char ch[32]={"frame1.txt"};
     // test_show_frame();
     clear();
@@ -227,7 +254,7 @@ void test_file_driver(){
     putc('\n');
     puts("---------------------------------------------------------------\n");
     for(i=0;i<re;i++){
-        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))       // we filter out the non-readable characters to better understanding and illusitration
         // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
             putc(buf[i]);
     }
@@ -257,9 +284,18 @@ void test_file_driver(){
 
     return;
 }
+
+/*
+ * test_file_driver_small_file
+ *   DESCRIPTION: test cases for file_driver part
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: show the PASS or FAIL for open/close/read/write function, also we print out the small data that we read from read function
+ */ 
 void test_file_driver_small_file(){
     int fd,i,re;
-    char buf[50000];
+    char buf[60000];        //we pick up this number just to store data we read, it is controlled by user so it is not a fixed number
     clear();
     // fd=file_open("frame1.txt");
     fd=file_open("frame0.txt");
@@ -277,7 +313,7 @@ void test_file_driver_small_file(){
     putc('\n');
     puts("---------------------------------------------------------------\n");
     for(i=0;i<re;i++){
-        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))       // we filter out the non-readable characters to better understanding and illusitration
         // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
             putc(buf[i]);
     }
@@ -293,9 +329,18 @@ void test_file_driver_small_file(){
 
     return;
 }
+
+/*
+ * test_file_driver_large_file
+ *   DESCRIPTION: test cases for file_driver part
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: show the PASS or FAIL for open/close/read/write function, also we print out the large data that we read from read function
+ */ 
 void test_file_driver_large_file(){
     int fd,i,re;
-    char buf[50000];
+    char buf[60000];        //we pick up this number just to store data we read, it is controlled by user so it is not a fixed number
     clear();
     fd=file_open("verylargetextwithverylongname.tx");
     // fd=file_open("hello");
@@ -312,7 +357,7 @@ void test_file_driver_large_file(){
     putc('\n');
     puts("---------------------------------------------------------------\n");
     for(i=0;i<re;i++){
-        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))           // we filter out the non-readable characters to better understanding and illusitration
         // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
             putc(buf[i]);
     }
@@ -328,9 +373,18 @@ void test_file_driver_large_file(){
 
     return;
 }
+
+/*
+ * test_file_driver_executable_file
+ *   DESCRIPTION: test cases for file_driver part
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: show the PASS or FAIL for open/close/read/write function, also we print out the executable file that we read from read function
+ */ 
 void test_file_driver_executable_file(){
     int fd,i,re;
-    char buf[50000];
+    char buf[60000];             //we pick up this number just to store data we read, it is controlled by user so it is not a fixed number
     clear();
     // fd=file_open("ls");
     fd=file_open("grep");
@@ -347,7 +401,7 @@ void test_file_driver_executable_file(){
     putc('\n');
     puts("---------------------------------------------------------------\n");
     for(i=0;i<re;i++){
-        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))       // we filter out the non-readable characters to better understanding and illusitration
         // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
             putc(buf[i]);
     }
@@ -363,9 +417,19 @@ void test_file_driver_executable_file(){
 
     return;
 }
+
+/*
+ * test_file_driver_read_twice
+ *   DESCRIPTION: test cases for file_driver part
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: show the PASS or FAIL for open/close/read/write function, also we print out the file that we read twice, 
+ *                 showing that we will continue to read the file from last end point
+ */ 
 void test_file_driver_read_twice(){
     int fd,i,re;
-    char buf[50000];
+    char buf[60000];            //we pick up this number just to store data we read, it is controlled by user so it is not a fixed number
     clear();
     fd=file_open("verylargetextwithverylongname.tx");
     puts("return value of file_open:");
@@ -379,7 +443,7 @@ void test_file_driver_read_twice(){
     putc('\n');
     puts("---------------------------------------------------------------\n");
     for(i=0;i<re;i++){
-        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))           // we filter out the non-readable characters to better understanding and illusitration
         // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
             putc(buf[i]);
     }
@@ -392,7 +456,7 @@ void test_file_driver_read_twice(){
     putc('\n');
     puts("---------------------------------------------------------------\n");
     for(i=0;i<re;i++){
-        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))           // we filter out the non-readable characters to better understanding and illusitration
         // if(buf[i]!='\0' && buf[i]!=' ' && buf[i]!='\n')
             putc(buf[i]);
     }
@@ -409,6 +473,15 @@ void test_file_driver_read_twice(){
 
     return;
 }
+
+/*
+ * test_show_files
+ *   DESCRIPTION: show all files in file system
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: show all files in file system
+ */ 
 void test_show_files(){
     int i,j;
     clear();
@@ -422,11 +495,20 @@ void test_show_files(){
     // printf("LOOOOOOK WHAT I FOUND: %d\n",read_dentry_by_index(10,&test));
     return;
 }
+
+/*
+ * test_show_frame
+ *   DESCRIPTION: show one file in file system
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: show one file in file system
+ */ 
 void test_show_frame(){
     int i,re;
     // char ch[32]="verylargetextwithverylongname.tx";
     char ch[32]="ls";
-    char buf[20000];
+    char buf[20000];             //we pick up this number just to store data we read, it is controlled by user so it is not a fixed number
     clear();
     re=read_dentry_by_name ((uint8_t*)ch,(&test));
     puts("open_file: ");
@@ -439,7 +521,7 @@ void test_show_frame(){
     // printf("%d\n",test.inode_num);
     re=read_data(test.inode_num,0,(void*)buf,6000);
     for(i=0;i<re;i++){
-        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))
+        if((buf[i]>31 && buf[i]<127)||(buf[i]=='\n'))   // we filter out the non-readable characters to better understanding and illusitration
         // if(buf[i]!='\0' && buf[i]!=' ')
             putc(buf[i]);
     }
@@ -463,10 +545,26 @@ void test_show_frame(){
     return;
 }
 
+/*
+ * get_length
+ *   DESCRIPTION: return the length of data stored in this dentry/inode
+ *   INPUTS: dentry dt: the dentry we are looking at,
+ *   OUTPUTS: none
+ *   RETURN VALUE: return the length of the data in corresponding file
+ *   SIDE EFFECTS: none
+ */ 
 int32_t get_length(struct dentry dt){
     return *((uint32_t*)(node + block_size*(dt.inode_num) + length_off));
 }
 
+/*
+ * get_dir_number
+ *   DESCRIPTION: return the number of directory length
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: return the number of directory
+ *   SIDE EFFECTS: none
+ */
 int32_t get_dir_number(){
     return dir_count;
 }
