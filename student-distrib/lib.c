@@ -18,6 +18,11 @@
 #define cursor_port_mask 0x0f
 #define cursor_port_mask2 0x0e
 
+#define OLD_videomem_scroll 2*80*24
+#define NEW_videomem_scroll 2*80*25
+
+#define empty_mem 0x20
+
 static int screen_x;
 static int screen_y;
 static char* video_mem = (char *)VIDEO;
@@ -176,6 +181,7 @@ int32_t puts(int8_t* s) {
     return index;
 }
 
+// size of videomemory buffer is created, that hold bytes for character and color
 static char scroll_buf[2*(NUM_ROWS*NUM_COLS)];
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
@@ -184,21 +190,30 @@ static char scroll_buf[2*(NUM_ROWS*NUM_COLS)];
 void putc(uint8_t c) {
     // added to terminal scroll
     int i;
+    // checks if the character is a new line or line carriage 
      if(c == '\n' || c == '\r') {
-        
+        // if newline and y is at the end 
         if(c== '\n' && screen_y == NUM_ROWS-1){
 
-            memcpy(scroll_buf,video_mem+(NUM_COLS*2),2*80*24);
+            // copy memory to a buffer 
+            memcpy(scroll_buf,video_mem+(NUM_COLS*2),OLD_videomem_scroll);
+
+            // go through colomns and set new video memory to clear end row
             for(i=0;i<NUM_COLS;i++){
-                *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = 0x20;
+                // set the last row to empty character
+                *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = empty_mem;
+                // set the value of color
                 *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
             }
-            memcpy(video_mem,scroll_buf, 2*80*25);
+            // copy buffer to video memory
+            memcpy(video_mem,scroll_buf, NEW_videomem_scroll);
+            // set screen_x to 0
             screen_x = 0;
-            // screen_y = NUM_ROWS-1;
         }
         else{
+            // else set screen_y to next row
             screen_y = (screen_y + 1); // fixes the first character to show up
+            // set x to first character in row
             screen_x = 0;
         }
     }
@@ -211,7 +226,9 @@ void putc(uint8_t c) {
                 screen_y--;
                 screen_x = NUM_COLS;
              }
+             // set memory to space 
              *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1)) = ' ';
+             // decrement x value 
              screen_x--;
     }
     else if(c == tab_ascii){
@@ -226,23 +243,34 @@ void putc(uint8_t c) {
     else {
             // when at the bottom right corner, then scroll
             if(screen_x >= NUM_COLS && screen_y == NUM_ROWS-1){
-                // copy the video memory 
-                memcpy(scroll_buf,video_mem+(NUM_COLS*2),2*80*24);
+                // copy the video memory to buffer 
+                memcpy(scroll_buf,video_mem+(NUM_COLS*2),OLD_videomem_scroll);
+                // go through colomns and set new video memory to clear end row
                 for(i=0;i<NUM_COLS;i++){
-                    *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = 0x20;
+                    // set the last row to empty character
+                    *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = empty_mem;
+                    // set the value of color
                     *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
                 }
-                memcpy(video_mem,scroll_buf, 2*80*25);
+                // copy buffer to video memory
+                memcpy(video_mem,scroll_buf, NEW_videomem_scroll);
+                // set x to starting value in row 
                 screen_x = 0;
+                // set y to last row on screen
                 screen_y = NUM_ROWS-1;
             }else{
                 if(screen_x == NUM_COLS){
+                    // set y to next row
                     screen_y ++;
+                    // set x to starting value in row
                     screen_x = 0;
                 }
             }
+        // set the value of video memory to character 
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+        // set the value of video memory to color 
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+        // set x to next value in column 
         screen_x++;
         
     }
@@ -556,5 +584,6 @@ void update_cursor(int screenx, int screeny)
 	outb(cursor_port_mask,cursor_port);
 	outb((uint8_t) (i & cursor_mask),cursor_port2);
 	outb(cursor_port_mask2,cursor_port);
-	outb((uint8_t) ((i >> 8) & cursor_mask),cursor_port2);
+    // 8 is NOT a MAGIC NUMBER
+	outb((uint8_t) ((i >> 8) & cursor_mask),cursor_port2); // 8 is set to help change the mask 
 }

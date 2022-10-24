@@ -1,18 +1,6 @@
 #include "keyboard.h"
 
 
-//  void keyboard_handler(){
-//     asm volatile(" \n
-//                 pushal \n
-//                 pushfl  \n
-//                 call keyboard_helper \n
-//                 popfl  \n
-//                 popal \n
-//                 iret \n
-//                 "   
-//     );
-// }
-
 // ALL MAGIC NUMBER LABELS
 #define print_screen 0xE0
 #define keycode_0 0xB
@@ -67,6 +55,8 @@
 
 #define tab_keycode 0x0F
 #define tab_ascii 9
+
+#define max_characters 127
 
 static int caps_lock_flag = 0;
 static int shift_flag = 0;
@@ -126,31 +116,21 @@ void init_keycodes(){
 void keyboard_helper(){
     int port = keyboard_port;
     int scan_code = inb(port);
-    // send_eoi(End);
-    // clear();
-    // printf("Hellooooo");
-    // if(scan_code != keyboard_keycodes[enter]){
-    //     newline_flag = 0;
-    // }
-    // if backspace return print backspace
-    //buffer_cur_location != 0 &&
-    // if( keyboard_keycodes[scan_code] == keyboard_keycodes[backspace] && buffer[buffer_cur_location] == tab_ascii){
-    //     putc(BS_ascii);
-    //     putc(BS_ascii);
-    //     putc(BS_ascii);
-    //     buffer[buffer_cur_location] = 0;
-    //     buffer_cur_location--;
-    //     send_eoi(keyboard_irq_num);
-    //     return;
-    // }
+
+    // if locaton is 0 and if pressed key is backspace  
     if( buffer_cur_location == 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
+        // return end of interupt 
         send_eoi(keyboard_irq_num);
         return;
     }
+    // if buffer location is greater than 0 and if backspace is pressed
     if( buffer_cur_location > 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
-            putc(BS_ascii);
+            putc(BS_ascii); // print backspace 
+            // set current location of buffer current index to 0
             buffer[buffer_cur_location] = 0;
+            // decrement the location since backspace is pressed
             buffer_cur_location--;
+            // send end of interrupt signal
             send_eoi(keyboard_irq_num);
             return;
     }
@@ -161,22 +141,24 @@ void keyboard_helper(){
         // buffer location is now set to 0 
         buffer_cur_location = 0;
         // print out new line
-        // if(screen_y != 0 ){
         putc(keyboard_keycodes[enter]);
-        // }
         // clear buffer 
         copy_buffer(buffer);
+        // clear keyboard buffer 
         memset(buffer,0,strlen(buffer));
+        // send end of interupt signal
         send_eoi(keyboard_irq_num);
         return;
     }
     
     // if scan code is shift key then set flag to high 
     if(scan_code == l_shift_keycode_pressed || scan_code == r_shift_keycode_pressed){
+        // shift flag is set to high
         shift_flag = 1;
     }
     // if shift is releaased then set flag to low
     if(scan_code == l_shift_keycode_released || scan_code == r_shift_keycode_released){
+        // shift flag is set to low 
         shift_flag = 0;
     }
     //if caps lock is pressed check if flag is set to high
@@ -200,7 +182,9 @@ void keyboard_helper(){
     }
     // if ctrl is pressed and l is pressed, clear screen and return 
     if (ctrl_flag==1 && keyboard_keycodes[scan_code]=='l'){
+        // clear screen
         clear();
+        // send end of interupt signal
         send_eoi(keyboard_irq_num); 
         return;
     }
@@ -216,74 +200,85 @@ void keyboard_helper(){
     //     goto end;
     // }
 
-
-    if(buffer_cur_location <127 && keyboard_keycodes[scan_code] != print_screen){
+    // if buffer location is less than allowed value of 127 and pressed key is allowed then execute
+    if(buffer_cur_location < max_characters && keyboard_keycodes[scan_code] != print_screen){
        if(shift_flag){
             // prints out the special characters in the number row
             if(keyboard_keycodes[scan_code]>= '0' && keyboard_keycodes[scan_code]<='9'){
-                int special_character_index = keyboard_keycodes[scan_code] - 48;
+                int special_character_index = keyboard_keycodes[scan_code] - 48; // 48 is the conversion to index to index of the special characters array
                 putc(special_num_char[special_character_index]);
                 buffer[buffer_cur_location]=special_num_char[special_character_index];
+                // buffer location is incremented 
                 buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]=='`'){
                 putc(tilde);
                 buffer[buffer_cur_location] = tilde;
+                // increment the buffer current index 
                 buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]=='['){
                 putc('{');
                 buffer[buffer_cur_location] = '{';
+                // increment the buffer current index 
                 buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]==']'){
                 putc('}');
                 buffer[buffer_cur_location] = '}';
+                // increment the buffer current index 
                 buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]== backslash_ascii){
                 putc(straight_line);
                 buffer[buffer_cur_location] = straight_line;
+                // increment the buffer current index 
                 buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]==','){
                 putc('<');
                 buffer[buffer_cur_location] = '<';
+                // increment the buffer current index 
                 buffer_cur_location++;
                 goto end;
             }          
             if(keyboard_keycodes[scan_code]=='.'){
                 putc('>');
                 buffer[buffer_cur_location] = '>';
+                // increment the buffer current index 
                 buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]=='/'){
                 putc('?');
                 buffer[buffer_cur_location] = '?';
+                // increment the buffer current index 
                 buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]==';'){
                 putc(':');
                 buffer[buffer_cur_location] = ':';
+                // increment the buffer current index 
                 buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]==apostrophe){
                 putc('"');
                 buffer[buffer_cur_location] = '"';
+                // increment the buffer current index 
                 buffer_cur_location++;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]=='-'){
                 putc('_');
                 buffer[buffer_cur_location] = '_';
+                // increment the buffer current index 
                 buffer_cur_location++;
                 goto end;
 
@@ -291,18 +286,22 @@ void keyboard_helper(){
             if(keyboard_keycodes[scan_code]=='='){
                 putc('+');
                 buffer[buffer_cur_location] = '+';
+                // increment the buffer current index 
                 buffer_cur_location++;
                 goto end;
             }
         }
+        // if flags are high and inside the ascii values of a and z, then print out uppercase 
         if((shift_flag ^ caps_lock_flag) && (keyboard_keycodes[scan_code]>=lower_a_ascii && keyboard_keycodes[scan_code]<=lower_z_ascii)){
                 putc(keyboard_keycodes[scan_code]-uppercase_conversion);
                 buffer[buffer_cur_location] = keyboard_keycodes[scan_code]-uppercase_conversion;
+                // increment the buffer current index 
                 buffer_cur_location++;
         }
         else{
             putc(keyboard_keycodes[scan_code]);
             buffer[buffer_cur_location] = keyboard_keycodes[scan_code];
+            // increment the buffer current index 
             buffer_cur_location++;
         }
     }

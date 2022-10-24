@@ -25,31 +25,38 @@ uint32_t terminal_read(int32_t fd, void *buf, int32_t nbytes){
         ((char*)buf)[i] = line[i];
         i++;
     }
+    // clear line buffer
     memset(line,0,strlen(line));
+    // new line flag is set to low 
     newline_flag_terminal = 0;
+    // set interupts
     sti();
     return i;
 }
 
-/* void keyboard_init_irq();
- * Inputs: none
- * Return Value: none
- * Function: initializes the keyboard and enables the interrupt irq */
+/* uint32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes);
+ * Inputs: fd     -- file desciptor 
+           buf    -- buffer passed which is normally a char buffer 
+           nbytes --  bytes that are going to be copied to the screen 
+ * Return Value: bytes that have been written on the screen
+ * Function: writes nbytes to the screen */
 uint32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes){
+    // if buffer is null then return -1, else continue 
     if(buf == NULL){
         return -1;
     }
     int i;
+    // go through all bytes and print it on the screen
     for(i = 0; i < nbytes; i++){
         putc(((char*)buf)[i]);
     }
     return i;
 }
 
-/* void keyboard_init_irq();
- * Inputs: none
- * Return Value: none
- * Function: initializes the keyboard and enables the interrupt irq */
+/* uint32_t terminal_open(const int8_t* filename);
+ * Inputs: filename -- pointer to the file 
+ * Return Value: if success return 0, else return -1 
+ * Function: Returns if terminal open is successful or not  */
 uint32_t terminal_open(const int8_t* filename){
     if(filename == NULL){
         return -1;
@@ -57,20 +64,22 @@ uint32_t terminal_open(const int8_t* filename){
     return 0;
 }
 
-/* void keyboard_init_irq();
- * Inputs: none
- * Return Value: none
- * Function: initializes the keyboard and enables the interrupt irq */
+/* uint32_t terminal_close(int32_t fd);
+ * Inputs: fd -- file descriptor 
+ * Return Value: returns 0 or -1 dependent on success or failure
+ * Function: returns value when terminal is closed */
 uint32_t terminal_close(int32_t fd){
     return 0;
 }
 
-/* void keyboard_init_irq();
- * Inputs: none
+/* void copy_buffer(char* keyboard);
+ * Inputs: keyboard -- buffer given to copy over to Terminal buffer 
  * Return Value: none
- * Function: initializes the keyboard and enables the interrupt irq */
+ * Function: copies over a buffer given to Terminal global buffer and sets global flag for newline to high */
 void copy_buffer(char* keyboard){
+    // copy over buffer to line buffer for terminal
     strncpy(line,keyboard,strlen(keyboard));
+    // new line flag is set to high 
     newline_flag_terminal = 1;
     return;
 }

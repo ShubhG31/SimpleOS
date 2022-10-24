@@ -8,6 +8,8 @@
 #define PASS 1
 #define FAIL 0
 
+#define VIDEO 0xB8000
+
 /* format these macros as you see fit */
 #define TEST_HEADER 	\
 	printf("[TEST %s] Running %s at %s:%d\n", __FUNCTION__, __FUNCTION__, __FILE__, __LINE__)
@@ -59,16 +61,16 @@ int divide_0_test(){
 	// checks the divide by 0 exception
 		int n = 0;
 		n = 1/n;
-		return 0;
+		return PASS;
 }
 
 // Tests dereferencing video memory address
 int dereferencing_vm_test(){
 	// Tests dereferencing video memory address
 		int i;
-		int *j = (int*)0xB8000;
+		int *j = (int*)VIDEO;//0xB8000;
 		i = (int)*j;
-		return 0;
+		return PASS;
 }
 
 // Tests page fault when dereferencing null pointer 
@@ -77,7 +79,7 @@ int dereferencing_null_test(){
 		int *j, i;
 		j = NULL;
 		i = *j;
-		return 0;
+		return PASS;
 }
 
 // add more tests here
@@ -93,15 +95,6 @@ int dereferencing_null_test(){
  * Files: Terminal.h/S
  */
 int terminal_test(){
-	// int result = PASS;
-	// char buf[128] = " dfojsdfkha";
-	// int terminal = terminal_read(0,buf,128);
-	// printf("%s",buf);
-	// if (terminal != 128){
-	// 	assertion_failure();
-	// 	result = FAIL;
-	// }
-	// return result;
 
 	while(1){
 		puts("391OS>");
@@ -113,6 +106,14 @@ int terminal_test(){
 	}
 }
 
+/* Terminal Write Test
+ * 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: Lets the prints the given text, and checks the return value of bytes written
+ * Files: Terminal.h/S
+ */
 int terminal_write_test(){
 	int result = PASS;
 	char buf[11] = "dfojsdfkha";
@@ -125,12 +126,24 @@ int terminal_write_test(){
 	return result;
 }
 
+/* Terminal Read Test
+ * 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: Lets the read function copy keyboard buffer to and checks the return value of bytes copied
+ * Files: Terminal.h/S
+ */
 int terminal_read_test(){
 	int result = PASS;
-	char buf_test[500] = "HELLO WORLD\n";
+
+	// THE 500 is for large buffer
+	char buf_test[500] = "HELLO WORLD\n"; // sets a large buffer to HELLO WORLD
+	// copies the buffer to line buffer in terminal 
 	copy_buffer(buf_test);
-	char buf[500];
-	int terminal = terminal_read(0,(void*)buf,0);
+	// THE 500 is for large buffer
+	char buf[500]; // buffer the teminal read is going to copy to 
+	int terminal = terminal_read(0,(void*)buf,0); // 0 for not necessary values 
 	if (terminal != 11){
 		assertion_failure();
 		result = FAIL;
@@ -143,24 +156,31 @@ int RTC_open_test(){
     // printf("%d",RTC_open(filename));
 	return RTC_open(filename);
 }
-
+/* RTC Write and Read Test
+ * 
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: Checks all possible frequencies that RTC can be set to
+ * Files: RTC.h/S
+ */
 int RTC_write_and_read_test(){
 	int i;
 	int count = 80;//used for when characters should go on a new line
 	int32_t write_ret;
-	for(i = 2; i < 2048; i++){//1024 is the max feq so we can visibly see change in how fast character is printed
+	for(i = 2; i < 2048; i++){ //1024 is the max feq so we can visibly see change in how fast character is printed
     	int buf_int = i;
 		write_ret = RTC_write(NULL, (void*) (&buf_int), NULL);//we write a new freq each time
 		RTC_read(NULL, NULL, NULL);
 		count--;
 		if(write_ret != -1){//if the freq is a valid for write
-			count = 80;
+			count = 80; //used for when characters should go on a new line
 			putc('\n');
 			putc('\n');
 			putc('a');
 			// putc("a\n");
-		}else if(count == 0){//if we filled the entire line with characters
-			count = 80;
+		}else if(count == 0){ //if we filled the entire line with characters
+			count = 80; //used for when characters should go on a new line
 			putc('\n');
 			putc('a');
 			// putc("a\n");
