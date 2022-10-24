@@ -6,7 +6,7 @@
 
 struct dentry dt_dir,dt_file;
 static struct file_descriptor FD[PCB_size];
-int use[8],dir_p,head;
+int use[FD_num],dir_p,head;
 
 /*
  * file_sys_init

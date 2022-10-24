@@ -1,5 +1,6 @@
 #include "lib.h"
 #include "types.h"
+#define FD_num 8
 
 struct file_descriptor{
     uint32_t opt_table_pointer;
