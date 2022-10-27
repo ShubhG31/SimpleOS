@@ -99,7 +99,9 @@ void idt_initialization(){
     SET_IDT_ENTRY(idt[19], SIMD_floating_point);
     // Setting the keyboard handler
     SET_IDT_ENTRY(idt[keyboard], keyboard_handler);
-    SET_IDT_ENTRY(idt[0x28], RTC_handler);
+    SET_IDT_ENTRY(idt[RTCint], RTC_handler);
+    // Setting up the System Call Handler
+    SET_IDT_ENTRY(idt[systemCall], system_call_handler);
     lidt(idt_desc_ptr);
     return;
 }

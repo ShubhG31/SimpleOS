@@ -8,6 +8,7 @@
 #include "lib.h"
 #include "keyboard.h"
 #include "RTC.h"
+#include "system_call.h"
 
 // these declare the 19 exceptions that are used in idt.c
 

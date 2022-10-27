@@ -1,3 +1,5 @@
+.globl system_halt, system_execute, system_read, system_write, system_open, system_close, system_getargs, system_vidmap
+
 .globl keyboard_handler
 # .globl used because this function is called outside the program
 
@@ -24,3 +26,32 @@ RTC_handler:
                 popfl  
                 popal 
                 iret   
+
+.global system_call_handler
+
+system_call_handler:
+                pushal 
+                pushfl  
+                cmpl $10, %EAX   # see if command given is greater than 10
+                jg error
+                cmpl $1, %EAX   # see if command given is less than 1 
+                jl error
+                pushl %edx
+                pushl %ecx
+                pushl %ebx
+                call *system_call_table(,%eax,4)  # jump to specified system call function 
+                popl %edx
+                popl %ecx
+                popl %ebx
+                popfl  
+                popal 
+                iret
+system_call_table: 
+        .long system_halt, system_execute, system_read, system_write, system_open, system_close, system_getargs, system_vidmap
+
+
+error:
+    popfl  
+    popal 
+    movl $-1, %eax
+    iret
