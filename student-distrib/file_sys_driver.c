@@ -37,6 +37,7 @@ int file_sys_init(){
 // File open() initialize any temporary structures, return 0
 int dir_open(const int8_t* filename){
     int re;
+    if(filename==NULL||strlen(filename)>name_length)return -1;
     re=read_dentry_by_name ((uint8_t*)filename,(&dt_dir));
     if(re==-1)return -1;        // reading fails, so we return -1
     for( head = 0; head < PCB_size && use[head] == 1; head++ );         // this is for future CP, ignore now
@@ -88,11 +89,11 @@ int dir_read(int32_t fd, void* buf, int32_t nbytes){
     for( dir_p=dir_p+1; dir_p<get_dir_number(); dir_p++ ){  // continue to read file_name from last one
         re=read_dentry_by_index (dir_p, &dt_dir);       // get the dentry of next file
         // printf("file_type: %d   length: %d //",dt_dir.filetype, get_length(dt_dir));
-        puts("file_type:");
-        put_number(dt_dir.filetype);
-        puts("    length:");
-        put_number(get_length(dt_dir));
-        puts(" ");                                      // for test
+        // puts("file_type:");
+        // put_number(dt_dir.filetype);
+        // puts("    length:");
+        // put_number(get_length(dt_dir));
+        // puts(" ");                                      // for test
         for( j=0;j<name_length;j++ ){
             // printf("%c",dt_dir.filename[j]);
             *((uint8_t*)(buf+l_read))=dt_dir.filename[j];       // store the name of file's info
@@ -134,6 +135,7 @@ int dir_write(int32_t fd, const void* buf, int32_t nbytes){
 // File open() initialize any temporary structures, return 0
 int file_open(const int8_t* filename){
     int re=0;
+    if(filename==NULL||strlen(filename)>name_length)return -1;
     re=read_dentry_by_name ((uint8_t*)filename,(&dt_file));
     if(re==-1)return -1;
     for( head = 0; head < PCB_size && use[head] == 1; head++ );

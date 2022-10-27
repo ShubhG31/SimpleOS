@@ -1,5 +1,38 @@
 #include "system_call.h"
+#include "file_sys_driver.h"
+#include "RTC.h"
+#include "Terminal.h"
+struct files_command{
+    int *open(uint8_t*);
+    int *close(uint32_t);
+    int *write(int32_t,void*,int32_t);
+    int *read(int32_t,void*,int32_t);
+};
+struct files_command file_handler[4];
 
+void fd_init(){
+    // RTC
+    file_handler[0].open=&RTC_open;
+    file_handler[0].close=&RTC_close;
+    file_handler[0].read=&RTC_read;
+    file_handler[0].write=&RTC_write;
+    // file directory
+    file_handler[1].open=&dir_open;
+    file_handler[1].close=&dir_close;
+    file_handler[1].read=&dir_read;
+    file_handler[1].write=&dir_write;
+    // file file
+    file_handler[2].open=&file_open;
+    file_handler[2].close=&file_close;
+    file_handler[2].read=&file_read;
+    file_handler[2].write=&file_write;
+    // terminal
+    file_handler[3].open=&terminal_read;
+    file_handler[3].close=&terminal_close;
+    file_handler[3].read=&terminal_read;
+    file_handler[3].write=&terminal_write;
+    return;
+}
 extern int system_halt(uint8_t status){
 
 }
