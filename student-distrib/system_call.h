@@ -3,7 +3,6 @@
 
 extern int system_call_handler();
 
-
 extern int system_halt(uint8_t status);
 extern int system_execute(const uint8_t* command); 
 extern int system_read(int32_t fd, void* buf, int32_t nbytes); 

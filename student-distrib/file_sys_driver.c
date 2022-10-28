@@ -39,7 +39,7 @@ int dir_open(const int8_t* filename){
     int re;
     if(filename==NULL||strlen(filename)>name_length)return -1;
     re=read_dentry_by_name ((uint8_t*)filename,(&dt_dir));
-    if(re==-1)return -1;        // reading fails, so we return -1
+    if(re==-1)return -1;        // reading fails, so we return -1 
     for( head = 0; head < PCB_size && use[head] == 1; head++ );         // this is for future CP, ignore now
     FD[head].opt_table_pointer=0;                                       // pointer to the function?
     FD[head].inode=0;   // we have only one directory, its inode is 0

@@ -1,7 +1,11 @@
 #include "system_call.h"
+#include "file_sys.h"
 #include "file_sys_driver.h"
 #include "RTC.h"
 #include "Terminal.h"
+
+#define PCB_size 8
+
 struct files_command{
     int *open(uint8_t*);
     int *close(uint32_t);
@@ -9,6 +13,10 @@ struct files_command{
     int *read(int32_t,void*,int32_t);
 };
 struct files_command file_handler[4];
+struct file_descriptor F_D[PCB_size];
+int use[FD_num], head;
+use[0] = 1;
+use[1] = 1;
 
 void fd_init(){
     // RTC
@@ -33,6 +41,7 @@ void fd_init(){
     file_handler[3].write=&terminal_write;
     return;
 }
+
 extern int system_halt(uint8_t status){
 
 }
@@ -46,10 +55,39 @@ extern int system_write(int32_t fd, const void* buf, int32_t nbytes){
 
 }
 extern int system_open(const uint8_t* filename){
-
+    int re;
+    struct dentry file;
+    int * file_open;
+    int32_t inode;                  //inode 4B
+    fd_init()
+    re=read_dentry_by_name (filename,(&file));
+    if(re==-1)return -1;        // reading fails, so we return -1
+    if(file.filetype == 2){
+        inode = file.inode_num;
+    }else{
+        inode = 0;
+    }
+    file_open = file_handler[file.filetype].open;
+    for( head = 0; head < PCB_size+1 && use[head] == 1; head++ ); 
+    if(head == 8){
+        putc('no space in file descriptor array')
+        return -1;
+    }else{
+        F_D[head].opt_table_pointer = (uint32_t)file_open;                                       // pointer to the function?
+        F_D[head].inode=inode;   // we have only one directory, its inode is 0
+        F_D[head].file_pos=0;    // start with offset at 0
+        F_D[head].flags=1;
+        use[head]=1;    // set this fd this in use
+    }
+    return head;
 } 
 extern int system_close(int32_t fd){
-
+    if(fd == 0 || fd == 1){
+        return -1;
+    }else{
+        use[head] = 0;
+        return 0;
+    }
 }
 extern int system_getargs(uint8_t* buf, int32_t nbytes){
 
