@@ -75,3 +75,4 @@ page_directory_4k_t page_directory[NUM_DIR]  __attribute__((aligned(4096)));
 extern void paging_init();
 extern void LoadPagingDirectory(unsigned int*);
 extern void EnablePaging();
+extern int32_t set_new_page(int phy_mem_loc);
