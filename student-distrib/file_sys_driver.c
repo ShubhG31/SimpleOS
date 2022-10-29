@@ -2,7 +2,7 @@
 #include "file_sys.h"
 #include "system_call.h"
 
-#define PCB_size 8
+
 #define dir_count 63
 
 struct dentry dt_dir,dt_file;

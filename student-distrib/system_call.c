@@ -15,6 +15,7 @@
 #define pcb_fdt_usage_off 11
 #define pcb_fd_off 12
 #define fd_size 16
+#define PCB_size 8
 
 int pid,last_pid,processor_usage;
 int phy_mem_loc;
@@ -40,7 +41,7 @@ struct PCB_table{
     int8_t fdt_usage; //00000011// 1 byte
     struct file_descriptor fdt[8]; // 16 byte each
 };
-struct files_command file_handler[4];
+struct files_command file_handler[4]=;
 struct PCB_table* pcb_t;
 struct PCB_table pcb_box;
 struct file_descriptor fd_box;
@@ -73,7 +74,7 @@ void fd_init(){         // need to be run after booting part
     return;
 }
 extern int system_halt(uint8_t status){
-
+    //remeber to clear the paging.
 }
 extern int system_execute(const uint8_t* command){
     int re;
@@ -82,7 +83,7 @@ extern int system_execute(const uint8_t* command){
 
     last_pid=pid;
     pid++;
-    pcb_t=get_fd_pointer();
+    pcb_t=get_pcb_pointer();
     //Parse args
 
     //Check for executable
@@ -102,8 +103,8 @@ extern int system_execute(const uint8_t* command){
     //Create PCB
     pcb_box.parent_id=last_pid;
     pcb_box.id=pid;
-    pcb_box.saved_esp;              // what should be saved here
-    pcb_box.saved_ebp;              // what should be saved here
+    pcb_box.saved_esp=;              // what should be saved here
+    pcb_box.saved_ebp=;              // what should be saved here
     pcb_box.active=1;
     pcb_box.fdt_usage=3; //00000011
     
@@ -145,10 +146,10 @@ extern int system_execute(const uint8_t* command){
 extern int system_read(int32_t fd, void* buf, int32_t nbytes){
     int re;
     if(check_fd_in_use(fd)==0)return -1;
-    pcb_t=get_fd_pointer();
+    pcb_t=get_pcb_pointer();
     pcb_box=*pcb_t;
     fd_box=pcb_t.fdt[fd];
-    re=*(*(struct files_command*)fd_box.opt_table_pointer.read)(&fd_box,buf,nbytes);
+    re=*(*(struct files_command*)(fd_box.opt_table_pointer).read)(&fd_box,buf,nbytes);
     if(re!=-1){
         fd_box.file_pos+=re;
         *((struct file_descriptor*)(pcb_t+pcb_fd_off+fd*fd_size))=fd_box;
@@ -158,19 +159,57 @@ extern int system_read(int32_t fd, void* buf, int32_t nbytes){
 extern int system_write(int32_t fd, const void* buf, int32_t nbytes){
     int re;
     if(check_fd_in_use(fd)==0)return -1;
-    pcb_t=get_fd_pointer();
+    pcb_t=get_pcb_pointer();
     pcb_box=*pcb_t;
     fd_box=pcb_t.fdt[fd];
-    re=*(*(struct files_command*)fd_box.opt_table_pointer.write)(&fd_box,buf,nbytes);
+    re=*(*(struct files_command*)(fd_box.opt_table_pointer).write)(&fd_box,buf,nbytes);
     return re;
 }
 extern int system_open(const uint8_t* filename){
-        
+    int re, fd ;
+    mask = 0x80;    //mask used to check bits left to right
+    struct dentry file;
+    int * file_open;
+    int32_t inode;                  //inode 4B
+    if(filename==NULL||strlen(filename)>name_length)return -1;
+    re=read_dentry_by_name (filename,(&file));
+    if(re==-1)return -1;        // reading fails, so we return -1
+    
+    pcb_t=get_pcb_pointer();
+    pcb_box=*pcb_t;
 
+    for( fd = 2; fd <= PCB_size; fd++){
+        if(((1<<fd)&pcb_box.fdt_usage)==0)break;
+        puts('no space in file descriptor array');
+        if(fd==PCB_size)return -1;
+    }
+
+    fd_box=pcb_t.fdt[fd];
+    
+    if(file.filetype == 2){
+        inode = file.inode_num;
+    }else{
+        inode = 0;
+    }
+    
+    file_open = file_handler[file.filetype];
+    
+    fd_box.opt_table_pointer = (uint32_t)file_open;        // pointer to the function?
+    fd_box.inode = inode;   // we have only one directory, its inode is 0
+    fd_box.file_pos = 0;    // start with offset at 0
+    fd_box.flags = 1;
+    pcb_box.fdt[fd]=fd_box;
+    pcb_box.fdt_usage = pcb_box.fdt_usage | (1<<fd);
+    *((int32_t*)(pcb_t))=pcb_box;
+
+    *(file_handler[file.filetype].open)(filename);
+    // use[head]=1;    // set this fd this in use
+    return fd;
 } 
 extern int system_close(int32_t fd){
+    if(fd==0||fd==1)return -1;
     if(check_fd_in_use(fd)==0)return -1;
-    pcb_t=get_fd_pointer();
+    pcb_t=get_pcb_pointer();
     pcb_box=*pcb_t;
     fd_box=pcb_t.fdt[fd];
     fd_box.opt_table_pointer=NULL;
@@ -188,11 +227,11 @@ extern int system_vidmap(uint8_t** screen_start){
 
 }
 int check_fd_in_use(int32_t fd){
-    pcb_t=get_fd_pointer();
+    pcb_t=get_pcb_pointer();
     pcb_box=*pcb_t;
     if(((1<<fd)&pcb_box.fdt_usage)!=0)return 1;
     return 0;
 }
-extern int get_fd_pointer(){
+extern int get_pcb_pointer(){
     return addr_8MB-size_8kb*pid;
 }
