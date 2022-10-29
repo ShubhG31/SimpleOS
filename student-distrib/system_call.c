@@ -12,11 +12,28 @@ struct files_command{
     int *write(int32_t,void*,int32_t);
     int *read(int32_t,void*,int32_t);
 };
+
 struct files_command file_handler[4];
 struct file_descriptor F_D[PCB_size];
-int use[FD_num], head;
-use[0] = 1;
-use[1] = 1;
+
+struct PCB_table{
+    int pid;
+    int parent_id
+    struct file_descriptor fdt[8];
+    int saved_esp;
+    int saved_ebp;
+    int active;
+    int16_t fdt_usage;
+};
+
+int use[FD_num], head, mask;
+mask = 0x80;    //mask used to check bits left to right
+fdt_usage = 0;
+fdt_usage = fdt_usage || mask;
+mask = mask >> 1;
+fdt_usage = fdt_usage || mask;
+// use[0] = 1;
+// use[1] = 1;
 
 void fd_init(){
     // RTC
@@ -64,15 +81,18 @@ extern int system_read(int32_t fd, void* buf, int32_t nbytes){
 
 }
 extern int system_write(int32_t fd, const void* buf, int32_t nbytes){
-    if(fd == 0 || fd == 1){
-        return -1;
-    }else{
-        use[head] = 0;
-        return 0;
-    }
+    // if(fd == 0 || fd == 1){
+    //     return -1;
+    // }else{
+    //     use[head] = 0;
+    //     return 0;
+    // }
 }
 extern int system_open(const uint8_t* filename){
     int re;
+    int temp;
+    temp = 0x1;
+    mask = 0x80;    //mask used to check bits left to right
     struct dentry file;
     int * file_open;
     int32_t inode;                  //inode 4B
@@ -84,16 +104,18 @@ extern int system_open(const uint8_t* filename){
         inode = 0;
     }
     file_open = file_handler[file.filetype].open;
-    for( head = 0; head < PCB_size+1 && use[head] == 1; head++ ); 
+    for( head = 0; head < PCB_size+1 && (1 & (fdt_usage >> (head + 8))) head++);
     if(head == 8){
-        putc('no space in file descriptor array')
+        putc('no space in file descriptor array');
         return -1;
     }else{
         F_D[head].opt_table_pointer = (uint32_t)file_open;                                       // pointer to the function?
         F_D[head].inode=inode;   // we have only one directory, its inode is 0
         F_D[head].file_pos=0;    // start with offset at 0
         F_D[head].flags=1;
-        use[head]=1;    // set this fd this in use
+        temp = temp >> head;
+        fdt_usage = fdt_usage || temp;
+        // use[head]=1;    // set this fd this in use
     }
     return head;
 } 
@@ -101,7 +123,13 @@ extern int system_close(int32_t fd){
     if(fd == 0 || fd == 1){
         return -1;
     }else{
-        use[head] = 0;
+        mask = 0xDF;    //mask used to check bits left to right
+        int i;
+        for (i = 0; i < fd-3; i++) {
+            mask = mask >> 1;
+        }
+        fdt_usage = fdt_usage & mask;
+        // use[fd] = 0;
         return 0;
     }
 }
