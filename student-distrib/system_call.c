@@ -35,12 +35,24 @@ void fd_init(){
     file_handler[2].read=&file_read;
     file_handler[2].write=&file_write;
     // terminal
-    file_handler[3].open=&terminal_read;
+    file_handler[3].open=&terminal_open;
     file_handler[3].close=&terminal_close;
     file_handler[3].read=&terminal_read;
     file_handler[3].write=&terminal_write;
     return;
 }
+
+fd_init();
+F_D[0].opt_table_pointer = (uint32_t)file_handler[3].read;                                       // pointer to the function?
+F_D[0].inode=0;             // we have only one directory, its inode is 0
+F_D[0].file_pos=0;          // start with offset at 0
+F_D[0].flags=1;
+
+F_D[1].opt_table_pointer = (uint32_t)file_handler[3].write;                                       // pointer to the function?
+F_D[1].inode=0;             // we have only one directory, its inode is 0
+F_D[1].file_pos=0;          // start with offset at 0
+F_D[1].flags=1;
+
 
 extern int system_halt(uint8_t status){
 
@@ -52,14 +64,18 @@ extern int system_read(int32_t fd, void* buf, int32_t nbytes){
 
 }
 extern int system_write(int32_t fd, const void* buf, int32_t nbytes){
-
+    if(fd == 0 || fd == 1){
+        return -1;
+    }else{
+        use[head] = 0;
+        return 0;
+    }
 }
 extern int system_open(const uint8_t* filename){
     int re;
     struct dentry file;
     int * file_open;
     int32_t inode;                  //inode 4B
-    fd_init()
     re=read_dentry_by_name (filename,(&file));
     if(re==-1)return -1;        // reading fails, so we return -1
     if(file.filetype == 2){
