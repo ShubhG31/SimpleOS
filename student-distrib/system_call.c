@@ -41,7 +41,7 @@ struct PCB_table{
     int8_t fdt_usage; //00000011// 1 byte
     struct file_descriptor fdt[8]; // 16 byte each
 };
-struct files_command file_handler[4]=;
+struct files_command file_handler[4];
 struct PCB_table* pcb_t;
 struct PCB_table pcb_box;
 struct file_descriptor fd_box;
@@ -77,8 +77,9 @@ extern int system_halt(uint8_t status){
     //remeber to clear the paging.
 }
 extern int system_execute(const uint8_t* command){
-    int re;
-    char buf[4];
+    // sti_save_flag();                                     // not sure whether we need this
+    int32_t re,EIP,CS,EFLAGS,ESP,SS;
+    char buf[28];
     struct dentry dt;
 
     last_pid=pid;
@@ -137,13 +138,22 @@ extern int system_execute(const uint8_t* command){
     // // *((int32_t*)(pcb_t+))
 
     //Prepare for Context Switch
-    IRET_prepare();
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = 0x800000 - 0x2000*pid - 4; //8mb-8kb 
+
     //Push IRET context to kernel stack
+    re=read_data(dt.inode_num, 24, buf, 4);
     
+    EIP=(buf[0]<<24)|(buf[1]<<16)|(buf[2]<<8)|(buf[3]);
+    ESP=0x8400000; //132MB
+    CS=USER_CS;
+    SS=USER_DS;
+
     //IRET
-    
+    IRET_prepare(EIP);
+
     //return;
-    system_halt();
+    
 }
 extern int system_read(int32_t fd, void* buf, int32_t nbytes){
     int re;
@@ -194,9 +204,8 @@ extern int system_open(const uint8_t* filename){
         inode = 0;
     }
     
-    file_open = file_handler[file.filetype];
     
-    fd_box.opt_table_pointer = (uint32_t)file_open;        // pointer to the function?
+    fd_box.opt_table_pointer = &file_handler[file.filetype];        // pointer to the function?
     fd_box.inode = inode;   // we have only one directory, its inode is 0
     fd_box.file_pos = 0;    // start with offset at 0
     fd_box.flags = 1;

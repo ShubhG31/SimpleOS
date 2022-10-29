@@ -151,7 +151,7 @@ void entry(unsigned long magic, unsigned long addr) {
     keyboard_init_irq();
     RTC_init();
     paging_init();
-
+    fd_init();
     file_sys_test_cases ();
 
 
