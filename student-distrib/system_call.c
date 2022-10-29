@@ -87,7 +87,7 @@ extern int system_execute(const uint8_t* command){
     //Parse args
 
     //Check for executable
-    re=read_dentry_by_name(command,dt);
+    re=read_dentry_by_name(command,&dt);
     if(re==-1)return -1;
     re=read_data(dt.inode_num, 0, buf, 4);
     if(buf[0]==exe_0 && buf[1]==exe_1 && buf[2]==exe_2 && buf[3]==exe_3);
@@ -101,10 +101,12 @@ extern int system_execute(const uint8_t* command){
     re=read_data(dt.inode_num, 0, (uint8_t*)(0x08048000), get_length(dt));
     
     //Create PCB
+    register uint32_t saved_ebp asm("ebp");
+    register uint32_t saved_esp asm("esp");
     pcb_box.parent_id=last_pid;
     pcb_box.id=pid;
-    pcb_box.saved_esp=;              // what should be saved here
-    pcb_box.saved_ebp=;              // what should be saved here
+    pcb_box.saved_esp=saved_esp;              // what should be saved here
+    pcb_box.saved_ebp=saved_ebp;              // what should be saved here
     pcb_box.active=1;
     pcb_box.fdt_usage=3; //00000011
     
@@ -135,7 +137,7 @@ extern int system_execute(const uint8_t* command){
     // // *((int32_t*)(pcb_t+))
 
     //Prepare for Context Switch
-
+    IRET_prepare();
     //Push IRET context to kernel stack
     
     //IRET
