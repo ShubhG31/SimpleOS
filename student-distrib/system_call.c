@@ -155,7 +155,24 @@ extern int system_execute(const uint8_t* command){
     //Push IRET context to kernel stack
 
     //IRET
-    IRET_prepare(EIP);
+    // IRET_prepare(EIP);
+
+    // DS
+    // esp
+    // eflags 
+    // cs
+    // eip 
+    asm volatile (
+        "pushl \n"
+        "pushl \n"
+        "\n"
+        "\n"
+        "\n"        
+        "\n"
+        "\n"        
+        "\n"
+        "iret \n"
+    )
     
     //return;
     // system_halt();
