@@ -6,6 +6,7 @@
 #define dir_count 63
 
 struct dentry dt_dir,dt_file;
+int dir_p;
 
 /*
  * file_sys_init
@@ -183,7 +184,7 @@ int file_read(int32_t fd, void* buf, int32_t nbytes){
     // if(fd<=1)return -1;          // might need this for the latter checkpoint
     // if(fd<0)return -1;
     // if(use[fd]==0)return -1;
-    inode=*((struct file_descriptor*)fd).inode;
+    inode=*(((struct file_descriptor*)fd).inode);
     file_pos=*((struct file_descriptor*)fd).file_pos;
     re=read_data( inode, file_pos, (uint8_t*)buf, nbytes);
     // re=read_data ( FD[fd].inode, FD[fd].file_pos, (uint8_t*)buf, nbytes);   // read data stored in inode, starting at file_pos

@@ -20,28 +20,28 @@
 int pid,last_pid,processor_usage;
 int phy_mem_loc;
 
-struct file_descriptor{
-    uint32_t opt_table_pointer;
-    uint32_t inode;
-    uint32_t file_pos;
-    uint32_t flags;
-};
+// struct file_descriptor{
+//     uint32_t opt_table_pointer;
+//     uint32_t inode;
+//     uint32_t file_pos;
+//     uint32_t flags;
+// };
 struct files_command{
     int32_t *open(uint8_t*);
     int32_t *close(uint32_t);
     int32_t *write(int32_t,void*,int32_t);
     int32_t *read(int32_t,void*,int32_t);
 };
-struct PCB_table{
-    int8_t id;                 // 1 byte
-    int8_t parent_id            // 1 byte
-    int32_t saved_esp;          // 4 byte
-    int32_t saved_ebp;          // 4 byte
-    int8_t active;              // 1 byte
-    int8_t fdt_usage; //00000011// 1 byte
-    struct file_descriptor fdt[8]; // 16 byte each
-};
-struct files_command file_handler[4]=;
+// struct PCB_table{
+//     int8_t id;                 // 1 byte
+//     int8_t parent_id            // 1 byte
+//     int32_t saved_esp;          // 4 byte
+//     int32_t saved_ebp;          // 4 byte
+//     int8_t active;              // 1 byte
+//     int8_t fdt_usage; //00000011// 1 byte
+//     struct file_descriptor fdt[8]; // 16 byte each
+// };
+struct files_command file_handler[4];
 struct PCB_table* pcb_t;
 struct PCB_table pcb_box;
 struct file_descriptor fd_box;
@@ -157,20 +157,23 @@ extern int system_execute(const uint8_t* command){
     //IRET
     // IRET_prepare(EIP);
 
+    // clear tlb
+    asm volatile(
+        "movl %cr3, %edx"
+        "movl %edx, %cr3"
+    )
+
     // DS
-    // esp
+    // esp  calculated through the 2^20 * 132 = 138412032 to hex is 0x08400000 and -4 of that is 0x083FFFFC
     // eflags 
     // cs
     // eip 
     asm volatile (
-        "pushl \n"
-        "pushl \n"
-        "\n"
-        "\n"
-        "\n"        
-        "\n"
-        "\n"        
-        "\n"
+        "pushl $0x002B\n"
+        "pushl $0x083FFFFC\n"
+        "pushfl\n"
+        "pushl $0x0023\n"
+        "pushl 0x800000\n"        
         "iret \n"
     )
     

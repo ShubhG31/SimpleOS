@@ -4,7 +4,21 @@
 #define exe_2 0x4c
 #define exe_3 0x46
 
-
+struct file_descriptor{
+    uint32_t opt_table_pointer;
+    uint32_t inode;
+    uint32_t file_pos;
+    uint32_t flags;
+};
+struct PCB_table{
+    int8_t id;                 // 1 byte
+    int8_t parent_id            // 1 byte
+    int32_t saved_esp;          // 4 byte
+    int32_t saved_ebp;          // 4 byte
+    int8_t active;              // 1 byte
+    int8_t fdt_usage; //00000011// 1 byte
+    struct file_descriptor fdt[8]; // 16 byte each
+};
 extern int system_call_handler();
 
 extern void fd_init();
