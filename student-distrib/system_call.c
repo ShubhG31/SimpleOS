@@ -93,6 +93,9 @@ extern int system_open(const uint8_t* filename){
     int temp;
     temp = 0x1;
     mask = 0x80;    //mask used to check bits left to right
+    pcb_t=get_fd_pointer();
+    pcb_box=*pcb_t;
+
     struct dentry file;
     int * file_open;
     int32_t inode;                  //inode 4B
@@ -103,8 +106,8 @@ extern int system_open(const uint8_t* filename){
     }else{
         inode = 0;
     }
-    file_open = file_handler[file.filetype].open;
-    for( head = 0; head < PCB_size+1 && (1 & (fdt_usage >> (head + 8))) head++);
+    file_open = file_handler[file.filetype];
+    for( head = 0; head < PCB_size+1 && (1 & (pcb_box.fdt_usage >> (head + 8))) head++);
     if(head == 8){
         putc('no space in file descriptor array');
         return -1;
@@ -114,7 +117,7 @@ extern int system_open(const uint8_t* filename){
         F_D[head].file_pos=0;    // start with offset at 0
         F_D[head].flags=1;
         temp = temp >> head;
-        fdt_usage = fdt_usage || temp;
+        pcb_box.fdt_usage = pcb_box.fdt_usage || temp;
         // use[head]=1;    // set this fd this in use
     }
     return head;
