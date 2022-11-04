@@ -47,7 +47,7 @@ system_call_handler:
                 popal 
                 iret
 system_call_table: 
-        .long system_halt, system_execute, system_read, system_write, system_open, system_close, system_getargs, system_vidmap
+        .long 0,system_halt, system_execute, system_read, system_write, system_open, system_close, system_getargs, system_vidmap
 
 
 error:

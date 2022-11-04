@@ -101,6 +101,7 @@ void idt_initialization(){
     SET_IDT_ENTRY(idt[keyboard], keyboard_handler);
     SET_IDT_ENTRY(idt[RTCint], RTC_handler);
     // Setting up the System Call Handler
+    idt[systemCall].reserved3= 1;
     SET_IDT_ENTRY(idt[systemCall], system_call_handler);
     lidt(idt_desc_ptr);
     return;

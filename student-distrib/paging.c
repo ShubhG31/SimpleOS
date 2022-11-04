@@ -1,6 +1,6 @@
 #include "paging.h"
 #include "types.h"
-#include "lib.c"
+#include "lib.h"
 
 /* The Pages Table and Directory itself (declared in paging.c */
 
@@ -16,7 +16,8 @@ extern void paging_init(){
     // intializing the page directory
     for( i = 0; i < NUM_DIR; i++ ){
         page_directory[i].present=0;
-        page_directory[i].RW=0;
+        page_directory[i].RW=1; //changed
+        page_directory[i].US=0;
         page_directory[i].PWT=0; 
         page_directory[i].PCD=1;        // Tells the program that it is not Video Memory when set to 1  
         page_directory[i].A=0;
@@ -28,7 +29,8 @@ extern void paging_init(){
     }
     // printf("before the inits table loop\n"); 
     page_directory[0].present=1;        // page table is present
-    page_directory[0].RW=0;
+    page_directory[0].RW=1; // changed 
+    page_directory[0].US=1;
     page_directory[0].PWT=0; //
     page_directory[0].PCD=1;            // Tells the program that it is not Video Memory when set to 1  
     page_directory[0].A=0;
@@ -39,7 +41,8 @@ extern void paging_init(){
     page_directory[0].offset_31_12=((uint32_t)(page_table))>>12; // sets the address that points to page table in physical memory
     
     page_directory[1].present=1;         // page table is present
-    page_directory[1].RW=0;
+    page_directory[1].RW=1; // changed 
+    page_directory[1].US=0; // changed 
     page_directory[1].PWT=0; //
     page_directory[1].PCD=0;
     page_directory[1].A=0;
@@ -69,7 +72,7 @@ extern void paging_init(){
     // Sets videomem page
     for( i = ENTRIES; i <= ENTRIES ; i++){
         page_table[i].present=1;
-        page_table[i].RW=0;
+        page_table[i].RW=1; // changed 
         page_table[i].US=0;
         page_table[i].PWT=0;
         page_table[i].PCD=0;
@@ -89,7 +92,8 @@ extern void paging_init(){
 }
 int32_t set_new_page(int phy_mem_loc){
     page_directory[32].present=1;         // page table is present
-    page_directory[32].RW=0;
+    page_directory[32].RW=1;  // changed 
+    page_directory[32].US = 1; //changed
     page_directory[32].PWT=0; //
     page_directory[32].PCD=0;
     page_directory[32].A=0;
@@ -98,7 +102,7 @@ int32_t set_new_page(int phy_mem_loc){
     page_directory[32].G=1;                // Tells the program that it is not Video Memory when set to 1
     page_directory[32].AVL=0;
     page_directory[32].offset_31_12=(phy_mem_loc/4)<<10;
-    return 
+    return; 
 }
 
 /*

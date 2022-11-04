@@ -1,3 +1,5 @@
+#ifndef _paging_
+#define _paging_
 #include "types.h"
 #include "lib.h"
 
@@ -76,3 +78,5 @@ extern void paging_init();
 extern void LoadPagingDirectory(unsigned int*);
 extern void EnablePaging();
 extern int32_t set_new_page(int phy_mem_loc);
+
+#endif

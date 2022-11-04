@@ -1,5 +1,5 @@
 #include "file_sys.h"
-#include "file_sys_driver.h"
+// #include "file_sys_driver.h"
 
 // #define name_length 32
 // #define block_size 4096
@@ -555,6 +555,7 @@ void test_show_frame(){
  */ 
 int32_t get_length(struct dentry dt){
     return *((uint32_t*)(node + block_size*(dt.inode_num) + length_off));
+    // return 
 }
 
 /*

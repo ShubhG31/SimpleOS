@@ -15,6 +15,7 @@
 #include "paging.h"
 #include "file_sys.h"
 #include "file_sys_driver.h"
+#include "system_call.h"
 
 #define RUN_TESTS
 
@@ -153,7 +154,7 @@ void entry(unsigned long magic, unsigned long addr) {
     paging_init();
     fd_init();
     file_sys_test_cases ();
-
+    system_execute("shell");
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
@@ -168,7 +169,7 @@ void entry(unsigned long magic, unsigned long addr) {
 
 #ifdef RUN_TESTS
     /* Run tests */
-    launch_tests();
+    // launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
 

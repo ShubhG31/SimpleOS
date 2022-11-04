@@ -1,3 +1,6 @@
+#ifndef _system_call_
+#define _system_call_
+
 #include "types.h"
 #define exe_0 0x7f
 #define exe_1 0x45
@@ -12,7 +15,7 @@ struct file_descriptor{
 };
 struct PCB_table{
     int8_t id;                 // 1 byte
-    int8_t parent_id            // 1 byte
+    int8_t parent_id;            // 1 byte
     int32_t saved_esp;          // 4 byte
     int32_t saved_ebp;          // 4 byte
     int8_t active;              // 1 byte
@@ -31,3 +34,6 @@ extern int system_close(int32_t fd);
 extern int system_getargs(uint8_t* buf, int32_t nbytes); 
 extern int system_vidmap(uint8_t** screen_start);
 extern int get_pcb_pointer();
+int check_fd_in_use(int32_t fd);
+
+#endif

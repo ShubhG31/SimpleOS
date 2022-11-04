@@ -257,11 +257,11 @@ void launch_tests(){
 	/* Checkpoint 2 tests*/
 
 	// Terminal Tests 
-	TEST_OUTPUT("Terminal Write test", terminal_write_test());
-	TEST_OUTPUT("Terminal Read test", terminal_read_test());
-	TEST_OUTPUT("Terminal Open test", terminal_open_test());
-	TEST_OUTPUT("Terminal Close test", terminal_close_test());
-	terminal_test();
+	// TEST_OUTPUT("Terminal Write test", terminal_write_test());
+	// TEST_OUTPUT("Terminal Read test", terminal_read_test());
+	// TEST_OUTPUT("Terminal Open test", terminal_open_test());
+	// TEST_OUTPUT("Terminal Close test", terminal_close_test());
+	// terminal_test();
 
 	// RTC Tests 
 	// TEST_OUTPUT("RTC_write_and_read_test", RTC_write_and_read_test());
@@ -269,7 +269,7 @@ void launch_tests(){
 	// TEST_OUTPUT("RTC_close_test", RTC_close_test());
 		// File System Tests
 			// test_file_driver_small_file();
-			// test_file_driver_large_file();
+			test_file_driver_large_file();
 			// test_file_driver_executable_file();
 			// test_file_driver_read_twice();
 			// test_dir_driver();

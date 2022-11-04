@@ -1,5 +1,11 @@
 #include "lib.h"
 #include "types.h"
+#include "file_sys_driver.h"
+#ifndef _sysfile_
+#define _sysfile_
+
+// #include "lib.h"
+// #include "types.h"
 
 #define name_length 32
 #define block_size 4096
@@ -35,6 +41,7 @@ struct data_block{
 
 extern int32_t read_dentry_by_name (const uint8_t* fname, struct dentry* dentry);  
 extern int32_t read_dentry_by_index (uint32_t index, struct dentry* dentry);
+// changed the unisgned to signed 
 extern int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
 extern int32_t load_fss();
 extern int32_t file_sys_test_cases();
@@ -49,3 +56,5 @@ void test_dir_driver();
 void test_show_files();
 void test_show_frame();
 void test_file_driver_read_twice();
+
+#endif
