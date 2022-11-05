@@ -85,7 +85,8 @@ int dir_read(int32_t fd, void* buf, int32_t nbytes){
         // printf("\n");
         return l_read;  // return the number of bytes in name
     }
-    return -1;
+    return 0;
+    // return -1;
 }
 
 /*

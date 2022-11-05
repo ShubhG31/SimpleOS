@@ -1,20 +1,19 @@
 .global IRET_prepare, label
 
 IRET_prepare:
-    pushl %ebp
-    movl %esp, %ebp
-    pushl   %ebp
-    movl    %ebp, %esp
-    movl   8(%ebp),%ecx
-#     pushl   $USER_DS
-#     pushl   $0x8400000
-#     pushfl
-#     popl    %eax
-#     orl     $0x0200, %eax
-#     pushl   %eax
+#    pushl %ebp
+#    pushl %esp
+#    movl    %esp, %ebp
+#    movl   8(%ebp),%ecx
+#    pushl   $USER_DS
+#    pushl   $0x8400000
+#    pushfl
+#    popl    %eax
+#    orl     $0x0200, %eax
+#    pushl   %eax
 
-#     pushl   $USER_CS
-#     pushl   4(%ebp)
+#    pushl   $USER_CS
+#    pushl   4(%ebp)
     #sti
     pushl $0x002B
     pushl $0x083FFFFC
@@ -29,6 +28,7 @@ IRET_prepare:
     iret
     
 label:
-
-    leave
+#    popl %esp
+#    popl %ebp
+#    leave
     ret

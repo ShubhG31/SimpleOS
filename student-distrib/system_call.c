@@ -67,19 +67,28 @@ void fd_init(){         // need to be run after booting part
 }
 int system_halt(uint8_t status){
     //remember to clear the paging.
-    int i;
+    int i,saved_ebp,saved_esp;
     // clear the page that was used for now complete process
     if(pid==0)return -1;
-    
     // clearing process
     pcb_t=(struct PCB_table*)get_pcb_pointer();
+
+    
+    // update pid
+    pid=pcb_t->parent_id;
+
     pcb_box=*pcb_t;
     pcb_box.active=0;
     pcb_box.fdt_usage=0;
     pcb_box.id=0;
     pcb_box.parent_id=0;
+    saved_ebp=pcb_box.saved_ebp;
+    saved_esp=pcb_box.saved_esp;
+    // put_number(saved_ebp);putc('\n');
+    // put_number(saved_esp);putc('\n');
+    // while(1);
     pcb_box.saved_ebp=0;
-    pcb_box.saved_ebp=0;
+    pcb_box.saved_esp=0;
     for(i=0;i<7;i++){
         (pcb_box.fdt[i]).opt_table_pointer=NULL;
         (pcb_box.fdt[i]).inode=0;
@@ -87,13 +96,10 @@ int system_halt(uint8_t status){
         (pcb_box.fdt[i]).flags=0;
     }
     *pcb_t=pcb_box;
-
     // clearing paging (remapping)
     phy_mem_loc-=4;
     set_new_page(phy_mem_loc-4);
     
-    // update pid
-    pid=pcb_t->parent_id;
     
     // clear tlb
     asm volatile(
@@ -103,9 +109,28 @@ int system_halt(uint8_t status){
 
     // load the parent task 
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = 0x800000 - 0x2000*pid - 4; //8mb-8kb 
+    tss.esp0 = 0x800000 - 0x2000*(pid) - 4; //8mb-8kb 
 
-    label();
+    // puts(" i fucking finish everything before here\n");
+    // restore_esp_ebp(saved_ebp,saved_esp);
+    // while(1);
+    // label();
+    asm volatile(
+        "movl %0, %%esp;"
+        "movl %1, %%ebp;"
+        "leave;"
+        "ret;"
+        :
+        :"r"(saved_esp), "r"(saved_ebp)
+    );
+    // register uint32_t saved_ebp_ asm("ebp");
+    // register uint32_t saved_esp_ asm("esp");
+    // put_number(saved_ebp_);putc('\n');
+    // put_number(saved_esp_);putc('\n');
+    // asm volatile(
+    //     "jmp label\n"
+    // );
+    // while(1);
     return 1;
 }
 int system_execute(const uint8_t* command){
@@ -154,6 +179,9 @@ int system_execute(const uint8_t* command){
     //Create PCB
     register uint32_t saved_ebp asm("ebp");
     register uint32_t saved_esp asm("esp");
+    // puts("fuckit:\n");
+    // put_number(saved_ebp);putc('\n');
+    // put_number(saved_esp);putc('\n');
     pcb_box.parent_id=last_pid;
     pcb_box.id=pid;
     pcb_box.saved_esp=saved_esp;              // what should be saved here
@@ -199,7 +227,7 @@ int system_execute(const uint8_t* command){
 
     //Prepare for Context Switch
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = 0x800000 - 0x2000*pid - 4; //8mb-8kb 
+    tss.esp0 = 0x800000 - 0x2000*(pid) - 4; //8mb-8kb 
 
     /* everythinint i;
     char file_name[32]="frame0.txt";
@@ -272,9 +300,9 @@ int system_execute(const uint8_t* command){
     // );
     IRET_prepare(eip);          //eip address may change, may need to modify it
       // "pushl 0x800000\n"  
-    //return;
-    // system_halt();
-    return 1;
+    puts("fuckfuckfuckfuckfuckfuckfuckfuckfuckfuck\n");
+    while(1);
+    return 0;
 }
 int system_read(int32_t fd, void* buf, int32_t nbytes){
     int re;
