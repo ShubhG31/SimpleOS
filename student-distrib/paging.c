@@ -102,7 +102,7 @@ int32_t set_new_page(int phy_mem_loc){
     page_directory[32].G=1;                // Tells the program that it is not Video Memory when set to 1
     page_directory[32].AVL=0;
     page_directory[32].offset_31_12=(phy_mem_loc/4)<<10;
-    return; 
+    return 1; 
 }
 
 /*

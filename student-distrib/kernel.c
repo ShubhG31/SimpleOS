@@ -153,8 +153,9 @@ void entry(unsigned long magic, unsigned long addr) {
     RTC_init();
     paging_init();
     fd_init();
-    file_sys_test_cases ();
-    system_execute("shell");
+    // file_sys_test_cases ();
+    char call_[10]="shell";
+    system_execute((uint8_t*)call_);
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */

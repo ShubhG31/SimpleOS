@@ -35,5 +35,8 @@ extern int system_getargs(uint8_t* buf, int32_t nbytes);
 extern int system_vidmap(uint8_t** screen_start);
 extern int get_pcb_pointer();
 int check_fd_in_use(int32_t fd);
+extern int get_pid();
+extern void IRET_prepare(int);
+extern void label();
 
 #endif

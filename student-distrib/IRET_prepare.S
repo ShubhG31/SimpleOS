@@ -1,6 +1,8 @@
-.global IRET_prepare
+.global IRET_prepare, label
 
 IRET_prepare:
+    pushl %ebp
+    movl %esp, %ebp
     pushl   %ebp
     movl    %ebp, %esp
     movl   8(%ebp),%ecx
@@ -13,6 +15,7 @@ IRET_prepare:
 
 #     pushl   $USER_CS
 #     pushl   4(%ebp)
+    #sti
     pushl $0x002B
     pushl $0x083FFFFC
     pushfl
@@ -25,4 +28,7 @@ IRET_prepare:
     pushl (0x08048018)
     iret
     
+label:
+
+    leave
     ret
