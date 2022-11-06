@@ -67,7 +67,8 @@ void fd_init(){         // need to be run after booting part
 }
 int system_halt(uint8_t status){
     //remember to clear the paging.
-    int i,saved_ebp,saved_esp;
+    int i,saved_ebp,saved_esp,status_;
+    status_=status;
     // clear the page that was used for now complete process
     if(pid==0)return -1;
     // clearing process
@@ -115,13 +116,15 @@ int system_halt(uint8_t status){
     // restore_esp_ebp(saved_ebp,saved_esp);
     // while(1);
     // label();
+    // put_number(status);puts("-----\n");
     asm volatile(
+        "movl %2, %%eax;"
         "movl %0, %%esp;"
         "movl %1, %%ebp;"
         "leave;"
         "ret;"
         :
-        :"r"(saved_esp), "r"(saved_ebp)
+        :"r"(saved_esp), "r"(saved_ebp), "r"(status_)
     );
     // register uint32_t saved_ebp_ asm("ebp");
     // register uint32_t saved_esp_ asm("esp");
