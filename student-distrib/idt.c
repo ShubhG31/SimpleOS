@@ -115,80 +115,80 @@ void idt_initialization(){
 extern void divide_by_zero(){
     clear();
     printf("Exception: Division by Zero\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }
 // 0x1
 extern void single_step_int(){
     printf("Exception: single step interrupt\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }     
 // 0x2
 extern void non_maskable_int(){
     printf("Exception: NMI\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }      
 extern void breakpoint(){
     printf("Exception: breakpoint\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }     
 extern void overflow(){
     printf("Exception: overflow\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }  
 extern void bound_range_exceeds(){
     printf("Exception: bound range exceeds\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }      
 extern void invalid_opcode(){
     printf("Exception: Invalid Opcode\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }     
 extern void coprocessor_not_avail(){
     printf("Exception: Coprocessor not available\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }   
 extern void double_fault(){
     printf("Exception: double fault\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }      
 extern void coprocessor_segment_overrun(){
     printf("Exception: Coprocessor segment overrun \n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }     
 extern void invalid_task_state(){
     printf("Exception: invalid task state \n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }  
 extern void segment_not_present(){
     printf("Exception: segment not present\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }      
 extern void stack_segment_fault(){
     printf("Exception: stack segment fault\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }  
 extern void general_protection_fault(){
     printf("Exception: general protection fault\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }
 extern void page_fault(){
     // clear();
     printf("Exception: Page Fault\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
    
 }
 // 0xF reserved 
@@ -196,21 +196,21 @@ extern void page_fault(){
 //0x10
 extern void floating_point_exception(){
     printf("Exception: Floating Point Exception\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
 }
 
 // 0x11
 void alignment_check(){
     printf("Exception: alignment Exception\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
 }
 //0x12
 void machine_check(){
     printf("Exception: Machine Check Exception\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
 }
 //0x13
 void SIMD_floating_point(){
     printf("Exception: SIMD Floating Point Exception\n");
-    while(1);
+    system_halt((uint8_t)HALT_error);
 }

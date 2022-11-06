@@ -65,12 +65,22 @@ void fd_init(){         // need to be run after booting part
     phy_mem_loc=8;  // start address in physical mem to store files  8MB
     return;
 }
+// int system_exception_halt(uint32_t status){
+
+// }
 int system_halt(uint8_t status){
     //remember to clear the paging.
     int i,saved_ebp,saved_esp,status_;
     status_=status;
+    if(status == HALT){
+        status_ = HALT_error;
+    }
     // clear the page that was used for now complete process
-    if(pid==0)return -1;
+    if(pid==0){
+        // fd_init();
+        // system_execute("shell");//return status;
+        return -1;
+    }
     // clearing process
     pcb_t=(struct PCB_table*)get_pcb_pointer();
 
@@ -303,13 +313,14 @@ int system_execute(const uint8_t* command){
     // );
     IRET_prepare(eip);          //eip address may change, may need to modify it
       // "pushl 0x800000\n"  
-    puts("fuckfuckfuckfuckfuckfuckfuckfuckfuckfuck\n");
-    while(1);
+    // puts("fuckfuckfuckfuckfuckfuckfuckfuckfuckfuck\n");
+    // while(1);
     return 0;
 }
 int system_read(int32_t fd, void* buf, int32_t nbytes){
     int re;
     re=0;
+    if(fd<0||fd>7)return -1;
     if(fd==1)return -1; //stdout does not handle terminal read
     if(check_fd_in_use(fd)==0)return -1;
     // pcb_t=get_pcb_pointer();
@@ -337,6 +348,7 @@ int system_read(int32_t fd, void* buf, int32_t nbytes){
 int system_write(int32_t fd, const void* buf, int32_t nbytes){
     // puts(" i fucking finish everything before here\n");
     int re;
+    if(fd<0||fd>7)return -1;
     if(fd==0)return -1; //stdin does not handle terminal write
     if(check_fd_in_use(fd)==0)return -1;
     // pcb_t=get_pcb_pointer();
@@ -357,14 +369,15 @@ int system_open(const uint8_t* filename){
     pcb_t=(struct PCB_table*)get_pcb_pointer();
     pcb_box=*pcb_t;
 
+    
+
     for( fd = 2; fd <= PCB_size; fd++){
         if(((1<<fd)&pcb_box.fdt_usage)==0)break;
         if(fd==PCB_size){
-            puts("no space in file descriptor array");
+            // puts("no space in file descriptor array");
             return -1;
         }
     }
-
     
     if (file.filetype == 0) re=((RTC_commands.open)((uint8_t*)filename));
     else if (file.filetype == 1) re=((dir_commands.open)((uint8_t*)filename));
@@ -394,6 +407,7 @@ int system_open(const uint8_t* filename){
 } 
 int system_close(int32_t fd){
     int re;
+    if(fd<0||fd>7)return -1;
     if(fd==0||fd==1)return -1;
     if(check_fd_in_use(fd)==0)return -1;
     pcb_t=(struct PCB_table*)get_pcb_pointer();
@@ -408,9 +422,14 @@ int system_close(int32_t fd){
     return 0;
 }
 int system_getargs(uint8_t* buf, int32_t nbytes){
+    if(buf == NULL) return -1;
     return 1;
 } 
 int system_vidmap(uint8_t** screen_start){
+    if(screen_start == NULL)return -1;
+    if(*screen_start == NULL)return -1;
+    if((int)screen_start>=0x400000 && (int)screen_start<0x800000)return -1;
+    // **screen_start = 0;
     return 1;
 }
 int check_fd_in_use(int32_t fd){

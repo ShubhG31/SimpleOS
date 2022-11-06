@@ -6,6 +6,8 @@
 #define exe_1 0x45
 #define exe_2 0x4c
 #define exe_3 0x46
+#define HALT 37
+#define HALT_error 256
 
 struct file_descriptor{
     uint32_t opt_table_pointer;
