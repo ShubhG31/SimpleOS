@@ -68,6 +68,12 @@ void fd_init(){         // need to be run after booting part
 // int system_exception_halt(uint32_t status){
 
 // }
+
+/* int system_halt(unit8_t status);
+ * Inputs: status of the system
+ * Return Value: 0
+ * Function: halts the process of the system  */
+
 int system_halt(uint8_t status){
     //remember to clear the paging.
     int i,saved_ebp,saved_esp,status_;
@@ -146,6 +152,12 @@ int system_halt(uint8_t status){
     // while(1);
     return 1;
 }
+
+/* int system_execute(unit8_t status);
+ * Inputs: the user command given
+ * Return Value: certain values depending on the type of execution process it is, a fail, system call halr or system call halt
+ * Function: executes a new program and process */
+
 int system_execute(const uint8_t* command){
     int re;
     uint8_t buf[40];
@@ -317,6 +329,12 @@ int system_execute(const uint8_t* command){
     // while(1);
     return 0;
 }
+
+/* int system_read(int32_t fd, void* buf, int32_t nbytes);
+ * Inputs: fd which is the file descriptor, buf which is the buffer, nbytes which is the number of bytes
+ * Return Value: re
+ * Function: reads data from the given process or system */
+
 int system_read(int32_t fd, void* buf, int32_t nbytes){
     int re;
     re=0;
@@ -345,6 +363,12 @@ int system_read(int32_t fd, void* buf, int32_t nbytes){
     }
     return re;
 }
+
+/* int system_write(int32_t fd, const void* buf, int32_t nbytes);
+ * Inputs: fd which is the file descriptor, buf which is the buffer, nbytes which is the number of bytes
+ * Return Value: null
+ * Function: writes data to the given process or system */
+
 int system_write(int32_t fd, const void* buf, int32_t nbytes){
     // puts(" i fucking finish everything before here\n");
     int re;
@@ -358,6 +382,12 @@ int system_write(int32_t fd, const void* buf, int32_t nbytes){
     re = ((((struct files_command*)fd_box.opt_table_pointer)->write)((int32_t)fd,(void*)buf,(int32_t)nbytes));
     return re;
 }
+
+/* int system_open(const unit8_t* filename);
+ * Inputs: filename which is the name of the file
+ * Return Value: fd which is the file descriptor
+ * Function: opens the system and displays access */
+
 int system_open(const uint8_t* filename){
     int re, fd ;
     struct dentry file;
@@ -405,6 +435,12 @@ int system_open(const uint8_t* filename){
 
     return fd;
 } 
+
+/* int system_close(int32_t fd);
+ * Inputs: fd which is the file descriptor
+ * Return Value: 0
+ * Function: closes the file descriptor that was given in the input */
+
 int system_close(int32_t fd){
     int re;
     if(fd<0||fd>7)return -1;
@@ -421,10 +457,22 @@ int system_close(int32_t fd){
     re = ((((struct files_command*)fd_box.opt_table_pointer)->close)((int32_t)fd));
     return 0;
 }
+
+/* int system_getargs(unit8_t* buf, int32_t nbytes);
+ * Inputs: buf which is the buffer and nbytes which is the number of bytes
+ * Return Value: null
+ * Function: gets the given argument and writes it into the buffer */
+
 int system_getargs(uint8_t* buf, int32_t nbytes){
     if(buf == NULL) return -1;
     return 1;
 } 
+
+/* int system_vidmap(uint32_t** screen_start);
+ * Inputs: buf which is the buffer
+ * Return Value: null
+ * Function: puts in the address that is pointing to virtual memory in the system */
+
 int system_vidmap(uint8_t** screen_start){
     if(screen_start == NULL)return -1;
     if(*screen_start == NULL)return -1;
@@ -432,12 +480,24 @@ int system_vidmap(uint8_t** screen_start){
     // **screen_start = 0;
     return 1;
 }
+
+/* int check_fd_in_use(int32_t fd);
+ * Inputs: fd which is the file descriptor
+ * Return Value: null
+ * Function: checks if the file descriptor is in use and passes that result in */
+
 int check_fd_in_use(int32_t fd){
     pcb_t=(struct PCB_table*)get_pcb_pointer();
     pcb_box=*pcb_t;
     if(((1<<fd)&pcb_box.fdt_usage)!=0)return 1;
     return 0;
 }
+
+/* int get_pcb_pointer();
+ * Inputs: null
+ * Return Value: the pcb pointer
+ * Function: returns the pcb pointer using the pid in the system */
+
 int get_pcb_pointer(){
     return addr_8MB-size_8kb*(pid+1);       // pid starts at 0 (0 -> move 1*8kb, 1-> move 2*8kb)
 }
