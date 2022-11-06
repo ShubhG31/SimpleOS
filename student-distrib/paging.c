@@ -90,6 +90,11 @@ extern void paging_init(){
     // printf("finish enable ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
     return;
 }
+
+/* Inputs: void
+ * Return Value: initialization of paging including the page directory as shown in documents
+ * Function: initializing the page table with the right status of 0 or 1 */
+
 int32_t set_new_page(int phy_mem_loc){
     page_directory[32].present=1;         // page table is present
     page_directory[32].RW=1;  // changed 
