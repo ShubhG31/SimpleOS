@@ -77,6 +77,7 @@ void idt_initialization(){
     /*
     Setting up the first 19 exceptions in IDT, these are not magic numbers
     */
+
     SET_IDT_ENTRY(idt[0], divide_by_zero);
     SET_IDT_ENTRY(idt[1], single_step_int);
     SET_IDT_ENTRY(idt[2], non_maskable_int);  
@@ -101,7 +102,7 @@ void idt_initialization(){
     SET_IDT_ENTRY(idt[keyboard], keyboard_handler);
     SET_IDT_ENTRY(idt[RTCint], RTC_handler);
     // Setting up the System Call Handler
-    idt[systemCall].reserved3= 1;
+    // idt[systemCall].reserved3= 1;
     SET_IDT_ENTRY(idt[systemCall], system_call_handler);
     lidt(idt_desc_ptr);
     return;

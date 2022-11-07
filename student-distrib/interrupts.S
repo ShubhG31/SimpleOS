@@ -33,6 +33,7 @@ RTC_handler:
 .global system_call_handler
 
 system_call_handler:
+                sti
                 pushal 
                 pushfl  
                 cmpl $10, %EAX   # see if command given is greater than 10

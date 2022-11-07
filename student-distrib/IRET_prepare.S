@@ -14,7 +14,6 @@ IRET_prepare:
 
 #    pushl   $USER_CS
 #    pushl   4(%ebp)
-    #sti
     pushl $0x002B
     pushl $0x083FFFFC
     pushfl
@@ -25,6 +24,7 @@ IRET_prepare:
     # pushl %ecx
     # pushl $0x080482e8
     pushl (0x08048018)
+    # cli
     iret
     
 label:

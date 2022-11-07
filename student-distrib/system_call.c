@@ -83,8 +83,8 @@ int system_halt(uint8_t status){
     }
     // clear the page that was used for now complete process
     if(pid==0){
-        // fd_init();
-        // system_execute("shell");//return status;
+        fd_init();
+        system_execute("shell");//return status;
         return -1;
     }
     // clearing process
@@ -163,13 +163,6 @@ int system_execute(const uint8_t* command){
     uint8_t buf[40];
     struct dentry dt;
 
-    // puts("we are running:");
-    // int i;
-    // for(i=0;i<10;i++)putc(*(command+i));putc('\n');
-    // puts((int8_t*)command);
-    // putc('\n');
-    // if(*((uint8_t*)command)!='s')while(1);
-
     //Parse args
 
     //Check for executable
@@ -181,8 +174,6 @@ int system_execute(const uint8_t* command){
     else return -1;
 
     last_pid=pid;
-    // char *buffer = 0x08048000 + (0x8<<20)*pid ; //
-    // char *buffer = (char*)0x08048000; //
     pid++;
     pcb_t=(struct PCB_table*)get_pcb_pointer();
     
@@ -204,9 +195,7 @@ int system_execute(const uint8_t* command){
     //Create PCB
     register uint32_t saved_ebp asm("ebp");
     register uint32_t saved_esp asm("esp");
-    // puts("fuckit:\n");
-    // put_number(saved_ebp);putc('\n');
-    // put_number(saved_esp);putc('\n');
+
     pcb_box.parent_id=last_pid;
     pcb_box.id=pid;
     pcb_box.saved_esp=saved_esp;              // what should be saved here
@@ -230,25 +219,7 @@ int system_execute(const uint8_t* command){
     pcb_box.fdt[5]=fd_box;
     pcb_box.fdt[6]=fd_box;
     pcb_box.fdt[7]=fd_box;
-    // *((int32_t*)(pcb_t))=pcb_box;
     *(pcb_t)=pcb_box;
-
-    
-    // re=read_data((uint32_t)(dt.inode_num), (uint32_t)0, (uint8_t*)(0x08048000), (uint32_t)5605);//(uint32_t)get_length(dt));
-    // int fde;
-    // fde=file_open(command);
-    // fd=file_open("hello");
-    // fd=file_open("fish");       //dont exist
-    // puts("return value of file_open:");
-    // put_number(fd);
-    // putc('\n');
-    // if(fde==-1){
-    //     puts("\n Cannot find the file \n");
-    //     return -1;
-    // }
-    // char buf[60000];  
-    // char *buffer = 0x08048000 + (0x8<<20)*pid ;
-    // re=file_read(fde,(void*)buffer,60000);
 
     //Prepare for Context Switch
     tss.ss0 = KERNEL_DS;
