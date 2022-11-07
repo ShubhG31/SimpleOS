@@ -18,34 +18,23 @@
 #define pcb_fd_off 12
 #define fd_size 16
 #define PCB_size 8
+#define Program_page 4
 
 int pid,last_pid,processor_usage;
 int phy_mem_loc;
+
 typedef int32_t (*open_type)(uint8_t*);
 typedef int32_t (*close_type)(uint32_t);
 typedef int32_t (*write_type)(int32_t,void*,int32_t);
 typedef int32_t (*read_type)(int32_t,void*,int32_t);
-// struct file_descriptor{
-//     uint32_t opt_table_pointer;
-//     uint32_t inode;
-//     uint32_t file_pos;
-//     uint32_t flags;
-// };
+
 struct files_command{
     open_type open;
     close_type close;
     read_type read;
     write_type write;
 };
-// struct PCB_table{
-//     int8_t id;                 // 1 byte
-//     int8_t parent_id            // 1 byte
-//     int32_t saved_esp;          // 4 byte
-//     int32_t saved_ebp;          // 4 byte
-//     int8_t active;              // 1 byte
-//     int8_t fdt_usage; //00000011// 1 byte
-//     struct file_descriptor fdt[8]; // 16 byte each
-// };
+
 static struct files_command RTC_commands={(open_type)&RTC_open, (close_type)&RTC_close, (read_type)&RTC_read, (write_type)&RTC_write};
 static struct files_command dir_commands={(open_type)&dir_open, (close_type)&dir_close, (read_type)&dir_read, (write_type)&dir_write};
 static struct files_command file_commands={(open_type)&file_open, (close_type)&file_close, (read_type)&file_read, (write_type)&file_write};
@@ -65,9 +54,6 @@ void fd_init(){         // need to be run after booting part
     phy_mem_loc=8;  // start address in physical mem to store files  8MB
     return;
 }
-// int system_exception_halt(uint32_t status){
-
-// }
 
 /* int system_halt(unit8_t status);
  * Inputs: status of the system
@@ -84,7 +70,8 @@ int system_halt(uint8_t status){
     // clear the page that was used for now complete process
     if(pid==0){
         fd_init();
-        system_execute("shell");//return status;
+        const uint8_t *command = "shell";
+        system_execute(command);//return status;
         return -1;
     }
     // clearing process
@@ -101,9 +88,7 @@ int system_halt(uint8_t status){
     pcb_box.parent_id=0;
     saved_ebp=pcb_box.saved_ebp;
     saved_esp=pcb_box.saved_esp;
-    // put_number(saved_ebp);putc('\n');
-    // put_number(saved_esp);putc('\n');
-    // while(1);
+
     pcb_box.saved_ebp=0;
     pcb_box.saved_esp=0;
     for(i=0;i<7;i++){
@@ -114,8 +99,8 @@ int system_halt(uint8_t status){
     }
     *pcb_t=pcb_box;
     // clearing paging (remapping)
-    phy_mem_loc-=4;
-    set_new_page(phy_mem_loc-4);
+    phy_mem_loc-=Program_page;
+    set_new_page(phy_mem_loc-Program_page);
     
     
     // clear tlb
@@ -126,13 +111,8 @@ int system_halt(uint8_t status){
 
     // load the parent task 
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = 0x800000 - 0x2000*(pid) - 4; //8mb-8kb 
+    tss.esp0 = addr_8MB - size_8kb*(pid) - 4; //8mb-8kb 
 
-    // puts(" i fucking finish everything before here\n");
-    // restore_esp_ebp(saved_ebp,saved_esp);
-    // while(1);
-    // label();
-    // put_number(status);puts("-----\n");
     asm volatile(
         "movl %2, %%eax;"
         "movl %0, %%esp;"
@@ -142,14 +122,6 @@ int system_halt(uint8_t status){
         :
         :"r"(saved_esp), "r"(saved_ebp), "r"(status_)
     );
-    // register uint32_t saved_ebp_ asm("ebp");
-    // register uint32_t saved_esp_ asm("esp");
-    // put_number(saved_ebp_);putc('\n');
-    // put_number(saved_esp_);putc('\n');
-    // asm volatile(
-    //     "jmp label\n"
-    // );
-    // while(1);
     return 1;
 }
 
@@ -159,6 +131,10 @@ int system_halt(uint8_t status){
  * Function: executes a new program and process */
 
 int system_execute(const uint8_t* command){
+    // if(pid>=5){
+    //     puts("Too Many Programs are being run\n");
+    //     return 0;
+    // }
     int re;
     uint8_t buf[40];
     struct dentry dt;
@@ -225,79 +201,13 @@ int system_execute(const uint8_t* command){
     tss.ss0 = KERNEL_DS;
     tss.esp0 = 0x800000 - 0x2000*(pid) - 4; //8mb-8kb 
 
-    /* everythinint i;
-    char file_name[32]="frame0.txt";
-    char buff[100];
-    put_number((int)(&file_commands));
-    putc('\n');
-    re=system_open((uint8_t*)file_name);
-    put_number(re);
-    putc('\n');
-    pcb_t=(struct PCB_table*)get_pcb_pointer();
-    puts("inode: ");
-    put_number(pcb_t->fdt[re].inode);
-    putc('\n');
-    puts("fdt_usage: ");
-    put_number(pcb_t->fdt_usage);
-    putc('\n');
-    puts("command: ");
-    put_number(pcb_t->fdt[re].opt_table_pointer);
-    putc('\n');
-
-    re=system_read(re,(void*)buff,99);
-    put_number(re);
-    putc('\n');
-    for(i=0;i<re;i++)putc(buff[i]);
-    putc('\n');
-    puts(" i fucking finish everything before here\n");
-
-    re=system_write(re,(void*)buff,99);
-    put_number(re);
-    putc('\n');
-
-    re=system_close(2);
-    put_number(re);
-    putc('\n');
-    puts("inode: ");
-    put_number(pcb_t->fdt[2].inode);
-    putc('\n');
-    puts("fdt_usage: ");
-    put_number(pcb_t->fdt_usage);
-    putc('\n');
-    puts("command: ");
-    put_number(pcb_t->fdt[2].opt_table_pointer);
-    putc('\n');
-    while(1);*/
-    //Push IRET context to kernel stack
-
-    //IRET
-    // IRET_prepare(EIP);
-
-    // // clear tlb
-    // asm volatile(
-    //     "movl %cr3, %edx \n"
-    //     "movl %edx, %cr3 \n"
-    // );
-
     // DS
     // esp  calculated through the 2^20 * 132 = 138412032 to hex is 0x08400000 and -4 of that is 0x083FFFFC
     // eflags 
     // cs
     // eip 
-    // asm volatile ("pushl $0x002B\n" 
-    //     "pushl $0x083FFFFC\n"
-    //     "pushfl\n"
-    //     "popl %ebx\n"
-    //     "orl $0x0200, %ebx\n"
-    //     "pushl %ebx\n"
-    //     "pushl $0x0023\n"
-    //     "pushl $0x08048040\n"      
-    //     "iret \n"
-    // );
     IRET_prepare(eip);          //eip address may change, may need to modify it
-      // "pushl 0x800000\n"  
-    // puts("fuckfuckfuckfuckfuckfuckfuckfuckfuckfuck\n");
-    // while(1);
+
     return 0;
 }
 
@@ -312,22 +222,10 @@ int system_read(int32_t fd, void* buf, int32_t nbytes){
     if(fd<0||fd>7)return -1;
     if(fd==1)return -1; //stdout does not handle terminal read
     if(check_fd_in_use(fd)==0)return -1;
-    // pcb_t=get_pcb_pointer();
     pcb_t=(struct PCB_table*)get_pcb_pointer();
     fd_box=pcb_t->fdt[fd];
 
-    // put_number(re);
-    // putc('\n');
     re = ((((struct files_command*)(fd_box.opt_table_pointer))->read)((int32_t)fd,(void*)buf,(int32_t)nbytes));
-    // put_number(re);
-    // putc('\n');
-    // puts(" i fucking finish everything before here\n");
-    // int i;
-    // put_number(re);
-    // puts("FFFF:");
-    // for(i=0;i<re;i++){
-    //     putc(*(uint8_t*)(buf+i));
-    // }putc('\n');
     if(re!=-1){
         fd_box.file_pos+=re;
         pcb_t->fdt[fd].file_pos+=re;
@@ -387,11 +285,6 @@ int system_open(const uint8_t* filename){
 
     fd_box=pcb_t->fdt[fd];
     
-    // if(file.filetype == 2){
-    //     inode = file.inode_num;
-    // }else{
-    //     inode = 0;
-    // }
     if (file.filetype == 0) fd_box.opt_table_pointer = (uint32_t) &RTC_commands;
     else if (file.filetype == 1) fd_box.opt_table_pointer = (uint32_t) &dir_commands;
     else if (file.filetype == 2) fd_box.opt_table_pointer = (uint32_t) &file_commands;

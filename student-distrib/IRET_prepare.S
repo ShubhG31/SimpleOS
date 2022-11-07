@@ -1,30 +1,23 @@
+.data 
+    USER_DS = 0x002B
+    USER_CS = 0x0023
+    Nineth_bit = 0x0200
+    EIP = 0x08048018
+    bottom = 0x083FFFFC
+
 .global IRET_prepare, label
+    
 
 IRET_prepare:
-#    pushl %ebp
-#    pushl %esp
-#    movl    %esp, %ebp
-#    movl   8(%ebp),%ecx
-#    pushl   $USER_DS
-#    pushl   $0x8400000
-#    pushfl
-#    popl    %eax
-#    orl     $0x0200, %eax
-#    pushl   %eax
-
-#    pushl   $USER_CS
-#    pushl   4(%ebp)
-    pushl $0x002B
-    pushl $0x083FFFFC
+    pushl $USER_DS
+    pushl $bottom
     pushfl
     popl %ebx
-    orl $0x0200, %ebx
+    orl $Nineth_bit, %ebx
     pushl %ebx
-    pushl $0x0023
-    # pushl %ecx
-    # pushl $0x080482e8
-    pushl (0x08048018)
-    # cli
+    pushl $USER_CS
+    movl $EIP, %ebx
+    pushl (%ebx)
     iret
     
 label:
