@@ -154,10 +154,10 @@ int system_execute(const uint8_t* command){
     pid++;
     pcb_t=(struct PCB_table*)get_pcb_pointer();
     
-    //Set up paging
 
-    int eip = (buf[27]<<24)|(buf[26]<<16)|(buf[25]<<8)|(buf[24]);
+    int eip = (buf[27]<<24)|(buf[26]<<16)|(buf[25]<<8)|(buf[24]); // using bytes 27-24 of the user program to set the EIP to user program
 
+    //Set up pagings
     set_new_page(phy_mem_loc);
     phy_mem_loc+=4;
     
@@ -180,28 +180,31 @@ int system_execute(const uint8_t* command){
     pcb_box.active=1;
     pcb_box.fdt_usage=3; //00000011
     
+    // sets the File Descriptor table for executed function 
     fd_box.opt_table_pointer=(uint32_t)&terminal_commands;
     fd_box.inode=-1;
     fd_box.file_pos=0;
     fd_box.flags=1;         // in use or not
-    pcb_box.fdt[0]=fd_box;
-    pcb_box.fdt[1]=fd_box;
+    pcb_box.fdt[0]=fd_box;  // sets the first entry to terminal command
+    pcb_box.fdt[1]=fd_box;  // sets the second entry to terminal command 
     fd_box.opt_table_pointer=NULL;
     fd_box.inode=-1;
     fd_box.file_pos=0;
     fd_box.flags=0;
-    pcb_box.fdt[2]=fd_box;
+
+    // entries 2-7 is set to NULL for File Descriptor table
+    pcb_box.fdt[2]=fd_box;  
     pcb_box.fdt[3]=fd_box;
     pcb_box.fdt[4]=fd_box;
     pcb_box.fdt[5]=fd_box;
     pcb_box.fdt[6]=fd_box;
     pcb_box.fdt[7]=fd_box;
+    // Process Control Block is Set to current executed function
     *(pcb_t)=pcb_box;
 
     //Prepare for Context Switch
-    tss.ss0 = KERNEL_DS;
-    tss.esp0 = 0x800000 - 0x2000*(pid) - 4; //8mb-8kb -4 is for safety
-
+    tss.ss0 = KERNEL_DS;    // TSS tells the 
+    tss.esp0 = 0x800000 - 0x2000*(pid) - 4; //8mb-(8kb*pid) -4 is for safety
     // DS
     // esp  calculated through the 2^20 * 132 = 138412032 to hex is 0x08400000 and -4 of that is 0x083FFFFC
     // eflags 
@@ -268,8 +271,6 @@ int system_open(const uint8_t* filename){
     
     pcb_t=(struct PCB_table*)get_pcb_pointer();
     pcb_box=*pcb_t;
-
-    
 
     for( fd = 2; fd <= PCB_size; fd++){
         if(((1<<fd)&pcb_box.fdt_usage)==0)break;

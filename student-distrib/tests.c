@@ -275,6 +275,9 @@ void launch_tests(){
 			// test_dir_driver();
 			// test_show_files();
 			// test_show_frame();
+	
+	/* Checkpoint 3 tests*/
 
+	// Tests cases are taken care of in syserr and executing Shell, ls, pingpong. 
 
 }
