@@ -341,7 +341,7 @@ int system_getargs(uint8_t* buf, int32_t nbytes){
 int system_vidmap(uint8_t** screen_start){
     if(screen_start == NULL)return -1;
     if(*screen_start == NULL)return -1;
-    if((int)screen_start>=0x400000 && (int)screen_start<0x800000)return -1;
+    if((int)screen_start>=0x400000 && (int)screen_start<0x800000)return -1;     // if accessing the memory location between 4MB-8MB return -1
     // **screen_start = 0;
     return 1;
 }
