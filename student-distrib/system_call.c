@@ -19,6 +19,7 @@
 #define fd_size 16
 #define PCB_size 8
 #define Program_page 4
+#define text_read 40
 
 int pid,last_pid,processor_usage;
 int phy_mem_loc;
@@ -111,7 +112,7 @@ int system_halt(uint8_t status){
 
     // load the parent task 
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = addr_8MB - size_8kb*(pid) - 4; //8mb-8kb 
+    tss.esp0 = addr_8MB - size_8kb*(pid) - 4; //8mb-8kb-4 -4 is for safety
 
     asm volatile(
         "movl %2, %%eax;"
@@ -145,7 +146,7 @@ int system_execute(const uint8_t* command){
     re=read_dentry_by_name(command,&dt);
 
     if(re==-1)return -1;
-    re=read_data(dt.inode_num, 0, buf, 40);
+    re=read_data(dt.inode_num, 0, buf, text_read);
     if(buf[0]==exe_0 && buf[1]==exe_1 && buf[2]==exe_2 && buf[3]==exe_3);
     else return -1;
 
@@ -199,7 +200,7 @@ int system_execute(const uint8_t* command){
 
     //Prepare for Context Switch
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = 0x800000 - 0x2000*(pid) - 4; //8mb-8kb 
+    tss.esp0 = 0x800000 - 0x2000*(pid) - 4; //8mb-8kb -4 is for safety
 
     // DS
     // esp  calculated through the 2^20 * 132 = 138412032 to hex is 0x08400000 and -4 of that is 0x083FFFFC
