@@ -70,7 +70,7 @@ int system_halt(uint8_t status){
     // clear the page that was used for now complete process
     if(pid==0){
         fd_init();
-        const uint8_t *command = "shell";
+        const uint8_t* command = (uint8_t*) "shell";
         system_execute(command);//return status;
         return -1;
     }
@@ -131,10 +131,10 @@ int system_halt(uint8_t status){
  * Function: executes a new program and process */
 
 int system_execute(const uint8_t* command){
-    // if(pid>=5){
-    //     puts("Too Many Programs are being run\n");
-    //     return 0;
-    // }
+    if(pid>=5){
+        puts("Too Many Programs are being run\n");
+        return 0;
+    }
     int re;
     uint8_t buf[40];
     struct dentry dt;
