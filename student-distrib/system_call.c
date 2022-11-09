@@ -332,6 +332,7 @@ int system_close(int32_t fd){
 int system_getargs(uint8_t* buf, int32_t nbytes){
     if(buf == NULL) return -1;
     *pcb_t = get_pcb_pointer();
+    //copy everything given n number of characters/bytes
     memcpy(buf, pcb_t->buf, n_bytes);
     return 0;
 } 
