@@ -124,6 +124,7 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
     if( inode < 0 || inode > inode_count )return -1;        // edge cases
     l_read=0;   // l_read stores the length that we read, initializa it to be zero
     inode_length=*((uint32_t*)(node + block_size*inode + length_off));  // total bytes for this file
+    if(inode_length==offset)return 0;
     //printf("%d\n",inode_length);
 
     // offset/block_size is the number of data block we gonna ignore
@@ -144,7 +145,7 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
             // if we have already read length bytes OR we reach the end of the file, return
         }
     }
-    return -1;  // we should return before, if everything works well, so here return -1 for any trouble
+    return 0;  // we should return before, if everything works well, so here return -1 for any trouble
 }
 
 

@@ -161,8 +161,8 @@ int file_read(int32_t fd, void* buf, int32_t nbytes){
     FD = pcb_->fdt[fd];
 
     re=read_data ( FD.inode, FD.file_pos, (uint8_t*)buf, nbytes);   // read data stored in inode, starting at file_pos
-    if( re==0 || re==-1 )return -1;
-
+    if( re==-1 )return -1;
+    if( re==0 ) return 0;
     FD.file_pos+=nbytes;      
     pcb_->fdt[fd]=FD;                                          
     // printf("I got the file read\n");

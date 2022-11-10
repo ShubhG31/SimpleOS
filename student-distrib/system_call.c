@@ -65,6 +65,8 @@ int system_halt(uint8_t status){
     //remember to clear the paging.
     int i,saved_ebp,saved_esp,status_;
     status_=status;
+    put_number(status);
+    puts("--------\n");
     if(status == HALT){
         status_ = HALT_error;
     }
@@ -139,12 +141,11 @@ int system_execute(const uint8_t* command){
     int re;
     uint8_t buf[40];
     struct dentry dt;
-    // puts(command);
+    
     //Parse args
 
     //Check for executable
     re=read_dentry_by_name(command,&dt);
-
     if(re==-1)return -1;
     re=read_data(dt.inode_num, 0, buf, text_read);
     if(buf[0]==exe_0 && buf[1]==exe_1 && buf[2]==exe_2 && buf[3]==exe_3);
@@ -156,11 +157,11 @@ int system_execute(const uint8_t* command){
     
 
     int eip = (buf[27]<<24)|(buf[26]<<16)|(buf[25]<<8)|(buf[24]); // using bytes 27-24 of the user program to set the EIP to user program
-puts(command);
+    puts(command);
     //Set up pagings
     set_new_page(phy_mem_loc);
     phy_mem_loc+=4;
-    puts(command);
+    
     // clear tlb
     asm volatile(
         "movl %cr3, %edx \n"
@@ -169,7 +170,7 @@ puts(command);
     // puts(command);
     //Load file into memory
     re=read_data((uint32_t)(dt.inode_num), (uint32_t)0, (uint8_t*)(0x08048000), (uint32_t)get_length(dt));//;
-    //    puts(command);
+    
     //Create PCB
     register uint32_t saved_ebp asm("ebp");
     register uint32_t saved_esp asm("esp");
@@ -212,6 +213,7 @@ puts(command);
     // cs
     // eip 
     //    puts(command);
+    put_number(re);puts("lllllllolllllll\n");
     IRET_prepare(eip);          //eip address may change, may need to modify it
 
     return 0;
@@ -343,11 +345,10 @@ int system_getargs(uint8_t* buf, int32_t nbytes){
 
 int system_vidmap(uint8_t** screen_start){
     if(screen_start == NULL)return -1;
-    if(*screen_start == NULL)return -1;
     if((int)screen_start>=0x400000 && (int)screen_start<0x800000)return -1;     // if accessing the memory location between 4MB-8MB return -1
     // **screen_start = 0;
-    printf("hello\n");
     *screen_start = (uint8_t*)set_video_page();
+    // puts("Success vidmap\n");
     return 0;
 }
 

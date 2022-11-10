@@ -9,6 +9,7 @@
     
 
 IRET_prepare:
+    movl 4(%esp), %edx
     pushl $USER_DS
     pushl $bottom
     pushfl
@@ -16,8 +17,10 @@ IRET_prepare:
     orl $Nineth_bit, %ebx
     pushl %ebx
     pushl $USER_CS
-    movl $EIP, %ebx
-    pushl (%ebx)
+    # movl $EIP, %ebx
+
+    # pushl (%ebx)
+    pushl %edx
     iret
     
 label:
