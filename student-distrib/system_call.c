@@ -157,7 +157,7 @@ int system_execute(const uint8_t* command){
     
 
     int eip = (buf[27]<<24)|(buf[26]<<16)|(buf[25]<<8)|(buf[24]); // using bytes 27-24 of the user program to set the EIP to user program
-    puts(command);
+    // puts(command);
     //Set up pagings
     set_new_page(phy_mem_loc);
     phy_mem_loc+=4;
@@ -213,7 +213,7 @@ int system_execute(const uint8_t* command){
     // cs
     // eip 
     //    puts(command);
-    put_number(re);puts("lllllllolllllll\n");
+    // put_number(re);puts("lllllllolllllll\n");
     IRET_prepare(eip);          //eip address may change, may need to modify it
 
     return 0;
@@ -235,7 +235,8 @@ int system_read(int32_t fd, void* buf, int32_t nbytes){
 
     re = ((((struct files_command*)(fd_box.opt_table_pointer))->read)((int32_t)fd,(void*)buf,(int32_t)nbytes));
     if(re!=-1){
-        fd_box.file_pos+=re;
+        // fd_box.file_pos+=re;
+        pcb_t=(struct PCB_table*)get_pcb_pointer();
         pcb_t->fdt[fd].file_pos+=re;
     }
     return re;

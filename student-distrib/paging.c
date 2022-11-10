@@ -30,7 +30,7 @@ extern void paging_init(){
     // printf("before the inits table loop\n"); 
     page_directory[0].present=1;        // page table is present
     page_directory[0].RW=1; // changed 
-    page_directory[0].US=1;
+    page_directory[0].US=0;
     page_directory[0].PWT=0; //
     page_directory[0].PCD=0;            // Tells the program that it is not Video Memory when set to 1  
     page_directory[0].A=0;
@@ -112,16 +112,16 @@ int32_t set_new_page(int phy_mem_loc){
 
 int32_t set_video_page(){
     page_directory[36].present=1;         // page table is present
-    page_directory[36].RW=1;  // changed 
+    page_directory[36].RW=1;  
     page_directory[36].US = 1; //changed
     page_directory[36].PWT=0; //
     page_directory[36].PCD=0;
     page_directory[36].A=0;
     page_directory[36].avl_=0;
-    page_directory[36].ps=0;               // When 1, tells us that the pages are 4MB 
-    page_directory[36].G=0;                // Tells the program that it is not Video Memory when set to 1
+    page_directory[36].ps=1;               // When 1, tells us that the pages are 4MB 
+    page_directory[36].G=0;
     page_directory[36].AVL=0;
-    page_directory[36].offset_31_12=((uint32_t)(page_table))>>12;
+    page_directory[36].offset_31_12=0;
     return 36*4*1024*1024+184*4*1024;
 }
 
