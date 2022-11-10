@@ -21,6 +21,8 @@
 #define Program_page 4
 #define text_read 40
 
+static uint8_t copy;
+
 int pid,last_pid,processor_usage;
 int phy_mem_loc;
 
@@ -330,7 +332,18 @@ int system_close(int32_t fd){
  * Function: gets the given argument and writes it into the buffer */
 
 int system_getargs(uint8_t* buf, int32_t nbytes){
+    int i;
+    strcpy(copy,command);
     if(buf == NULL) return -1;
+    for (i=0; i < nbytes; i++){
+        if (command[i] == " "){
+            break;
+        }
+        else{
+            return command[i];
+        }
+        ++command;
+    }
     pcb_t = (struct PCB_table*)get_pcb_pointer();
     //copy everything given n number of characters/bytes
     memcpy(buf, pcb_t->buf, nbytes);
