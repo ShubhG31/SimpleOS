@@ -110,6 +110,22 @@ int32_t set_new_page(int phy_mem_loc){
     return 1; 
 }
 
+
+int32_t set_video_page(){
+    page_directory[36].present=1;         // page table is present
+    page_directory[36].RW=1;  // changed 
+    page_directory[36].US = 0; //changed
+    page_directory[36].PWT=0; //
+    page_directory[36].PCD=0;
+    page_directory[36].A=0;
+    page_directory[36].avl_=0;
+    page_directory[36].ps=1;               // When 1, tells us that the pages are 4MB 
+    page_directory[36].G=0;                // Tells the program that it is not Video Memory when set to 1
+    page_directory[36].AVL=0;
+    page_directory[36].offset_31_12=0xB8;
+    return 36<<12; 
+}
+
 /*
 extern void LoadPagingDirectory(unsigned int* cr){
     int box;
