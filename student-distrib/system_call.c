@@ -21,8 +21,6 @@
 #define Program_page 4
 #define text_read 40
 
-static uint8_t copy;
-
 int pid,last_pid,processor_usage;
 int phy_mem_loc;
 
@@ -134,6 +132,13 @@ int system_halt(uint8_t status){
  * Function: executes a new program and process */
 
 int system_execute(const uint8_t* command){
+    int i;
+    command_length=strlen(command);
+    file_command_index = 0;
+    for(i=0; i < command_length; i++){
+        file_command[i]=NULL;
+        file_arguments[i]=NULL;
+    }
     if(pid>=5){
         puts("Too Many Programs are being run\n");
         return 0;
@@ -142,7 +147,21 @@ int system_execute(const uint8_t* command){
     uint8_t buf[40];
     struct dentry dt;
 
-    //Parse args
+    //Parse commands
+    for (i=0; i < command_length;i++){
+        if (command[i] != ' '){
+            file_command[file_command_index]=command[i];
+            file_command_index++;
+        }
+    }
+
+    //Parse arguments - literally same thing as commands
+    for (i=0; i < command_length;i++){
+        if (command[i] != ' '){
+            file_arguments[file_arguments_index]=command[i];
+            file_arguments_index++;
+        }
+    }
 
     //Check for executable
     re=read_dentry_by_name(command,&dt);
@@ -332,21 +351,9 @@ int system_close(int32_t fd){
  * Function: gets the given argument and writes it into the buffer */
 
 int system_getargs(uint8_t* buf, int32_t nbytes){
-    int i;
-    strcpy(copy,command);
-    if(buf == NULL) return -1;
-    for (i=0; i < nbytes; i++){
-        if (command[i] == " "){
-            break;
-        }
-        else{
-            return command[i];
-        }
-        ++command;
-    }
-    pcb_t = (struct PCB_table*)get_pcb_pointer();
-    //copy everything given n number of characters/bytes
-    memcpy(buf, pcb_t->buf, nbytes);
+    if(buf == NULL) return -1
+    pcb_t=(struct PCB_table*)get_pcb_pointer();
+    strcpy(buf,pcb->arg,nbytes);
     return 0;
 } 
 
