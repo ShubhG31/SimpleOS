@@ -165,7 +165,7 @@ void executeable_parse(const uint8_t* command){
     strncpy(command, temp, end-start);
     puts(command);
     // return temp;
-
+    // puts(temp);
     // puts(command);
     // command = "shell";
 }   
