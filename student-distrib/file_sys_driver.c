@@ -52,6 +52,7 @@ int dir_open(const int8_t* filename){
 // File close() undo what you did in the open function, return 0
 int dir_close(int32_t fd){
     if(fd<0||fd>7)return -1;
+    dir_p=0;
     return 0;
 }
 
@@ -71,11 +72,11 @@ int dir_read(int32_t fd, void* buf, int32_t nbytes){
     l_read=0;
     for( dir_p=dir_p+1; dir_p<get_dir_number(); dir_p++ ){  // continue to read file_name from last one
         re=read_dentry_by_index (dir_p, &dt_dir);       // get the dentry of next file
-        puts("file_type:");
-        put_number(dt_dir.filetype);
-        puts("  length:");
-        put_number(get_length(dt_dir));
-        puts("  ");                                      // for test
+        // puts("file_type:");
+        // put_number(dt_dir.filetype);
+        // puts("  length:");
+        // put_number(get_length(dt_dir));
+        // puts("  ");                                      // for test
         for( j=0;j<name_length;j++ ){
             // printf("%c",dt_dir.filename[j]);
             *((uint8_t*)(buf+l_read))=dt_dir.filename[j];       // store the name of file's info

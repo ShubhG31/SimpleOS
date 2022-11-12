@@ -26,6 +26,7 @@ struct PCB_table{
     int8_t active;              // 1 byte
     int8_t fdt_usage; //00000011// 1 byte
     struct file_descriptor fdt[8]; // 16 byte each
+    int8_t arg[128];
 };
 
 //the function that represents the system call handler

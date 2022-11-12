@@ -65,8 +65,8 @@ int system_halt(uint8_t status){
     //remember to clear the paging.
     int i,saved_ebp,saved_esp,status_;
     status_=status;
-    put_number(status);
-    puts("--------\n");
+    // put_number(status);
+    // puts("--------\n");
     if(status == HALT){
         status_ = HALT_error;
     }
@@ -79,7 +79,7 @@ int system_halt(uint8_t status){
     }
     // clearing process
     pcb_t=(struct PCB_table*)get_pcb_pointer();
-
+    for(i=2;i<7;i++) system_close(i);
     
     // update pid
     pid=pcb_t->parent_id;
@@ -128,6 +128,77 @@ int system_halt(uint8_t status){
     return 1;
 }
 
+// uint8_t* 
+/* void executeable_parse(unit8_t* command);
+ * Inputs: the user command given
+ * Return Value: NONE
+ * Function: parses the command and arguments for the executed program */
+void executeable_parse(uint8_t* command){
+    // "shell"
+    // puts((int8_t*)command);
+    // put_number((int)strlen(command));
+    // putc('\n');
+    
+    int start = 0, start2 = 0;
+    // finds the starting postion of the command word in the command string
+    while(command[start]==' '){
+        start++;
+    }
+
+    int end = start, end2=strlen((int8_t*)command);
+    // finds the end position of the command word in the command string
+    while(command[end] != ' ' && end < strlen((int8_t*)command)){
+        end++;
+    }
+    uint8_t temp[end-start+1];
+
+    start2=end;
+    // finds the starting position of the argument in the command string
+    while(command[start2]==' '){
+        start2++;
+    }
+    
+    // finds the last position of the argument in the command string
+    while(command[end2-1]==' '  && end2>start2){
+        end2--;
+    }
+
+    uint8_t temp2[end2-start2+1];
+    // put_number(start2);
+    // putc(' ');
+    // put_number(end2);putc('\n');
+    temp[end-start]=0;
+    temp2[end2-start2]=0;
+    // printf("%d; start: %d, end: %d\n", end-start, start, end);
+    
+    // command_parsing = &command[end+1];
+    // strncpy(temp,command+start,end-start);
+    // command = temp;
+    int length = end-start;
+    int i = 0;
+    while(i<length){
+        temp[i]=command[start+i];
+        i++;
+    }
+    i=start2;
+    while(i<end2){
+        temp2[i-start2]=command[i];
+        i++;
+    }
+    // puts(temp2);putc('\n');
+
+    pcb_t=(struct PCB_table*)get_pcb_pointer();
+    
+    strncpy((int8_t*)command, (int8_t*)temp, end-start);
+    strncpy(pcb_t->arg, (int8_t*)temp2, end2-start2);
+    command[end-start]=0;
+    pcb_t->arg[end2-start2]=0;
+    // puts(pcb_t->arg);
+    // puts(command);
+    // command = "shell";
+    return;
+}   
+
 /* int system_execute(unit8_t status);
  * Inputs: the user command given
  * Return Value: certain values depending on the type of execution process it is, a fail, system call halr or system call halt
@@ -138,22 +209,34 @@ int system_execute(const uint8_t* command){
         puts("Too Many Programs are being run\n");
         return 0;
     }
-    int re;
-    uint8_t buf[40];
+    int re,last_last_pid;
+    uint8_t buf[40], command_exe[128];
     struct dentry dt;
     
-    //Parse args
+    strcpy((int8_t*)command_exe, (int8_t*)command);
 
-    //Check for executable
-    re=read_dentry_by_name(command,&dt);
-    if(re==-1)return -1;
-    re=read_data(dt.inode_num, 0, buf, text_read);
-    if(buf[0]==exe_0 && buf[1]==exe_1 && buf[2]==exe_2 && buf[3]==exe_3);
-    else return -1;
-
+    last_last_pid=last_pid;
     last_pid=pid;
     pid++;
     pcb_t=(struct PCB_table*)get_pcb_pointer();
+
+    //Parse args
+    executeable_parse(command_exe);
+    // puts(command);putc('\n');
+    //Check for executable
+    re=read_dentry_by_name(command_exe,&dt);
+    if(re==-1){
+        pid=last_pid;
+        last_pid=last_last_pid;
+        return -1;
+    }
+    re=read_data(dt.inode_num, 0, buf, text_read);
+    if(buf[0]==exe_0 && buf[1]==exe_1 && buf[2]==exe_2 && buf[3]==exe_3);
+    else {
+        pid=last_pid;
+        last_pid=last_last_pid;
+        return -1;
+    }
     
 
     int eip = (buf[27]<<24)|(buf[26]<<16)|(buf[25]<<8)|(buf[24]); // using bytes 27-24 of the user program to set the EIP to user program
@@ -201,6 +284,7 @@ int system_execute(const uint8_t* command){
     pcb_box.fdt[5]=fd_box;
     pcb_box.fdt[6]=fd_box;
     pcb_box.fdt[7]=fd_box;
+    strcpy(pcb_box.arg, pcb_t->arg);
     // Process Control Block is Set to current executed function
     *(pcb_t)=pcb_box;
 
@@ -335,8 +419,12 @@ int system_close(int32_t fd){
  * Function: gets the given argument and writes it into the buffer */
 
 int system_getargs(uint8_t* buf, int32_t nbytes){
+    pcb_t=(struct PCB_table*)get_pcb_pointer();
     if(buf == NULL) return -1;
-    return 1;
+    int len=strlen((int8_t*)pcb_t->arg);
+    if(len==0||len>nbytes)return -1;
+    strcpy((int8_t*)buf,pcb_t->arg);
+    return 0;
 } 
 
 /* int system_vidmap(uint32_t** screen_start);
