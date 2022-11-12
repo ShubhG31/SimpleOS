@@ -24,6 +24,8 @@
 int pid,last_pid,processor_usage;
 int phy_mem_loc;
 
+char* command_parsing;
+
 typedef int32_t (*open_type)(uint8_t*);
 typedef int32_t (*close_type)(uint32_t);
 typedef int32_t (*write_type)(int32_t,void*,int32_t);
@@ -125,7 +127,48 @@ int system_halt(uint8_t status){
     );
     return 1;
 }
+// uint8_t* 
+void executeable_parse(const uint8_t* command){
+    // "shell"
+    puts(command);
+    int start = 0;
+    while(command[start]==' '){
+        start++;
+    }
 
+    int end = start;
+    while(command[end] != ' ' && end < strlen(command)){
+        end++;
+    }
+    uint8_t temp[end-start];
+    printf("%d; start: %d, end: %d\n", end-start, start, end);
+    
+    // command_parsing = &command[end+1];
+    // strncpy(temp,command+start,end-start);
+    // command = temp;
+    int length = end-start;
+    int i = 0;
+    while(i<length){
+        temp[i]=command[start+i];
+        putc(command[start+i]);
+        putc('\n');
+        i++;
+    }
+
+    for(i=0; i<strlen(temp);i++){
+        putc(temp[i]);
+    }
+    // puts(temp);
+    printf("%d\n", strlen(command));   
+    putc('\n');
+    // command = temp;
+    strncpy(command, temp, end-start);
+    puts(command);
+    // return temp;
+
+    // puts(command);
+    // command = "shell";
+}   
 /* int system_execute(unit8_t status);
  * Inputs: the user command given
  * Return Value: certain values depending on the type of execution process it is, a fail, system call halr or system call halt
@@ -141,6 +184,9 @@ int system_execute(const uint8_t* command){
     struct dentry dt;
     // puts(command);
     //Parse args
+    // command_parsing = command;
+    // command = 
+    executeable_parse(command);
 
     //Check for executable
     re=read_dentry_by_name(command,&dt);
@@ -333,7 +379,9 @@ int system_close(int32_t fd){
 
 int system_getargs(uint8_t* buf, int32_t nbytes){
     if(buf == NULL) return -1;
+    *buf = "frame0.txt";
     return 1;
+    
 } 
 
 /* int system_vidmap(uint32_t** screen_start);

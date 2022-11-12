@@ -67,6 +67,8 @@ int check_fd_in_use(int32_t fd);
 //function that gets the pid
 extern int get_pid();
 
+// extern uint8_t* 
+void executeable_parse(const uint8_t* command);
 //function that prepares the IRET
 extern void IRET_prepare(int);
 
