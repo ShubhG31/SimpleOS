@@ -53,3 +53,6 @@
 ## Nov. 13th
     (13) We were getting a page fault after compiling and running qemu. We realized it was because we were re-initialzing a pcb value within our code which we were not meaning to do. 
     We made sure to change the line of code to have the right value being inputted into the pcb by using the strcpy function.
+
+## Nov. 13th
+    (14) strncpy will not add an '\0' in the end, we need to manually add it

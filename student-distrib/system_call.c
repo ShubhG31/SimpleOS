@@ -20,6 +20,7 @@
 #define PCB_size 8
 #define Program_page 4
 #define text_read 40
+#define command_length 128
 
 int pid,last_pid,processor_usage;
 int phy_mem_loc;
@@ -167,8 +168,8 @@ void executeable_parse(uint8_t* command){
     // put_number(start2);
     // putc(' ');
     // put_number(end2);putc('\n');
-    temp[end-start]=0;
-    temp2[end2-start2]=0;
+    temp[end-start]=0;          // string end with \0
+    temp2[end2-start2]=0;       // string end with \0
     // printf("%d; start: %d, end: %d\n", end-start, start, end);
     
     // command_parsing = &command[end+1];
@@ -191,8 +192,8 @@ void executeable_parse(uint8_t* command){
     
     strncpy((int8_t*)command, (int8_t*)temp, end-start);
     strncpy(pcb_t->arg, (int8_t*)temp2, end2-start2);
-    command[end-start]=0;
-    pcb_t->arg[end2-start2]=0;
+    command[end-start]=0;           // string end with \0
+    pcb_t->arg[end2-start2]=0;      // string end with \0
     // puts(pcb_t->arg);
     // puts(command);
     // command = "shell";
@@ -210,7 +211,7 @@ int system_execute(const uint8_t* command){
         return 0;
     }
     int re,last_last_pid;
-    uint8_t buf[40], command_exe[128];
+    uint8_t buf[text_read], command_exe[command_length];
     struct dentry dt;
     
     strcpy((int8_t*)command_exe, (int8_t*)command);
