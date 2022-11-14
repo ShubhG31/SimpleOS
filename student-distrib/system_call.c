@@ -423,6 +423,7 @@ int system_getargs(uint8_t* buf, int32_t nbytes){
     if(buf == NULL) return -1;
     int len=strlen((int8_t*)pcb_t->arg);
     if(len==0||len>nbytes)return -1;
+    //copying the argument into PCB
     strcpy((int8_t*)buf,pcb_t->arg);
     return 0;
 } 
