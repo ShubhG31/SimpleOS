@@ -420,6 +420,7 @@ int system_close(int32_t fd){
 
 int system_getargs(uint8_t* buf, int32_t nbytes){
     pcb_t=(struct PCB_table*)get_pcb_pointer();
+    //checking if buffer is null
     if(buf == NULL) return -1;
     int len=strlen((int8_t*)pcb_t->arg);
     if(len==0||len>nbytes)return -1;
