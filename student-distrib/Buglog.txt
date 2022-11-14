@@ -3,7 +3,6 @@
         the system was booting as intended. Finding the bug took 30 mins, as we only had to comment out some kernel code to find it. Fixing it only took 3 lines of code, and was 
         fixed within 5 mins, as we could compare it to the idt intialization code.  
 
-
 ## Oct 15th
     (2) First i include the header file #include “paging.h” in paging.S file, which is unnecessary and causes the assembly code crash. 
         Besides, i wrote #include “paging.c” in the paging.h, and wrote #include “paging.h” in paging .c. This causes that two files copy each other, making the file excessively large.
@@ -13,11 +12,8 @@
     (3) The RTC was not triggering interrupts as intended. TAs had told us what the intended output of the RTC is suppose to be. After comparing with our Keyboard interrupt, we realized 
         that we forgot to make an assembly handler for the RTC, so it was not working as intended. The fix took 10 lines of code, but took an hour and a half to find. 
 
-
-
 ## Oct 16th
     (4) It is a misunderstanding not a bug. We only need to initialize the table pointing to video memory and the directory pointing to 4MB pages, instead of all 4GB pages.
-
 
 ## Oct. 20th
     (5) verylargetextwithverylongname.txt
@@ -45,3 +41,15 @@
     (10) In the sys_halt(), after restoring saved_esp, saved_ebp and eax, we should "leave" and then ret. 
 	 At first, i didn't leave, which causes the page fault, this is because the stack of wrapper for sys_execute("ls") is not torn down.
 	 leave command will tear down all stack in the later part and return back to the first sys_execute() stack.
+
+## Nov. 13th
+    (11) In system_execute(), after compiling and running qemu, instead of just shell being printed out, it would print shell and additional garbage, for example shelln@5. 
+    You need to make sure to create two temp variables that take into consideration the start and end of both the commands and arguments and then parse through those.
+
+## Nov. 13th
+    (12) Due to get_args(), it was not printing what we intended because it was returning -1 and returning -1 printing a separate statement that we did not want. 
+    We had to make sure we were returning the value 0 at the end of the get_args() function so that we will get the right output after entering cat, grep, etc.
+
+## Nov. 13th
+    (13) We were getting a page fault after compiling and running qemu. We realized it was because we were re-initialzing a pcb value within our code which we were not meaning to do. 
+    We made sure to change the line of code to have the right value being inputted into the pcb by using the strcpy function.
