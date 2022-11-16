@@ -37,7 +37,7 @@ int dir_open(const int8_t* filename){
     if(filename==NULL||strlen(filename)>name_length)return -1;
     re=read_dentry_by_name ((uint8_t*)filename,(&dt_dir));
     if(re==-1)return -1;        // reading fails, so we return -1
-    dir_p=0;        // store the index of file that we have already read
+    dir_p=-1;        // store the index of file that we have already read
     return dt_dir.inode_num;
 }
 
