@@ -56,11 +56,14 @@
 #define tab_keycode 0x0F
 #define tab_ascii 9
 
+#define alt 0x11
+
 #define max_characters 127
 
 static int caps_lock_flag = 0;
 static int shift_flag = 0;
 static int ctrl_flag = 0;
+static int alt_flag = 0;
 
 //ALL MAGIC NUMBER LABELS
 
@@ -116,6 +119,15 @@ void init_keycodes(){
 void keyboard_helper(){
     int port = keyboard_port;
     int scan_code = inb(port);
+
+    // if alt is pressed 
+    if(scan_code == alt){
+        alt_flag = 1;
+        puts("tab pressed");
+        send_eoi(keyboard_irq_num);
+        return;
+    }
+
 
     // if locaton is 0 and if pressed key is backspace  
     if( buffer_cur_location == 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
@@ -188,17 +200,6 @@ void keyboard_helper(){
         send_eoi(keyboard_irq_num); 
         return;
     }
-
-    // if tab is pressed then update buffer
-    // if(scan_code == tab_keycode){
-    //     putc(tab_ascii);
-    //     // putc(' ');
-    //     // putc(' ');
-    //     // putc(' ');
-    //     buffer[buffer_cur_location] = tab_ascii;
-    //     buffer_cur_location++;
-    //     goto end;
-    // }
 
     // if buffer location is less than allowed value of 127 and pressed key is allowed then execute
     if(buffer_cur_location < max_characters && keyboard_keycodes[scan_code] != print_screen){
