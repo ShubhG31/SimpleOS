@@ -74,4 +74,8 @@ extern void IRET_prepare(int);
 //function for an extra label
 extern void label();
 
+extern int find_next_pid();
+extern int get_main_pid();
+extern void schedule();
+extern int video_map_switch();
 #endif

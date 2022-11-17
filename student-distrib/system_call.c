@@ -23,7 +23,7 @@
 #define command_length 128
 
 int pid,last_pid,processor_usage;
-int phy_mem_loc;
+int phy_mem_loc,main_pid,display;
 
 typedef int32_t (*open_type)(uint8_t*);
 typedef int32_t (*close_type)(uint32_t);
@@ -49,11 +49,16 @@ struct file_descriptor fd_box;
 int get_pid(){
     return pid;
 }
+int get_main_pid(){
+    main_pid=0;         /// which need to be changed
+    return main_pid;
+}
 void fd_init(){         // need to be run after booting part
-    last_pid=-1;
+    // last_pid=-1;
+    main_pid=0; //for debug only                                                /////////////////////////////////////////// remember to delete
     pid=-1;
     processor_usage=0;
-    phy_mem_loc=8;  // start address in physical mem to store files  8MB
+    // phy_mem_loc=8;  // start address in physical mem to store files  8MB
     return;
 }
 
@@ -64,7 +69,7 @@ void fd_init(){         // need to be run after booting part
 
 int system_halt(uint8_t status){
     //remember to clear the paging.
-    int i,saved_ebp,saved_esp,status_;
+    int i,saved_ebp,saved_esp,status_,old_pid;
     status_=status;
     // put_number(status);
     // puts("--------\n");
@@ -73,7 +78,7 @@ int system_halt(uint8_t status){
     }
     // clear the page that was used for now complete process
     if(pid==0){
-        fd_init();
+        fd_init();                                                          ////// something wrong here about updating the process_usage
         const uint8_t* command = (uint8_t*) "shell";
         system_execute(command);//return status;
         return -1;
@@ -83,6 +88,9 @@ int system_halt(uint8_t status){
     for(i=2;i<7;i++) system_close(i);
     
     // update pid
+    processor_usage^=(1<<pid);
+    old_pid=pid;
+
     pid=pcb_t->parent_id;
 
     pcb_box=*pcb_t;
@@ -103,9 +111,10 @@ int system_halt(uint8_t status){
     }
     *pcb_t=pcb_box;
     // clearing paging (remapping)
-    phy_mem_loc-=Program_page;
-    set_new_page(phy_mem_loc-Program_page);
-    
+    // phy_mem_loc-=Program_page;
+    // set_new_page(phy_mem_loc-Program_page);
+    phy_mem_loc=8+4*pid;
+    set_new_page(phy_mem_loc);
     
     // clear tlb
     asm volatile(
@@ -218,7 +227,8 @@ int system_execute(const uint8_t* command){
 
     last_last_pid=last_pid;
     last_pid=pid;
-    pid++;
+    // pid++;
+    pid=find_next_pid();
     pcb_t=(struct PCB_table*)get_pcb_pointer();
 
     //Parse args
@@ -239,12 +249,14 @@ int system_execute(const uint8_t* command){
         return -1;
     }
     
+    processor_usage|=(1<<pid);
 
     int eip = (buf[27]<<24)|(buf[26]<<16)|(buf[25]<<8)|(buf[24]); // using bytes 27-24 of the user program to set the EIP to user program
     // puts(command);
     //Set up pagings
+    phy_mem_loc=8+pid*4;
     set_new_page(phy_mem_loc);
-    phy_mem_loc+=4;
+    // phy_mem_loc+=4;
     
     // clear tlb
     asm volatile(
@@ -439,9 +451,22 @@ int system_vidmap(uint8_t** screen_start){
     if(screen_start == NULL)return -1;
     if((int)screen_start>=0x400000 && (int)screen_start<0x800000)return -1;     // if accessing the memory location between 4MB-8MB return -1
     // **screen_start = 0;
-    *screen_start = (uint8_t*)set_video_page();
+    *screen_start = (uint8_t*)set_video_page(main_pid);
     // puts("Success vidmap\n");
     return 0;
+}
+
+void schedule(){
+    // switch video map in 4kb
+
+    // switch video map in 36/37/38 remap
+
+    // switch user code
+
+    // update main_pid
+
+    // update esp ebp
+    return;
 }
 
 /* int check_fd_in_use(int32_t fd);
@@ -464,3 +489,12 @@ int check_fd_in_use(int32_t fd){
 int get_pcb_pointer(){
     return addr_8MB-size_8kb*(pid+1);       // pid starts at 0 (0 -> move 1*8kb, 1-> move 2*8kb)
 }
+
+int find_next_pid(){
+    int i;
+    for(i=0;i<6;i++){
+        if((processor_usage&(1<<i))==0)return i;
+    }
+    return -1;
+}
+

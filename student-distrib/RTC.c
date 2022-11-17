@@ -1,6 +1,7 @@
 #include "RTC.h"
 #include "types.h"
 #include "lib.h"
+#include "system_call.h"
 #include "i8259.h"
 
 #define RTC_itr_num 8
@@ -19,8 +20,9 @@
 #define PASS 1
 #define FAIL 0
 static int8_t flag = 0;
-static volatile uint16_t Hz_rate = 0;
-static uint16_t Hz_counter = 0;
+static int idx;
+static volatile uint16_t Hz_rate[3];
+static uint16_t Hz_counter[3];
 static uint32_t buffer_rate = 0;
 
 /* extern void RTC_init();
@@ -39,8 +41,8 @@ void RTC_init(){
     outb( prev | BITSIX, READandWRITE);
     outb(inb(INDEX_NUM) & VALUE ,INDEX_NUM);
     inb(READandWRITE);
-    Hz_rate = MAX_FREQ;
-    Hz_counter = MAX_FREQ/Hz_rate;
+    Hz_rate[0] = Hz_rate[1] = Hz_rate[2] = MAX_FREQ;
+    Hz_counter[0] = Hz_counter[1] = Hz_counter[2] = MAX_FREQ/Hz_rate[0];
     sti();
     enable_irq(RTC_itr_num);
     // 
@@ -56,10 +58,12 @@ void RTC_init(){
  Works need better test
  */
 int32_t RTC_open(const uint8_t* filename){
-Hz_rate = MIN_FREQ;
-Hz_counter = MAX_FREQ/Hz_rate;
-// printf("1");
-return 0;
+    idx=get_main_pid();
+    Hz_rate[idx] = MIN_FREQ;
+    idx=get_main_pid();
+    Hz_counter[idx] = MAX_FREQ/Hz_rate[idx];
+    // printf("1");
+    return 0;
 }
 
 /* extern void RTC_read();
@@ -70,12 +74,12 @@ return 0;
    (you will not need spinlocks. Why?) inputs not used
  */
 int32_t RTC_read(int32_t fd, void* buf, int32_t nbytes){
-flag = 0;
-while(!flag){
-//    printf("flag = 0\n");
-}
-// printf("flag = 0\n");
-return 0;
+    flag = 0;
+    while(!flag){
+    //    printf("flag = 0\n");
+    }
+    // printf("flag = 0\n");
+    return 0;
 }
 
 /* extern void RTC_write();
@@ -85,20 +89,21 @@ return 0;
              and not read the value directly.
  */
 int32_t RTC_write(int32_t fd, const void* buf, int32_t nbytes){
-if(buf == NULL){
-    // printf("NULL\n");
-    return -1;
-}
-buffer_rate =*((int*)buf);
-//printf("buffer_rate = %d\n",buffer_rate);
-//if statement check if buf int is between 0-1024 and power of 2
-if((buffer_rate > 1024 || !((buffer_rate != 0) && ((buffer_rate & (buffer_rate - 1)) == 0)))){
-return -1;//invalid input
-}else{
-Hz_rate = buffer_rate;
-// Hz_counter = MAX_FREQ/Hz_rate;
-return 4;//number of bytes changed
-}
+    if(buf == NULL){
+        // printf("NULL\n");
+        return -1;
+    }
+    buffer_rate =*((int*)buf);
+    //printf("buffer_rate = %d\n",buffer_rate);
+    //if statement check if buf int is between 0-1024 and power of 2
+    if((buffer_rate > 1024 || !((buffer_rate != 0) && ((buffer_rate & (buffer_rate - 1)) == 0)))){
+        return -1;//invalid input
+    }else{
+        idx=get_main_pid();
+        Hz_rate[idx] = buffer_rate;
+        // Hz_counter = MAX_FREQ/Hz_rate;
+        return 4;//number of bytes changed
+    }
 //return 4;
 }
 
@@ -140,11 +145,11 @@ extern void RTC_handle(){
     outb(REGISTER_C, INDEX_NUM);
     inb(READandWRITE);
     cli();
-
-    Hz_counter--;
-    if(Hz_counter == 0){ 
+    idx=get_main_pid();
+    Hz_counter[idx]--;
+    if(Hz_counter[idx] == 0){ 
         flag = 1;
-        Hz_counter = MAX_FREQ/Hz_rate;
+        Hz_counter[idx] = MAX_FREQ/Hz_rate[idx];
     }
     sti();
     send_eoi(RTC_itr_num);

@@ -110,19 +110,20 @@ int32_t set_new_page(int phy_mem_loc){
     return 1; 
 }
 
-int32_t set_video_page(){
-    page_directory[36].present=1;         // page table is present
-    page_directory[36].RW=1;  
-    page_directory[36].US = 1; //changed
-    page_directory[36].PWT=0; //
-    page_directory[36].PCD=0;
-    page_directory[36].A=0;
-    page_directory[36].avl_=0;
-    page_directory[36].ps=1;               // When 1, tells us that the pages are 4MB 
-    page_directory[36].G=0;
-    page_directory[36].AVL=0;
-    page_directory[36].offset_31_12=0;
-    return 36*4*1024*1024+184*4*1024;
+int32_t set_video_page(int main_pid){
+    int idx=main_pid+36;
+    page_directory[idx].present=1;         // page table is present
+    page_directory[idx].RW=1;  
+    page_directory[idx].US = 1; //changed
+    page_directory[idx].PWT=0; //
+    page_directory[idx].PCD=0;
+    page_directory[idx].A=0;
+    page_directory[idx].avl_=0;
+    page_directory[idx].ps=1;               // When 1, tells us that the pages are 4MB 
+    page_directory[idx].G=0;
+    page_directory[idx].AVL=0;
+    page_directory[idx].offset_31_12=0;
+    return idx*4*1024*1024+184*4*1024;
 }
 
 /*
