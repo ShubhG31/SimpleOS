@@ -22,8 +22,8 @@
 #define text_read 40
 #define command_length 128
 
-int pid,last_pid,processor_usage;
-int phy_mem_loc,main_pid,display;
+int pid, last_pid, processor_usage;
+int phy_mem_loc, main_pid, display_pid;
 
 typedef int32_t (*open_type)(uint8_t*);
 typedef int32_t (*close_type)(uint32_t);
@@ -46,6 +46,11 @@ struct PCB_table* pcb_t;
 struct PCB_table pcb_box;
 struct file_descriptor fd_box;
 
+struct terminal_t{
+    int saved_esp, saved_ebp, pid;
+};
+struct terminal_t terminal[3];
+
 int get_pid(){
     return pid;
 }
@@ -55,6 +60,7 @@ int get_main_pid(){
 }
 void fd_init(){         // need to be run after booting part
     // last_pid=-1;
+    display_pid=0;
     main_pid=0; //for debug only                                                /////////////////////////////////////////// remember to delete
     pid=-1;
     processor_usage=0;
@@ -91,6 +97,7 @@ int system_halt(uint8_t status){
     processor_usage^=(1<<pid);
     old_pid=pid;
 
+    terminal[main_pid].pid=pcb_t->parent_id;
     pid=pcb_t->parent_id;
 
     pcb_box=*pcb_t;
@@ -215,6 +222,7 @@ void executeable_parse(uint8_t* command){
  * Function: executes a new program and process */
 
 int system_execute(const uint8_t* command){
+    // cli();
     if(pid>=5){
         puts("Too Many Programs are being run\n");
         return 0;
@@ -249,6 +257,7 @@ int system_execute(const uint8_t* command){
         return -1;
     }
     
+    terminal[main_pid].pid=pid;
     processor_usage|=(1<<pid);
 
     int eip = (buf[27]<<24)|(buf[26]<<16)|(buf[25]<<8)|(buf[24]); // using bytes 27-24 of the user program to set the EIP to user program
@@ -309,8 +318,8 @@ int system_execute(const uint8_t* command){
     // eflags 
     // cs
     // eip 
-    //    puts(command);
-    // put_number(re);puts("lllllllolllllll\n");
+
+    // sti();
     IRET_prepare(eip);          //eip address may change, may need to modify it
 
     return 0;
@@ -455,17 +464,68 @@ int system_vidmap(uint8_t** screen_start){
     // puts("Success vidmap\n");
     return 0;
 }
+int switch_terminal(int next_main_pid){
+    if(next_main_pid == main_pid)return 0;
+    // copy main_pid to extra buffer
+    
+    // change vidmap
+
+    // copy next_main_pid to 0xB8
+
+    return 0;
+}
 
 void schedule(){
+    int next_main_pid = (main_pid+1)%3;
+    int next_pid = terminal[next_main_pid].pid;
+    // update esp ebp
+    asm volatile(
+        "movl %0, %%esp;"
+        "movl %1, %%ebp;"
+        :
+        :"r"(terminal[next_main_pid].saved_esp), "r"(terminal[next_main_pid].saved_ebp)
+    );
     // switch video map in 4kb
+    if(display_pid == main_pid){
+        // store display video map
 
-    // switch video map in 36/37/38 remap
+        // restore next_display_pid
+
+    }else{
+        if(next_main_pid == display_pid){
+            // saved the current video map  (from the extra buffer to 0-4k)
+            copy_n_bytes(/*some address*/, 0xBC + next_main_pid * 2);       // i need to implement this function tomorrow
+
+            // vidmap pointer points to 0xB8
+            set_video_page(next_main_pid);
+                // question here: because the page directory cannot be changed, the pointer is returned back to use code
+                // how to deal with this when we need to swtich this when swtching terminal
+        } else {
+            // saved the current video map (from the extra buffer to 0-4k)
+
+            // copy the next video map into extra buffer
+
+            // vidmap pointer points to extra buffer
+
+        }
+    }
+
+    // update tss
+    tss.ss0 = KERNEL_DS;    // TSS tells the 
+    tss.esp0 = 0x800000 - 0x2000*(next_pid) - 4; //8mb-(8kb*pid) -4 is for safety
 
     // switch user code
+    phy_mem_loc = 8 + next_pid * 4;
+    set_new_page(phy_mem_loc);
 
-    // update main_pid
+    // update main_pid and pid
+    pid = next_pid;;
+    main_pid = next_main_pid;
 
-    // update esp ebp
+    // call iret back to user code
+    asm volatile(
+        "iret;"
+    );
     return;
 }
 
