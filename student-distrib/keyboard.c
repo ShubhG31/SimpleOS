@@ -73,8 +73,8 @@ static int alt_flag = 0;
 
 static int keyboard_keycodes[keys];
 static char special_num_char[10]=")!@#$%^&*(";
-char buffer[3][128] = {0};
-static unsigned int buffer_cur_location[curr_terminal][3] = {0};
+char buffer[3][128] = {{0},{0},{0}};
+static unsigned int buffer_cur_location[3] = {0};
 
 /* void init_keycodes();
  * Inputs: none
@@ -157,18 +157,18 @@ void keyboard_helper(){
         return;
     }
     // if locaton is 0 and if pressed key is backspace  
-    if( buffer_cur_location[curr_terminal] == 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
+    if( buffer_cur_location == 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
         // return end of interupt 
         send_eoi(keyboard_irq_num);
         return;
     }
     // if buffer location is greater than 0 and if backspace is pressed
-    if( buffer_cur_location[curr_terminal] > 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
+    if( buffer_cur_location > 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
             putc(BS_ascii); // print backspace 
             // set current location of buffer current index to 0
             buffer[curr_terminal][buffer_cur_location[curr_terminal]] = 0;
             // decrement the location since backspace is pressed
-            buffer_cur_location[curr_terminal][curr_terminal]--;
+            buffer_cur_location[curr_terminal]--;
             // send end of interrupt signal
             send_eoi(keyboard_irq_num);
             return;
@@ -176,9 +176,9 @@ void keyboard_helper(){
     // if enter is pressed, print newline and return 
     if( keyboard_keycodes[scan_code] == keyboard_keycodes[enter]){
         // put new line into the buffer 
-        buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]] = '\n';
+        buffer[curr_terminal][buffer_cur_location[curr_terminal]] = '\n';
         // buffer location is now set to 0 
-        buffer_cur_location[curr_terminal][curr_terminal] = 0;
+        buffer_cur_location[curr_terminal] = 0;
         // print out new line
         putc(keyboard_keycodes[enter]);
         // clear buffer 
@@ -229,108 +229,108 @@ void keyboard_helper(){
     }
 
     // if buffer location is less than allowed value of 127 and pressed key is allowed then execute
-    if(buffer_cur_location[curr_terminal][curr_terminal] < max_characters && keyboard_keycodes[scan_code] != print_screen){
+    if(buffer_cur_location[curr_terminal] < max_characters && keyboard_keycodes[scan_code] != print_screen){
        if(shift_flag){
             // prints out the special characters in the number row
             if(keyboard_keycodes[scan_code]>= '0' && keyboard_keycodes[scan_code]<='9'){
                 int special_character_index = keyboard_keycodes[scan_code] - 48; // 48 is the conversion to index to index of the special characters array
                 putc(special_num_char[special_character_index]);
-                buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]]=special_num_char[special_character_index];
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]]=special_num_char[special_character_index];
                 // buffer location is incremented 
-                buffer_cur_location[curr_terminal][curr_terminal]+=1;
+                buffer_cur_location[curr_terminal]+=1;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]=='`'){
                 putc(tilde);
-                buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]] = tilde;
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]] = tilde;
                 // increment the buffer current index 
-                buffer_cur_location[curr_terminal][curr_terminal]+=1;
+                buffer_cur_location[curr_terminal]+=1;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]=='['){
                 putc('{');
-                buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]] = '{';
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]] = '{';
                 // increment the buffer current index 
-                buffer_cur_location[curr_terminal][curr_terminal]+=1;
+                buffer_cur_location[curr_terminal]+=1;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]==']'){
                 putc('}');
-                buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]] = '}';
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]] = '}';
                 // increment the buffer current index 
-                buffer_cur_location[curr_terminal][curr_terminal]+=1;
+                buffer_cur_location[curr_terminal]+=1;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]== backslash_ascii){
                 putc(straight_line);
-                buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]] = straight_line;
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]] = straight_line;
                 // increment the buffer current index 
-                buffer_cur_location[curr_terminal][curr_terminal]+=1;
+                buffer_cur_location[curr_terminal]+=1;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]==','){
                 putc('<');
-                buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]] = '<';
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]] = '<';
                 // increment the buffer current index 
-                buffer_cur_location[curr_terminal][curr_terminal]+=1;
+                buffer_cur_location[curr_terminal]+=1;
                 goto end;
             }          
             if(keyboard_keycodes[scan_code]=='.'){
                 putc('>');
-                buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]] = '>';
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]] = '>';
                 // increment the buffer current index 
-                buffer_cur_location[curr_terminal][curr_terminal]+=1;
+                buffer_cur_location[curr_terminal]+=1;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]=='/'){
                 putc('?');
-                buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]] = '?';
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]] = '?';
                 // increment the buffer current index 
-                buffer_cur_location[curr_terminal][curr_terminal]+=1;
+                buffer_cur_location[curr_terminal]+=1;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]==';'){
                 putc(':');
-                buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]] = ':';
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]] = ':';
                 // increment the buffer current index 
-                buffer_cur_location[curr_terminal][curr_terminal]+=1;
+                buffer_cur_location[curr_terminal]+=1;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]==apostrophe){
                 putc('"');
-                buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]] = '"';
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]] = '"';
                 // increment the buffer current index 
-                buffer_cur_location[curr_terminal][curr_terminal]+=1;
+                buffer_cur_location[curr_terminal]+=1;
                 goto end;
             }
             if(keyboard_keycodes[scan_code]=='-'){
                 putc('_');
-                buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]] = '_';
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]] = '_';
                 // increment the buffer current index 
-                buffer_cur_location[curr_terminal][curr_terminal]+=1;
+                buffer_cur_location[curr_terminal]+=1;
                 goto end;
 
             }
             if(keyboard_keycodes[scan_code]=='='){
                 putc('+');
-                buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]] = '+';
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]] = '+';
                 // increment the buffer current index 
-                buffer_cur_location[curr_terminal][curr_terminal]+=1;
+                buffer_cur_location[curr_terminal]+=1;
                 goto end;
             }
         }
         // if flags are high and inside the ascii values of a and z, then print out uppercase 
         if((shift_flag ^ caps_lock_flag) && (keyboard_keycodes[scan_code]>=lower_a_ascii && keyboard_keycodes[scan_code]<=lower_z_ascii)){
                 putc(keyboard_keycodes[scan_code]-uppercase_conversion);
-                buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]] = keyboard_keycodes[scan_code]-uppercase_conversion;
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]] = keyboard_keycodes[scan_code]-uppercase_conversion;
                 // increment the buffer current index 
-                buffer_cur_location[curr_terminal][curr_terminal]+=1;
+                buffer_cur_location[curr_terminal]+=1;
         }
         else{
             putc(keyboard_keycodes[scan_code]);
-            buffer[curr_terminal][buffer_cur_location[curr_terminal][curr_terminal]] = keyboard_keycodes[scan_code];
+            buffer[curr_terminal][buffer_cur_location[curr_terminal]] = keyboard_keycodes[scan_code];
             // increment the buffer current index 
-            buffer_cur_location[curr_terminal][curr_terminal]+=1;
+            buffer_cur_location[curr_terminal]+=1;
         }
     }
     
