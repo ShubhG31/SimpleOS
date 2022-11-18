@@ -245,7 +245,7 @@ int system_execute(const uint8_t* command){
     last_pid=pid;
     // pid++;
     pid=find_next_pid();
-    if(pid==1)pid=3;
+    if(pid==1)pid=3;                                ///////////////////////////
     pcb_t=(struct PCB_table*)get_pcb_pointer();
 
     //Parse args
@@ -478,6 +478,16 @@ int system_vidmap(uint8_t** screen_start){
     if((int)screen_start>=0x400000 && (int)screen_start<0x800000)return -1;     // if accessing the memory location between 4MB-8MB return -1
     // **screen_start = 0;
     *screen_start = (uint8_t*)set_video_page();
+
+    put_number(main_terminal);putc('\n');
+    put_number(display_terminal);putc('\n');
+
+    // if the new user video is not displaying, reset the pointer
+    if( main_terminal != display_terminal ){
+        set_invisible_video_page(main_terminal);
+        map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );
+    }
+
     // puts("Success vidmap\n");
     return 0;
 }
@@ -505,7 +515,7 @@ int switch_terminal(int next_display_terminal){
         // map_B8_B9_table(0xB8);           // no need because this one is already displaying
         strncpy_( vidpointer, (0xB8)*size_4kb, size_8kb );
         strncpy_( (0xB8)*size_4kb, (0xBC + 2*next_display_terminal)*size_4kb, size_8kb);        
-        map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );     
+        map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );
         goto done_switch_terminal;
     }
 
