@@ -143,12 +143,18 @@ void keyboard_helper(){
 
     if(scan_code == f1_pressed){
         switch_terminal(1);
+        send_eoi(keyboard_irq_num);
+        return;
     }
     if(scan_code == f2_pressed){
         switch_terminal(2);
+        send_eoi(keyboard_irq_num);
+        return;
     }
     if(scan_code == f3_pressed){
         switch_terminal(3);
+        send_eoi(keyboard_irq_num);
+        return;
     }
     // if locaton is 0 and if pressed key is backspace  
     if( buffer_cur_location[curr_terminal] == 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
