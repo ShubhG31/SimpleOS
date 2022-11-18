@@ -157,13 +157,13 @@ void keyboard_helper(){
         return;
     }
     // if locaton is 0 and if pressed key is backspace  
-    if( buffer_cur_location == 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
+    if( buffer_cur_location[curr_terminal] == 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
         // return end of interupt 
         send_eoi(keyboard_irq_num);
         return;
     }
     // if buffer location is greater than 0 and if backspace is pressed
-    if( buffer_cur_location > 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
+    if( buffer_cur_location[curr_terminal] > 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
             putc(BS_ascii); // print backspace 
             // set current location of buffer current index to 0
             buffer[curr_terminal][buffer_cur_location[curr_terminal]] = 0;
