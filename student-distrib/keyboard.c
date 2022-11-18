@@ -141,29 +141,29 @@ void keyboard_helper(){
         return;
     }
 
-    if(scan_code == f1_pressed){
+    if(alt_flag == 1 && scan_code == f1_pressed){
         switch_terminal(1);
         send_eoi(keyboard_irq_num);
         return;
     }
-    if(scan_code == f2_pressed){
+    if(alt_flag == 1 && scan_code == f2_pressed){
         switch_terminal(2);
         send_eoi(keyboard_irq_num);
         return;
     }
-    if(scan_code == f3_pressed){
+    if(alt_flag == 1 && scan_code == f3_pressed){
         switch_terminal(3);
         send_eoi(keyboard_irq_num);
         return;
     }
     // if locaton is 0 and if pressed key is backspace  
-    if( buffer_cur_location == 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
+    if( buffer_cur_location[curr_terminal] == 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
         // return end of interupt 
         send_eoi(keyboard_irq_num);
         return;
     }
     // if buffer location is greater than 0 and if backspace is pressed
-    if( buffer_cur_location > 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
+    if( buffer_cur_location[curr_terminal] > 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
             putc(BS_ascii); // print backspace 
             // set current location of buffer current index to 0
             buffer[curr_terminal][buffer_cur_location[curr_terminal]] = 0;
@@ -184,7 +184,7 @@ void keyboard_helper(){
         // clear buffer 
         copy_buffer(buffer[curr_terminal]);
         // clear keyboard buffer 
-        memset(buffer[curr_terminal],0,strlen(buffer));
+        memset((void*)buffer[curr_terminal],0,strlen((int8_t*)buffer));
         // send end of interupt signal
         send_eoi(keyboard_irq_num);
         return;

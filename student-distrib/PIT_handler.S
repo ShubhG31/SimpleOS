@@ -6,7 +6,7 @@ PIT_handler:
     movl %esp, %ebp
     pushal
     pushfl
-    call schdule
+    call schedule
     popfl
     popal
     leave

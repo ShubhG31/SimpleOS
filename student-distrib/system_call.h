@@ -79,4 +79,5 @@ extern int get_display_terminal();
 extern int get_main_terminal();
 extern void schedule();
 extern int video_map_switch();
+extern int switch_terminal(int next_display_terminal);
 #endif
