@@ -245,6 +245,7 @@ int system_execute(const uint8_t* command){
     last_pid=pid;
     // pid++;
     pid=find_next_pid();
+    if(pid==1)pid=3;
     pcb_t=(struct PCB_table*)get_pcb_pointer();
 
     //Parse args
