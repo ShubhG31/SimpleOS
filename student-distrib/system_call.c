@@ -250,6 +250,7 @@ int system_execute(const uint8_t* command){
     //Parse args
     executeable_parse(command_exe);
     // puts(command);putc('\n');
+
     //Check for executable
     re=read_dentry_by_name(command_exe,&dt);
     if(re==-1){
@@ -485,6 +486,7 @@ int switch_terminal(int next_display_terminal){
     if( next_display_terminal == display_terminal )goto done_switch_terminal;
     
     if( next_display_terminal == main_terminal && display_terminal != main_terminal ){
+        map_B8_B9_table(0xB8);
         strncpy( (0xBC + 2*display_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
         strncpy( (0xB8)*size_4kb, vidpointer, size_8kb );
         // strncpy( (0xBC + 2*display_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
@@ -495,16 +497,20 @@ int switch_terminal(int next_display_terminal){
 
     if( next_display_terminal != main_terminal && display_terminal == main_terminal ){
         set_invisible_video_page(main_terminal);
+        map_B8_B9_table(0xB8);
         strncpy( vidpointer, (0xB8)*size_4kb, size_8kb );
         strncpy( (0xB8)*size_4kb, (0xBC + 2*next_display_terminal)*size_4kb, size_8kb);        
         // strncpy( ( (8 + main_terminal)*4 )*size_4MB+(0xB8)*size_4kb, (0xB8)*size_4kb, size_8kb );
-        // strncpy( (0xB8)*size_4kb, (0xBC + 2*next_display_terminal)*size_4kb, size_8kb);        
+        // strncpy( (0xB8)*size_4kb, (0xBC + 2*next_display_terminal)*size_4kb, size_8kb);   
+        map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );     
         goto done_switch_terminal;
     }
 
     if( next_display_terminal != main_terminal && display_terminal != main_terminal ){
+        map_B8_B9_table(0xB8);
         strncpy( (0xBC + 2*display_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
         strncpy( (0xB8)*size_4kb, (0xBC + 2*next_display_terminal)*size_4kb, size_8kb );
+        map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );     
         goto done_switch_terminal;
     }
 done_switch_terminal:
@@ -543,18 +549,22 @@ void schedule(){
     if( next_main_terminal == display_terminal && main_terminal != display_terminal ){
         strncpy( (0xBC + 2*main_terminal)*size_4kb, vidpointer, size_8kb );
         set_video_page();
+        // strncpy( vidpointer, (0xBC + 2*next_main_terminal)*size_4kb, size_8kb );
+        map_B8_B9_table(0xB8);
         goto finish_schedule_terminal;
     }
     if( next_main_terminal != display_terminal && main_terminal == display_terminal){
         strncpy( (0xBC + 2*main_terminal)*size_4kb, vidpointer, size_8kb );
         set_invisible_video_page(next_main_terminal);
-        strncpy( vidpointer, (0xBC + 2*next_main_terminal)*size_4kb, size_8kb );        
+        strncpy( vidpointer, (0xBC + 2*next_main_terminal)*size_4kb, size_8kb );
+        map_B8_B9_table( ((8+next_main_terminal)*size_4MB+184*size_4kb)/size_4kb );
         goto finish_schedule_terminal;
     }
     if (next_main_terminal != display_terminal && main_terminal != display_terminal){
         strncpy( (0xBC + 2*main_terminal)*size_4kb, vidpointer, size_8kb );
         set_invisible_video_page(next_main_terminal);
-        strncpy( vidpointer, (0xBC + 2*next_main_terminal)*size_4kb, size_8kb );        
+        strncpy( vidpointer, (0xBC + 2*next_main_terminal)*size_4kb, size_8kb );
+        map_B8_B9_table( ((8+next_main_terminal)*size_4MB+184*size_4kb)/size_4kb );
         goto finish_schedule_terminal;
     }
 
