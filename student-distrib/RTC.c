@@ -58,9 +58,9 @@ void RTC_init(){
  Works need better test
  */
 int32_t RTC_open(const uint8_t* filename){
-    idx=get_main_pid();
+    idx=get_main_terminal();
     Hz_rate[idx] = MIN_FREQ;
-    idx=get_main_pid();
+    idx=get_main_terminal();
     Hz_counter[idx] = MAX_FREQ/Hz_rate[idx];
     // printf("1");
     return 0;
@@ -99,7 +99,7 @@ int32_t RTC_write(int32_t fd, const void* buf, int32_t nbytes){
     if((buffer_rate > 1024 || !((buffer_rate != 0) && ((buffer_rate & (buffer_rate - 1)) == 0)))){
         return -1;//invalid input
     }else{
-        idx=get_main_pid();
+        idx=get_main_terminal();
         Hz_rate[idx] = buffer_rate;
         // Hz_counter = MAX_FREQ/Hz_rate;
         return 4;//number of bytes changed
@@ -145,7 +145,7 @@ extern void RTC_handle(){
     outb(REGISTER_C, INDEX_NUM);
     inb(READandWRITE);
     cli();
-    idx=get_main_pid();
+    idx=get_main_terminal();
     Hz_counter[idx]--;
     if(Hz_counter[idx] == 0){ 
         flag = 1;

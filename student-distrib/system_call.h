@@ -75,7 +75,8 @@ extern void IRET_prepare(int);
 extern void label();
 
 extern int find_next_pid();
-extern int get_main_pid();
+extern int get_display_terminal();
+extern int get_main_terminal();
 extern void schedule();
 extern int video_map_switch();
 #endif

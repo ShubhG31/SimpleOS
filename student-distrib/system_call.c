@@ -8,7 +8,10 @@
 #include "paging.h"
 
 #define addr_8MB 0x800000  //8*1024*1024
+#define size_4MB 0x400000 
+#define size_1MB 0x100000
 #define size_8kb 0x2000 //8*1024
+#define size_4kb 0x1000 //4*1024
 #define pcb_pid_off 0
 #define pcb_parid_off 1
 #define pcb_saved_esp_off 2
@@ -21,9 +24,10 @@
 #define Program_page 4
 #define text_read 40
 #define command_length 128
+#define vidpointer 36*4*1024*1024+184*4*1024
 
 int pid, last_pid, processor_usage;
-int phy_mem_loc, main_pid, display_pid;
+int phy_mem_loc, main_terminal, display_terminal, flag_open_three_shell;
 
 typedef int32_t (*open_type)(uint8_t*);
 typedef int32_t (*close_type)(uint32_t);
@@ -54,16 +58,19 @@ struct terminal_t terminal[3];
 int get_pid(){
     return pid;
 }
-int get_main_pid(){
-    main_pid=0;         /// which need to be changed
-    return main_pid;
+int get_main_terminal(){
+    return main_terminal;
+}
+int get_display_terminal(){
+    return display_terminal;
 }
 void fd_init(){         // need to be run after booting part
     // last_pid=-1;
-    display_pid=0;
-    main_pid=0; //for debug only                                                /////////////////////////////////////////// remember to delete
+    display_terminal=0;
+    main_terminal=0; //for debug only                                                /////////////////////////////////////////// remember to delete
     pid=-1;
     processor_usage=0;
+    flag_open_three_shell=0;
     // phy_mem_loc=8;  // start address in physical mem to store files  8MB
     return;
 }
@@ -83,8 +90,9 @@ int system_halt(uint8_t status){
         status_ = HALT_error;
     }
     // clear the page that was used for now complete process
-    if(pid==0){
-        fd_init();                                                          ////// something wrong here about updating the process_usage
+    if(pid<3){
+        // fd_init();                                                          ////// something wrong here about updating the process_usage
+        processor_usage^=(1<<pid);
         const uint8_t* command = (uint8_t*) "shell";
         system_execute(command);//return status;
         return -1;
@@ -97,7 +105,7 @@ int system_halt(uint8_t status){
     processor_usage^=(1<<pid);
     old_pid=pid;
 
-    terminal[main_pid].pid=pcb_t->parent_id;
+    terminal[main_terminal].pid=pcb_t->parent_id;
     pid=pcb_t->parent_id;
 
     pcb_box=*pcb_t;
@@ -257,7 +265,10 @@ int system_execute(const uint8_t* command){
         return -1;
     }
     
-    terminal[main_pid].pid=pid;
+    if(flag_open_three_shell<3) display_terminal=0;
+    if(pid<3) main_terminal=pid;
+    
+    terminal[main_terminal].pid=pid;
     processor_usage|=(1<<pid);
 
     int eip = (buf[27]<<24)|(buf[26]<<16)|(buf[25]<<8)|(buf[24]); // using bytes 27-24 of the user program to set the EIP to user program
@@ -280,7 +291,11 @@ int system_execute(const uint8_t* command){
     register uint32_t saved_ebp asm("ebp");
     register uint32_t saved_esp asm("esp");
 
-    pcb_box.parent_id=last_pid;
+    if(pid<3){
+        pcb_box.parent_id=pid;
+    } else {
+        pcb_box.parent_id=last_pid;
+    }
     pcb_box.id=pid;
     pcb_box.saved_esp=saved_esp;              // what should be saved here
     pcb_box.saved_ebp=saved_ebp;              // what should be saved here
@@ -460,55 +475,94 @@ int system_vidmap(uint8_t** screen_start){
     if(screen_start == NULL)return -1;
     if((int)screen_start>=0x400000 && (int)screen_start<0x800000)return -1;     // if accessing the memory location between 4MB-8MB return -1
     // **screen_start = 0;
-    *screen_start = (uint8_t*)set_video_page(main_pid);
+    *screen_start = (uint8_t*)set_video_page();
     // puts("Success vidmap\n");
     return 0;
 }
-int switch_terminal(int next_main_pid){
-    if(next_main_pid == main_pid)return 0;
-    // copy main_pid to extra buffer
+int switch_terminal(int next_display_terminal){
+    next_display_terminal-=1;
+    // if next_display_terminal
+    if( next_display_terminal == display_terminal )goto done_switch_terminal;
     
-    // change vidmap
+    if( next_display_terminal == main_terminal && display_terminal != main_terminal ){
+        strncpy( (0xBC + 2*display_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
+        strncpy( (0xB8)*size_4kb, vidpointer, size_8kb );
+        // strncpy( (0xBC + 2*display_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
+        // strncpy( (0xB8)*size_4kb, ( (8+next_display_terminal)*4 )*size_4MB+(0xB8)*size_4kb, size_8kb );
+        set_video_page();
+        goto done_switch_terminal;
+    }
 
-    // copy next_main_pid to 0xB8
+    if( next_display_terminal != main_terminal && display_terminal == main_terminal ){
+        set_invisible_video_page(main_terminal);
+        strncpy( vidpointer, (0xB8)*size_4kb, size_8kb );
+        strncpy( (0xB8)*size_4kb, (0xBC + 2*next_display_terminal)*size_4kb, size_8kb);        
+        // strncpy( ( (8 + main_terminal)*4 )*size_4MB+(0xB8)*size_4kb, (0xB8)*size_4kb, size_8kb );
+        // strncpy( (0xB8)*size_4kb, (0xBC + 2*next_display_terminal)*size_4kb, size_8kb);        
+        goto done_switch_terminal;
+    }
 
+    if( next_display_terminal != main_terminal && display_terminal != main_terminal ){
+        strncpy( (0xBC + 2*display_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
+        strncpy( (0xB8)*size_4kb, (0xBC + 2*next_display_terminal)*size_4kb, size_8kb );
+        goto done_switch_terminal;
+    }
+done_switch_terminal:
+    display_terminal=next_display_terminal;
     return 0;
 }
 
 void schedule(){
-    int next_main_pid = (main_pid+1)%3;
-    int next_pid = terminal[next_main_pid].pid;
+    int next_main_terminal = (main_terminal+1)%3;
+    int next_pid = terminal[next_main_terminal].pid;
+    register uint32_t saved_ebp asm("ebp");
+    register uint32_t saved_esp asm("esp");
+
+    // store and update main_terminal and pid
+    terminal[main_terminal].pid=pid;
+    terminal[main_terminal].saved_ebp=saved_ebp;
+    terminal[main_terminal].saved_esp=saved_esp;
+
+    if(flag_open_three_shell!=3){
+        flag_open_three_shell++;
+        const uint8_t* command = (uint8_t*) "shell";
+        system_execute(command);//return status;
+        return;
+    }
+
     // update esp ebp
     asm volatile(
         "movl %0, %%esp;"
         "movl %1, %%ebp;"
         :
-        :"r"(terminal[next_main_pid].saved_esp), "r"(terminal[next_main_pid].saved_ebp)
+        :"r"(terminal[next_main_terminal].saved_esp), "r"(terminal[next_main_terminal].saved_ebp)
     );
-    // switch video map in 4kb
-    if(display_pid == main_pid){
-        // store display video map
 
-        // restore next_display_pid
-
-    }else{
-        if(next_main_pid == display_pid){
-            // saved the current video map  (from the extra buffer to 0-4k)
-            copy_n_bytes(/*some address*/, 0xBC + next_main_pid * 2);       // i need to implement this function tomorrow
-
-            // vidmap pointer points to 0xB8
-            set_video_page(next_main_pid);
-                // question here: because the page directory cannot be changed, the pointer is returned back to use code
-                // how to deal with this when we need to swtich this when swtching terminal
-        } else {
-            // saved the current video map (from the extra buffer to 0-4k)
-
-            // copy the next video map into extra buffer
-
-            // vidmap pointer points to extra buffer
-
-        }
+    // switch video map
+    if( next_main_terminal == main_terminal )goto finish_schedule_terminal;
+    if( next_main_terminal == display_terminal && main_terminal != display_terminal ){
+        strncpy( (0xBC + 2*main_terminal)*size_4kb, vidpointer, size_8kb );
+        set_video_page();
+        goto finish_schedule_terminal;
     }
+    if( next_main_terminal != display_terminal && main_terminal == display_terminal){
+        strncpy( (0xBC + 2*main_terminal)*size_4kb, vidpointer, size_8kb );
+        set_invisible_video_page(next_main_terminal);
+        strncpy( vidpointer, (0xBC + 2*next_main_terminal)*size_4kb, size_8kb );        
+        goto finish_schedule_terminal;
+    }
+    if (next_main_terminal != display_terminal && main_terminal != display_terminal){
+        strncpy( (0xBC + 2*main_terminal)*size_4kb, vidpointer, size_8kb );
+        set_invisible_video_page(next_main_terminal);
+        strncpy( vidpointer, (0xBC + 2*next_main_terminal)*size_4kb, size_8kb );        
+        goto finish_schedule_terminal;
+    }
+
+finish_schedule_terminal:
+
+    // update main_terminal and pid
+    pid = next_pid;
+    main_terminal = next_main_terminal;
 
     // update tss
     tss.ss0 = KERNEL_DS;    // TSS tells the 
@@ -517,10 +571,6 @@ void schedule(){
     // switch user code
     phy_mem_loc = 8 + next_pid * 4;
     set_new_page(phy_mem_loc);
-
-    // update main_pid and pid
-    pid = next_pid;;
-    main_pid = next_main_pid;
 
     // call iret back to user code
     asm volatile(
