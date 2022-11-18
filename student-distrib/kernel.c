@@ -16,6 +16,7 @@
 #include "file_sys.h"
 #include "file_sys_driver.h"
 #include "system_call.h"
+#include "pit.h"
 
 #define RUN_TESTS
 
@@ -149,6 +150,7 @@ void entry(unsigned long magic, unsigned long addr) {
     idt_initialization();
     /* Init the PIC */
     i8259_init();
+    pit_initialize();
     keyboard_init_irq();
     RTC_init();
     paging_init();

@@ -598,6 +598,7 @@ finish_schedule_terminal:
     // asm volatile(
     //     "iret;"
     // );
+    send_eoi(0);
     return;
 }
 
