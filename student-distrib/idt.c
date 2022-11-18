@@ -9,6 +9,7 @@
 #define dplnum 3
 #define RTCint 0x28
 #define keyboardInt 0x21
+#define PITint 0x20
 // ALL MAGIC NUMBER LABELS
 
 // typedef void (*functions);
@@ -67,7 +68,7 @@ void idt_initialization(){
             idt[i].present = 1;
             // idt[i].reserved3 = 1;
         }
-        if(i == RTCint || i == keyboardInt || i<=LAST_EXCEPTION){
+        if(i == PITint || i == RTCint || i == keyboardInt || i<=LAST_EXCEPTION){
             // idt[i].dpl = 3;
             idt[i].present = 1;
             // idt[i].reserved3 = 1;
@@ -101,6 +102,7 @@ void idt_initialization(){
     // Setting the keyboard handler
     SET_IDT_ENTRY(idt[keyboard], keyboard_handler);
     SET_IDT_ENTRY(idt[RTCint], RTC_handler);
+    SET_IDT_ENTRY(idt[PITint], PIT_handler);
     // Setting up the System Call Handler
     // idt[systemCall].reserved3= 1;
     SET_IDT_ENTRY(idt[systemCall], system_call_handler);

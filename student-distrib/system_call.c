@@ -6,6 +6,7 @@
 #include "lib.h"
 #include "x86_desc.h"
 #include "paging.h"
+#include "i8259.h"
 
 #define addr_8MB 0x800000  //8*1024*1024
 #define size_4MB 0x400000 
@@ -52,6 +53,7 @@ struct file_descriptor fd_box;
 
 struct terminal_t{
     int saved_esp, saved_ebp, pid;
+    int send_eoi;
 };
 struct terminal_t terminal[3];
 
@@ -245,7 +247,7 @@ int system_execute(const uint8_t* command){
     last_pid=pid;
     // pid++;
     pid=find_next_pid();
-    if(pid==1)pid=3;                                ///////////////////////////
+    // if(pid==2)pid=3;                              ///////////////////////////
     pcb_t=(struct PCB_table*)get_pcb_pointer();
 
     //Parse args
@@ -267,9 +269,12 @@ int system_execute(const uint8_t* command){
         return -1;
     }
     
-    if(flag_open_three_shell<3) display_terminal=0;
+    // if(flag_open_three_shell<2){
+    //     // switch_terminal(pid+1);
+    //     terminal[pid].send_eoi=0;
+    // }
     if(pid<3) main_terminal=pid;
-    
+
     terminal[main_terminal].pid=pid;
     processor_usage|=(1<<pid);
 
@@ -337,6 +342,8 @@ int system_execute(const uint8_t* command){
     // eip 
 
     // sti();
+    puts("wowowowowowow\n");
+    put_number(flag_open_three_shell);putc('\n');
     IRET_prepare(eip);          //eip address may change, may need to modify it
 
     return 0;
@@ -355,7 +362,10 @@ int system_read(int32_t fd, void* buf, int32_t nbytes){
     if(check_fd_in_use(fd)==0)return -1;
     pcb_t=(struct PCB_table*)get_pcb_pointer();
     fd_box=pcb_t->fdt[fd];
-
+    if( pid<3 && terminal[pid].send_eoi==0 ) {
+        terminal[pid].send_eoi=1;
+        send_eoi(0);
+    }
     re = ((((struct files_command*)(fd_box.opt_table_pointer))->read)((int32_t)fd,(void*)buf,(int32_t)nbytes));
     if(re!=-1){
         // fd_box.file_pos+=re;
@@ -528,6 +538,7 @@ int switch_terminal(int next_display_terminal){
     }
 done_switch_terminal:
     display_terminal=next_display_terminal;
+    puts("finish switch terminal\n");
     return 0;
 }
 
@@ -543,12 +554,21 @@ void schedule(){
     terminal[main_terminal].saved_esp=saved_esp;
 
     if(flag_open_three_shell!=3){
+        // switch_terminal(flag_open_three_shell);
+        terminal[flag_open_three_shell].send_eoi=0;
+
+        strncpy_( (0xBC + 2*main_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
+        strncpy_( (0xB8)*size_4kb, (0xBC + 2*next_main_terminal)*size_4kb, size_8kb );
+
         flag_open_three_shell++;
         const uint8_t* command = (uint8_t*) "shell";
         system_execute(command);//return status;
         return;
     }
-
+    else{
+        send_eoi(0);
+        return;
+    }
     // update esp ebp
     asm volatile(
         "movl %0, %%esp;"

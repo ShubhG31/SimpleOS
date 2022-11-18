@@ -13,6 +13,7 @@
 // these declare the 19 exceptions that are used in idt.c
 
 extern void idt_initialization();
+extern void PIT_handler();
 
 extern void divide_by_zero();               // 0x0
 extern void single_step_int();              // 0x1      

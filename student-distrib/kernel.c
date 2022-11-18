@@ -150,14 +150,14 @@ void entry(unsigned long magic, unsigned long addr) {
     idt_initialization();
     /* Init the PIC */
     i8259_init();
-    pit_initialize();
     keyboard_init_irq();
     RTC_init();
     paging_init();
     fd_init();
+    pit_initialize();
     // file_sys_test_cases ();
-    char call_[10]="shell";
-    system_execute((uint8_t*)call_);
+    // char call_[10]="shell";
+    // system_execute((uint8_t*)call_);
 
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
