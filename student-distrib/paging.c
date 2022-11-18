@@ -138,8 +138,11 @@ int set_invisible_video_page(int main_terminal){
     page_directory[36].AVL=0;
     page_directory[36].offset_31_12=main_terminal+8;
     return 0;
-
-
+}
+int map_B8_B9_table(int off){
+    page_table[ENTRIES].offset_31_22=off;   //
+    page_table[ENTRIES].offset_31_22=off+1;   //
+    return 0;
 }
 
 /*
