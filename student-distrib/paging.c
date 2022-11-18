@@ -70,7 +70,7 @@ extern void paging_init(){
     // clear();
     // printf("before the wacky loop\n");
     // Sets videomem page
-    for( i = ENTRIES; i <= ENTRIES+1 ; i++){//ENTRIES:184
+    for( i = ENTRIES; i <= ENTRIES+9 ; i++){//ENTRIES:184-185 B8-B9 (BA-BB) BC-BD BE-BF C0-C1
         page_table[i].present=1;
         page_table[i].RW=1; // changed 
         page_table[i].US=1;
@@ -123,6 +123,23 @@ int32_t set_video_page(){
     page_directory[36].AVL=0;
     page_directory[36].offset_31_12=0;
     return 36*4*1024*1024+184*4*1024;
+}
+
+int set_invisible_video_page(int main_terminal){
+    page_directory[36].present=1;         // page table is present
+    page_directory[36].RW=1;  
+    page_directory[36].US = 1; //changed
+    page_directory[36].PWT=0; //
+    page_directory[36].PCD=0;
+    page_directory[36].A=0;
+    page_directory[36].avl_=0;
+    page_directory[36].ps=1;               // When 1, tells us that the pages are 4MB 
+    page_directory[36].G=0;
+    page_directory[36].AVL=0;
+    page_directory[36].offset_31_12=main_terminal+8;
+    return 0;
+
+
 }
 
 /*
