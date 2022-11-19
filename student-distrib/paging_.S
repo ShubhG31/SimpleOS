@@ -1,6 +1,7 @@
 .text
 .globl LoadPagingDirectory, EnablePaging
 .globl page_table, page_directory
+.globl empty_vid_map
 
 .align 4
 
@@ -43,6 +44,10 @@ page_table:
         .long 0
     .endr
 page_directory:
+    .rept 1024
+        .long 0
+    .endr
+empty_vid_map:
     .rept 1024
         .long 0
     .endr

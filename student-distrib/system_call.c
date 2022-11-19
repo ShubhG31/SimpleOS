@@ -29,6 +29,9 @@
 
 int pid, last_pid, processor_usage;
 int phy_mem_loc, main_terminal, display_terminal, flag_open_three_shell;
+int empty_vid_map[1024];
+int next_main_terminal, next_pid;
+int schedule_time;
 
 typedef int32_t (*open_type)(uint8_t*);
 typedef int32_t (*close_type)(uint32_t);
@@ -69,7 +72,7 @@ int get_display_terminal(){
 void fd_init(){         // need to be run after booting part
     // last_pid=-1;
     display_terminal=0;
-    main_terminal=0; //for debug only                                                /////////////////////////////////////////// remember to delete
+    main_terminal=-1; //for debug only                                                /////////////////////////////////////////// remember to delete
     pid=-1;
     processor_usage=0;
     flag_open_three_shell=0;
@@ -490,8 +493,8 @@ int system_vidmap(uint8_t** screen_start){
     // *screen_start = (uint8_t*)set_video_page();
     *screen_start = (uint8_t*)(36*4*1024*1024+184*4*1024);
 
-    put_number(main_terminal);putc('\n');
-    put_number(display_terminal);putc('\n');
+    puts("main_terminal:");put_number(main_terminal);putc('\n');
+    puts("display_terminal:");put_number(display_terminal);putc('\n');
 
     // if the new user video is not displaying, reset the pointer
     // if( main_terminal != display_terminal ){
@@ -508,6 +511,10 @@ void strncpy_(int dest, int source, uint32_t nbytes){
     memcpy((int8_t*)dest, (int8_t*)source, nbytes);
     return;
 }
+void clear_vid_map(){
+    strncpy_( (0xB8)*size_4kb, (int)empty_vid_map, size_8kb);
+    return;
+}
 
 int switch_terminal(int next_display_terminal){
     cli();
@@ -519,7 +526,7 @@ int switch_terminal(int next_display_terminal){
     if( next_display_terminal == main_terminal && display_terminal != main_terminal ){
         map_B8_B9_table(0xB8);
         flush_tlb();
-        strncpy_( (0xBC + 2*display_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
+        strncpy_( (0xBA + display_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
         strncpy_( (0xB8)*size_4kb, vidpointer, size_8kb );
         set_video_page();
         goto done_switch_terminal;
@@ -530,7 +537,7 @@ int switch_terminal(int next_display_terminal){
         flush_tlb();
         // map_B8_B9_table(0xB8);           // no need because this one is already displaying
         strncpy_( vidpointer, (0xB8)*size_4kb, size_8kb );
-        strncpy_( (0xB8)*size_4kb, (0xBC + 2*next_display_terminal)*size_4kb, size_8kb);        
+        strncpy_( (0xB8)*size_4kb, (0xBA + next_display_terminal)*size_4kb, size_8kb);        
         map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );
         goto done_switch_terminal;
     }
@@ -538,8 +545,8 @@ int switch_terminal(int next_display_terminal){
     if( next_display_terminal != main_terminal && display_terminal != main_terminal ){
         map_B8_B9_table(0xB8);
         flush_tlb();
-        strncpy_( (0xBC + 2*display_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
-        strncpy_( (0xB8)*size_4kb, (0xBC + 2*next_display_terminal)*size_4kb, size_8kb );
+        strncpy_( (0xBA + display_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
+        strncpy_( (0xB8)*size_4kb, (0xBA + next_display_terminal)*size_4kb, size_8kb );
         map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );     
         goto done_switch_terminal;
     }
@@ -552,23 +559,26 @@ done_switch_terminal:
 }
 
 void schedule(){
-    int next_main_terminal = (main_terminal+1)%3;
-    int next_pid = terminal[next_main_terminal].pid;
+    next_main_terminal = (main_terminal+1)%3;
+    next_pid = terminal[next_main_terminal].pid;
     register uint32_t saved_ebp asm("ebp");
     register uint32_t saved_esp asm("esp");
 
     // store and update main_terminal and pid
-    terminal[main_terminal].pid=pid;
-    terminal[main_terminal].saved_ebp=saved_ebp;
-    terminal[main_terminal].saved_esp=saved_esp;
+    if(main_terminal!=-1){
+        terminal[main_terminal].pid=pid;
+        terminal[main_terminal].saved_ebp=saved_ebp;
+        terminal[main_terminal].saved_esp=saved_esp;
+    }
 
     if(flag_open_three_shell!=3){
         // switch_terminal(flag_open_three_shell);
         terminal[flag_open_three_shell].send_eoi=0;
 
         set_video_page();
-        strncpy_( (0xBC + 2*main_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
-        strncpy_( (0xB8)*size_4kb, (0xBC + 2*next_main_terminal)*size_4kb, size_8kb );
+        strncpy_( (0xBA + main_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
+        strncpy_( (0xB8)*size_4kb, (0xBA + next_main_terminal)*size_4kb, size_8kb );
+        // clear_vid_map();
         display_terminal=next_main_terminal;
         main_terminal=next_main_terminal;
         
@@ -578,9 +588,14 @@ void schedule(){
         return;
     }
     else{
-        send_eoi(0);
-        return;
+        if(schedule_time<2){
+            schedule_time++;
+        }else{
+            send_eoi(0);
+            return;
+        }
     }
+
     // update esp ebp
     asm volatile(
         "movl %0, %%esp;"
@@ -593,22 +608,24 @@ void schedule(){
     flush_tlb();
     if( next_main_terminal == main_terminal )goto finish_schedule_terminal;
     if( next_main_terminal == display_terminal && main_terminal != display_terminal ){
-        map_B8_B9_table(0xB8);
-        strncpy_( (0xBC + 2*main_terminal)*size_4kb, vidpointer, size_8kb );
+        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_8kb );
         set_video_page();
+        map_B8_B9_table(0xB8);
         goto finish_schedule_terminal;
     }
     if( next_main_terminal != display_terminal && main_terminal == display_terminal){
-        strncpy_( (0xBC + 2*main_terminal)*size_4kb, vidpointer, size_8kb );
+        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_8kb );
         set_invisible_video_page(next_main_terminal);
-        strncpy_( vidpointer, (0xBC + 2*next_main_terminal)*size_4kb, size_8kb );
+        flush_tlb();
+        strncpy_( vidpointer, (0xBA + next_main_terminal)*size_4kb, size_8kb );
         map_B8_B9_table( ((8+next_main_terminal)*size_4MB+184*size_4kb)/size_4kb );
         goto finish_schedule_terminal;
     }
     if (next_main_terminal != display_terminal && main_terminal != display_terminal){
-        strncpy_( (0xBC + 2*main_terminal)*size_4kb, vidpointer, size_8kb );
+        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_8kb );
         set_invisible_video_page(next_main_terminal);
-        strncpy_( vidpointer, (0xBC + 2*next_main_terminal)*size_4kb, size_8kb );
+        flush_tlb();
+        strncpy_( vidpointer, (0xBA + next_main_terminal)*size_4kb, size_8kb );
         map_B8_B9_table( ((8+next_main_terminal)*size_4MB+184*size_4kb)/size_4kb );
         goto finish_schedule_terminal;
     }

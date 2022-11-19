@@ -70,7 +70,7 @@ extern void paging_init(){
     // clear();
     // printf("before the wacky loop\n");
     // Sets videomem page
-    for( i = ENTRIES; i <= ENTRIES+9 ; i++){//ENTRIES:184-185 B8-B9 (BA-BB) BC-BD BE-BF C0-C1
+    for( i = ENTRIES; i <= ENTRIES+5 ; i++){//ENTRIES:184-185 B8 (B9) BA BB BC
         page_table[i].present=1;
         page_table[i].RW=1; // changed 
         page_table[i].US=1;
@@ -141,7 +141,6 @@ int set_invisible_video_page(int main_terminal){
 }
 int map_B8_B9_table(int off){
     page_table[ENTRIES].offset_31_12=off;   //
-    page_table[ENTRIES+1].offset_31_12=off+1;   //
     return 0;
 }
 
