@@ -365,10 +365,14 @@ int system_read(int32_t fd, void* buf, int32_t nbytes){
     if(check_fd_in_use(fd)==0)return -1;
     pcb_t=(struct PCB_table*)get_pcb_pointer();
     fd_box=pcb_t->fdt[fd];
+    
+    // when we open the first terminal, we need to send eoi
+    // this is because system_read is the first part of shell code that will use interrupt
     if( pid<3 && terminal[pid].send_eoi==0 ) {
         terminal[pid].send_eoi=1;
         send_eoi(0);
     }
+    
     re = ((((struct files_command*)(fd_box.opt_table_pointer))->read)((int32_t)fd,(void*)buf,(int32_t)nbytes));
     if(re!=-1){
         // fd_box.file_pos+=re;
@@ -589,6 +593,7 @@ void schedule(){
     }
     else{
         // this part is only for limiting how many times we use schedule to change terminal,   (debug only)
+        // schedule_time is the times that we schedule to switch running terminal
         if(schedule_time<2){
             schedule_time++;
         }else{
