@@ -486,17 +486,18 @@ int system_getargs(uint8_t* buf, int32_t nbytes){
 int system_vidmap(uint8_t** screen_start){
     if(screen_start == NULL)return -1;
     if((int)screen_start>=0x400000 && (int)screen_start<0x800000)return -1;     // if accessing the memory location between 4MB-8MB return -1
-    // **screen_start = 0;
-    *screen_start = (uint8_t*)set_video_page();
+    
+    // *screen_start = (uint8_t*)set_video_page();
+    *screen_start = (uint8_t*)(36*4*1024*1024+184*4*1024);
 
     put_number(main_terminal);putc('\n');
     put_number(display_terminal);putc('\n');
 
     // if the new user video is not displaying, reset the pointer
-    if( main_terminal != display_terminal ){
-        set_invisible_video_page(main_terminal);
-        map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );
-    }
+    // if( main_terminal != display_terminal ){
+    //     set_invisible_video_page(main_terminal);
+    //     map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );
+    // }
 
     // puts("Success vidmap\n");
     return 0;

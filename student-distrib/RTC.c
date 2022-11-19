@@ -60,7 +60,6 @@ void RTC_init(){
 int32_t RTC_open(const uint8_t* filename){
     idx=get_main_terminal();
     Hz_rate[idx] = MIN_FREQ;
-    idx=get_main_terminal();
     Hz_counter[idx] = MAX_FREQ/Hz_rate[idx];
     // printf("1");
     return 0;
