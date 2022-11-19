@@ -342,7 +342,7 @@ int system_execute(const uint8_t* command){
     // eip 
 
     // sti();
-    puts("wowowowowowow\n");
+    puts("wowowowowowowowowowowowoowowowowowowoowowowowowo\n");
     put_number(flag_open_three_shell);putc('\n');
     IRET_prepare(eip);          //eip address may change, may need to modify it
 
@@ -503,17 +503,21 @@ int system_vidmap(uint8_t** screen_start){
 }
 
 void strncpy_(int dest, int source, uint32_t nbytes){
-    strncpy((int8_t*)dest, (int8_t*)source, nbytes);
+    // strncpy((int8_t*)dest, (int8_t*)source, nbytes);
+    memcpy((int8_t*)dest, (int8_t*)source, nbytes);
     return;
 }
 
 int switch_terminal(int next_display_terminal){
+    cli();
     next_display_terminal-=1;
+    flush_tlb();
     // if next_display_terminal
     if( next_display_terminal == display_terminal )goto done_switch_terminal;
     
     if( next_display_terminal == main_terminal && display_terminal != main_terminal ){
         map_B8_B9_table(0xB8);
+        flush_tlb();
         strncpy_( (0xBC + 2*display_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
         strncpy_( (0xB8)*size_4kb, vidpointer, size_8kb );
         set_video_page();
@@ -522,6 +526,7 @@ int switch_terminal(int next_display_terminal){
 
     if( next_display_terminal != main_terminal && display_terminal == main_terminal ){
         set_invisible_video_page(main_terminal);
+        flush_tlb();
         // map_B8_B9_table(0xB8);           // no need because this one is already displaying
         strncpy_( vidpointer, (0xB8)*size_4kb, size_8kb );
         strncpy_( (0xB8)*size_4kb, (0xBC + 2*next_display_terminal)*size_4kb, size_8kb);        
@@ -531,6 +536,7 @@ int switch_terminal(int next_display_terminal){
 
     if( next_display_terminal != main_terminal && display_terminal != main_terminal ){
         map_B8_B9_table(0xB8);
+        flush_tlb();
         strncpy_( (0xBC + 2*display_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
         strncpy_( (0xB8)*size_4kb, (0xBC + 2*next_display_terminal)*size_4kb, size_8kb );
         map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );     
@@ -538,7 +544,9 @@ int switch_terminal(int next_display_terminal){
     }
 done_switch_terminal:
     display_terminal=next_display_terminal;
+    flush_tlb();
     puts("finish switch terminal\n");
+    sti();
     return 0;
 }
 
@@ -557,9 +565,12 @@ void schedule(){
         // switch_terminal(flag_open_three_shell);
         terminal[flag_open_three_shell].send_eoi=0;
 
+        set_video_page();
         strncpy_( (0xBC + 2*main_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
         strncpy_( (0xB8)*size_4kb, (0xBC + 2*next_main_terminal)*size_4kb, size_8kb );
-
+        display_terminal=next_main_terminal;
+        main_terminal=next_main_terminal;
+        
         flag_open_three_shell++;
         const uint8_t* command = (uint8_t*) "shell";
         system_execute(command);//return status;
@@ -578,6 +589,7 @@ void schedule(){
     );
 
     // switch video map
+    flush_tlb();
     if( next_main_terminal == main_terminal )goto finish_schedule_terminal;
     if( next_main_terminal == display_terminal && main_terminal != display_terminal ){
         map_B8_B9_table(0xB8);
@@ -614,6 +626,9 @@ finish_schedule_terminal:
     phy_mem_loc = 8 + next_pid * 4;
     set_new_page(phy_mem_loc);
 
+    // flush TLB
+    flush_tlb();
+
     // call iret back to user code
     // asm volatile(
     //     "iret;"
@@ -649,5 +664,12 @@ int find_next_pid(){
         if((processor_usage&(1<<i))==0)return i;
     }
     return -1;
+}
+void flush_tlb(){
+    asm volatile(
+        "movl %cr3, %edx \n"
+        "movl %edx, %cr3 \n"
+    );
+    return;
 }
 

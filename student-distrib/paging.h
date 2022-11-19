@@ -59,7 +59,7 @@ typedef union page_table {
         uint32_t PAT            : 1;
         uint32_t G              : 1;
         uint32_t AVL            : 3;
-        uint32_t offset_31_22   : 20;
+        uint32_t offset_31_12   : 20;
     } __attribute__ ((packed));
 } page_table_t;
 

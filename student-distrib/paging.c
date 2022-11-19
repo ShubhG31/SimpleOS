@@ -65,7 +65,7 @@ extern void paging_init(){
         page_table[i].PAT=0;
         page_table[i].G=0;                 // Tells the program that it is not Video Memory when set to 1
         page_table[i].AVL=0;
-        page_table[i].offset_31_22=0;   //
+        page_table[i].offset_31_12=0;   //
     }
     // clear();
     // printf("before the wacky loop\n");
@@ -81,7 +81,7 @@ extern void paging_init(){
         page_table[i].PAT=0;
         page_table[i].G=0;
         page_table[i].AVL=0;
-        page_table[i].offset_31_22=i;   //
+        page_table[i].offset_31_12=i;   //
     }
     // printf("after the wacky loop\n");
     LoadPagingDirectory((unsigned int*)page_directory);
@@ -136,12 +136,12 @@ int set_invisible_video_page(int main_terminal){
     page_directory[36].ps=1;               // When 1, tells us that the pages are 4MB 
     page_directory[36].G=0;
     page_directory[36].AVL=0;
-    page_directory[36].offset_31_12=main_terminal+8;
+    page_directory[36].offset_31_12=(main_terminal+8)<<10;
     return 0;
 }
 int map_B8_B9_table(int off){
-    page_table[ENTRIES].offset_31_22=off;   //
-    page_table[ENTRIES].offset_31_22=off+1;   //
+    page_table[ENTRIES].offset_31_12=off;   //
+    page_table[ENTRIES+1].offset_31_12=off+1;   //
     return 0;
 }
 

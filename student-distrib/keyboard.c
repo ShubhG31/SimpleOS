@@ -56,12 +56,14 @@
 #define tab_keycode 0x0F
 #define tab_ascii 9
 
-#define alt_pressed 0x11
+#define alt_pressed 0x38
+#define alt_pressed2 0x36
 #define alt_released 0xB8
+#define alt_released2 0xB6
 
-#define f1_pressed 0x05
-#define f2_pressed 0x06
-#define f3_pressed 0x04
+#define f1_pressed 0x3B
+#define f2_pressed 0x3C
+#define f3_pressed 0x3D
 
 #define max_characters 127
 

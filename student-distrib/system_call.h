@@ -80,4 +80,5 @@ extern int get_main_terminal();
 extern void schedule();
 extern int video_map_switch();
 extern int switch_terminal(int next_display_terminal);
+extern void flush_tlb();
 #endif
