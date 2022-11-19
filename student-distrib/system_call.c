@@ -588,6 +588,7 @@ void schedule(){
         return;
     }
     else{
+        // this part is only for limiting how many times we use schedule to change terminal,   (debug only)
         if(schedule_time<2){
             schedule_time++;
         }else{
