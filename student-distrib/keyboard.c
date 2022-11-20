@@ -128,7 +128,7 @@ void keyboard_helper(){
     int scan_code = inb(port);
     int B8_B9_backup;
 
-    int curr_terminal = get_main_terminal(); 
+    int curr_terminal = get_display_terminal();     // everything we type is put into the display terminal buffer
 
     // if alt is pressed 
     if(scan_code == alt_pressed){

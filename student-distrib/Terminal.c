@@ -50,7 +50,7 @@ uint32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes){
     int i;
     // go through all bytes and print it on the screen
     for(i = 0; i < nbytes; i++){
-        putc(((char*)buf)[i]);
+        putc_user_code(((char*)buf)[i]);
     }
     return i;
 }

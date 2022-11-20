@@ -183,12 +183,115 @@ int32_t puts(int8_t* s) {
 
 // size of videomemory buffer is created, that hold bytes for character and color
 static char scroll_buf[2*(NUM_ROWS*NUM_COLS)];
+
+/* void putc_user_code(uint8_t c);
+ * Inputs: uint_8* c = character to print
+ * Return Value: void
+ *  Function: Output a character to the console only user code will call this,
+ *            the difference is that this one will only change main_terminal cursor
+ */
+void putc_user_code(uint8_t c) {
+    // added to terminal scroll
+    cli();
+    int i;
+    int dis_terminal=get_main_terminal();
+    // checks if the character is a new line or line carriage 
+     if(c == '\n' || c == '\r') {
+        // if newline and y is at the end 
+        if(c== '\n' && screen_y[dis_terminal] == NUM_ROWS-1){
+
+            // copy memory to a buffer 
+            memcpy(scroll_buf,video_mem+(NUM_COLS*2),OLD_videomem_scroll);
+
+            // go through colomns and set new video memory to clear end row
+            for(i=0;i<NUM_COLS;i++){
+                // set the last row to empty character
+                *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = empty_mem;
+                // set the value of color
+                *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
+            }
+            // copy buffer to video memory
+            memcpy(video_mem,scroll_buf, NEW_videomem_scroll);
+            // set screen_x to 0
+            screen_x[dis_terminal] = 0;
+        }
+        else{
+            // else set screen_y to next row
+            screen_y[dis_terminal] = (screen_y[dis_terminal] + 1); // fixes the first character to show up
+            // set x to first character in row
+            screen_x[dis_terminal] = 0;
+        }
+    }
+    //  when backspace is pressed
+    else if(c == BS_ascii){
+            if(screen_x[dis_terminal]==0 && screen_y[dis_terminal]==0){
+                return;
+            }
+             if( screen_x[dis_terminal]-1 < 0 && screen_y[dis_terminal]-1>0){
+                screen_y[dis_terminal]--;
+                screen_x[dis_terminal] = NUM_COLS;
+             }
+             // set memory to space 
+             *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]-1) << 1)) = ' ';
+             // decrement x value 
+             screen_x[dis_terminal]--;
+    }
+    else if(c == tab_ascii){
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1)) = ' ';
+        screen_x[dis_terminal]++;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1)) = ' ';
+        screen_x[dis_terminal]++;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1)) = ' ';
+        screen_x[dis_terminal]++;
+    }
+    
+    else {
+            // when at the bottom right corner, then scroll
+            if(screen_x[dis_terminal] >= NUM_COLS && screen_y[dis_terminal] == NUM_ROWS-1){
+                // copy the video memory to buffer 
+                memcpy(scroll_buf,video_mem+(NUM_COLS*2),OLD_videomem_scroll);
+                // go through colomns and set new video memory to clear end row
+                for(i=0;i<NUM_COLS;i++){
+                    // set the last row to empty character
+                    *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = empty_mem;
+                    // set the value of color
+                    *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
+                }
+                // copy buffer to video memory
+                memcpy(video_mem,scroll_buf, NEW_videomem_scroll);
+                // set x to starting value in row 
+                screen_x[dis_terminal] = 0;
+                // set y to last row on screen
+                screen_y[dis_terminal] = NUM_ROWS-1;
+            }else{
+                if(screen_x[dis_terminal] == NUM_COLS){
+                    // set y to next row
+                    screen_y[dis_terminal] ++;
+                    // set x to starting value in row
+                    screen_x[dis_terminal] = 0;
+                }
+            }
+        // set the value of video memory to character 
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1)) = c;
+        // set the value of video memory to color 
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1) + 1) = ATTRIB;
+        // set x to next value in column 
+        screen_x[dis_terminal]++;
+        
+    }
+    // sets the value of the cursor after character has been outputted on screen
+    if(get_display_terminal()==get_main_terminal())
+        update_cursor(screen_x[dis_terminal], screen_y[dis_terminal]);
+    sti();
+}
+
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
  * Return Value: void
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
     // added to terminal scroll
+    cli();
     int i;
     int dis_terminal=get_display_terminal();
     // checks if the character is a new line or line carriage 
@@ -277,6 +380,7 @@ void putc(uint8_t c) {
     }
     // sets the value of the cursor after character has been outputted on screen
     update_cursor(screen_x[dis_terminal], screen_y[dis_terminal]);
+    sti();
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);

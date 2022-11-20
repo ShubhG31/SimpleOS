@@ -328,8 +328,10 @@ int system_execute(const uint8_t* command){
     // eip 
 
     // sti();
-    puts("Now you are opening terminal ");
-    put_number(flag_open_three_shell);putc('\n');
+    if(pid<3){
+        puts("Now you are opening terminal ");
+        put_number(flag_open_three_shell);putc('\n');
+    }
     IRET_prepare(eip);          //eip address may change, may need to modify it
 
     return 0;
@@ -580,12 +582,12 @@ void schedule(){
     else{
         // this part is only for limiting how many times we use schedule to change terminal,   (debug only)
         // schedule_time is the times that we schedule to switch running terminal
-        if(schedule_time<0){
-            schedule_time++;
-        }else{
-            send_eoi(0);
-            return;
-        }
+        // if(schedule_time<0){
+        //     schedule_time++;
+        // }else{
+        //     send_eoi(0);
+        //     return;
+        // }
     }
 
     // update esp ebp
@@ -639,10 +641,7 @@ finish_schedule_terminal:
     // flush TLB
     flush_tlb();
 
-    // call iret back to user code
-    // asm volatile(
-    //     "iret;"
-    // );
+    update_cursor_after_switch(display_terminal);
     send_eoi(0);
     return;
 }
