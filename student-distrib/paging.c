@@ -143,6 +143,9 @@ int map_B8_B9_table(int off){
     page_table[ENTRIES].offset_31_12=off;   //
     return 0;
 }
+int get_B8_B9_table(){
+    return page_table[ENTRIES].offset_31_12;
+}
 
 /*
 extern void LoadPagingDirectory(unsigned int* cr){

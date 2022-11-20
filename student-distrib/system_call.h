@@ -9,6 +9,25 @@
 #define HALT 37
 #define HALT_error 256
 
+#define addr_8MB 0x800000  //8*1024*1024
+#define size_4MB 0x400000 
+#define size_1MB 0x100000
+#define size_8kb 0x2000 //8*1024
+#define size_4kb 0x1000 //4*1024
+#define pcb_pid_off 0
+#define pcb_parid_off 1
+#define pcb_saved_esp_off 2
+#define pcb_saved_ebp_off 6
+#define pcb_active_off 10
+#define pcb_fdt_usage_off 11
+#define pcb_fd_off 12
+#define fd_size 16
+#define PCB_size 8
+#define Program_page 4
+#define text_read 40
+#define command_length 128
+#define vidpointer 36*4*1024*1024+184*4*1024
+
 //describes and takes in what is necessary for the file descriptor
 struct file_descriptor{
     uint32_t opt_table_pointer;

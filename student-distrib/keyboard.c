@@ -123,47 +123,60 @@ void init_keycodes(){
  * Function: overall sees which key uses the particular scan code set and writes it to the screen. it then sends an end of interrupt because the function is over */
 
 void keyboard_helper(){
+    cli();                                              // question here idk whether we need this
     int port = keyboard_port;
     int scan_code = inb(port);
+    int B8_B9_backup;
 
     int curr_terminal = get_main_terminal(); 
 
     // if alt is pressed 
     if(scan_code == alt_pressed){
         alt_flag = 1;
-        puts("tab pressed");
+        // puts("tab pressed");
         send_eoi(keyboard_irq_num);
+        sti();
         return;
     }
 
     if(scan_code == alt_released){
         alt_flag = 0;
-        puts("tab released");
+        // puts("tab released");
         send_eoi(keyboard_irq_num);
+        sti();
         return;
     }
 
     if(alt_flag == 1 && scan_code == f1_pressed){
         switch_terminal(1);
         send_eoi(keyboard_irq_num);
+        sti();
         return;
     }
     if(alt_flag == 1 && scan_code == f2_pressed){
         switch_terminal(2);
         send_eoi(keyboard_irq_num);
+        sti();
         return;
     }
     if(alt_flag == 1 && scan_code == f3_pressed){
         switch_terminal(3);
         send_eoi(keyboard_irq_num);
+        sti();
         return;
     }
     // if locaton is 0 and if pressed key is backspace  
     if( buffer_cur_location[curr_terminal] == 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
         // return end of interupt 
         send_eoi(keyboard_irq_num);
+        sti();
         return;
     }
+
+    B8_B9_backup=get_B8_B9_table();
+    map_B8_B9_table(0xB8);
+    flush_tlb();
+
     // if buffer location is greater than 0 and if backspace is pressed
     if( buffer_cur_location[curr_terminal] > 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
             putc(BS_ascii); // print backspace 
@@ -172,11 +185,16 @@ void keyboard_helper(){
             // decrement the location since backspace is pressed
             buffer_cur_location[curr_terminal]--;
             // send end of interrupt signal
-            send_eoi(keyboard_irq_num);
-            return;
+            goto end;
+            // send_eoi(keyboard_irq_num);
+            // return;
     }
     // if enter is pressed, print newline and return 
     if( keyboard_keycodes[scan_code] == keyboard_keycodes[enter]){
+
+        // if the display one is not running terminal, we should not let the enter pressed
+        if(get_main_terminal()!=get_display_terminal())goto end;
+
         // put new line into the buffer 
         buffer[curr_terminal][buffer_cur_location[curr_terminal]] = '\n';
         // buffer location is now set to 0 
@@ -188,8 +206,9 @@ void keyboard_helper(){
         // clear keyboard buffer 
         memset((void*)buffer[curr_terminal],0,strlen((int8_t*)buffer));
         // send end of interupt signal
-        send_eoi(keyboard_irq_num);
-        return;
+        goto end;
+        // send_eoi(keyboard_irq_num);
+        // return;
     }
     
     // if scan code is shift key then set flag to high 
@@ -224,10 +243,11 @@ void keyboard_helper(){
     // if ctrl is pressed and l is pressed, clear screen and return 
     if (ctrl_flag==1 && keyboard_keycodes[scan_code]=='l'){
         // clear screen
-        clear();
+        clear(get_display_terminal());
         // send end of interupt signal
-        send_eoi(keyboard_irq_num); 
-        return;
+        // send_eoi(keyboard_irq_num); 
+        // return;
+        goto end;
     }
 
     // if buffer location is less than allowed value of 127 and pressed key is allowed then execute
@@ -337,7 +357,10 @@ void keyboard_helper(){
     }
     
 end:
+    map_B8_B9_table( B8_B9_backup );
+    flush_tlb();
     send_eoi(keyboard_irq_num);
+    sti();
     return;
 }
 

@@ -8,24 +8,7 @@
 #include "paging.h"
 #include "i8259.h"
 
-#define addr_8MB 0x800000  //8*1024*1024
-#define size_4MB 0x400000 
-#define size_1MB 0x100000
-#define size_8kb 0x2000 //8*1024
-#define size_4kb 0x1000 //4*1024
-#define pcb_pid_off 0
-#define pcb_parid_off 1
-#define pcb_saved_esp_off 2
-#define pcb_saved_ebp_off 6
-#define pcb_active_off 10
-#define pcb_fdt_usage_off 11
-#define pcb_fd_off 12
-#define fd_size 16
-#define PCB_size 8
-#define Program_page 4
-#define text_read 40
-#define command_length 128
-#define vidpointer 36*4*1024*1024+184*4*1024
+
 
 int pid, last_pid, processor_usage;
 int phy_mem_loc, main_terminal, display_terminal, flag_open_three_shell;
@@ -345,7 +328,7 @@ int system_execute(const uint8_t* command){
     // eip 
 
     // sti();
-    puts("wowowowowowowowowowowowoowowowowowowoowowowowowo\n");
+    puts("Now you are opening terminal ");
     put_number(flag_open_three_shell);putc('\n');
     IRET_prepare(eip);          //eip address may change, may need to modify it
 
@@ -516,12 +499,12 @@ void strncpy_(int dest, int source, uint32_t nbytes){
     return;
 }
 void clear_vid_map(){
-    strncpy_( (0xB8)*size_4kb, (int)empty_vid_map, size_8kb);
+    strncpy_( (0xB8)*size_4kb, (int)empty_vid_map, size_4kb);
     return;
 }
 
 int switch_terminal(int next_display_terminal){
-    cli();
+    // cli();
     next_display_terminal-=1;
     flush_tlb();
     // if next_display_terminal
@@ -530,8 +513,8 @@ int switch_terminal(int next_display_terminal){
     if( next_display_terminal == main_terminal && display_terminal != main_terminal ){
         map_B8_B9_table(0xB8);
         flush_tlb();
-        strncpy_( (0xBA + display_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
-        strncpy_( (0xB8)*size_4kb, vidpointer, size_8kb );
+        strncpy_( (0xBA + display_terminal)*size_4kb, (0xB8)*size_4kb, size_4kb );
+        strncpy_( (0xB8)*size_4kb, vidpointer, size_4kb );
         set_video_page();
         goto done_switch_terminal;
     }
@@ -540,8 +523,8 @@ int switch_terminal(int next_display_terminal){
         set_invisible_video_page(main_terminal);
         flush_tlb();
         // map_B8_B9_table(0xB8);           // no need because this one is already displaying
-        strncpy_( vidpointer, (0xB8)*size_4kb, size_8kb );
-        strncpy_( (0xB8)*size_4kb, (0xBA + next_display_terminal)*size_4kb, size_8kb);        
+        strncpy_( vidpointer, (0xB8)*size_4kb, size_4kb );
+        strncpy_( (0xB8)*size_4kb, (0xBA + next_display_terminal)*size_4kb, size_4kb);        
         map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );
         goto done_switch_terminal;
     }
@@ -549,16 +532,17 @@ int switch_terminal(int next_display_terminal){
     if( next_display_terminal != main_terminal && display_terminal != main_terminal ){
         map_B8_B9_table(0xB8);
         flush_tlb();
-        strncpy_( (0xBA + display_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
-        strncpy_( (0xB8)*size_4kb, (0xBA + next_display_terminal)*size_4kb, size_8kb );
+        strncpy_( (0xBA + display_terminal)*size_4kb, (0xB8)*size_4kb, size_4kb );
+        strncpy_( (0xB8)*size_4kb, (0xBA + next_display_terminal)*size_4kb, size_4kb );
         map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );     
         goto done_switch_terminal;
     }
 done_switch_terminal:
     display_terminal=next_display_terminal;
+    update_cursor_after_switch(display_terminal);
     flush_tlb();
-    puts("finish switch terminal\n");
-    sti();
+    // puts("finish switch terminal\n");
+    // sti();
     return 0;
 }
 
@@ -580,8 +564,10 @@ void schedule(){
         terminal[flag_open_three_shell].send_eoi=0;
 
         set_video_page();
-        strncpy_( (0xBA + main_terminal)*size_4kb, (0xB8)*size_4kb, size_8kb );
-        strncpy_( (0xB8)*size_4kb, (0xBA + next_main_terminal)*size_4kb, size_8kb );
+        if(flag_open_three_shell!=0){
+            strncpy_( (0xBA + main_terminal)*size_4kb, (0xB8)*size_4kb, size_4kb );
+            strncpy_( (0xB8)*size_4kb, (0xBA + next_main_terminal)*size_4kb, size_4kb );
+        }
         // clear_vid_map();
         display_terminal=next_main_terminal;
         main_terminal=next_main_terminal;
@@ -594,7 +580,7 @@ void schedule(){
     else{
         // this part is only for limiting how many times we use schedule to change terminal,   (debug only)
         // schedule_time is the times that we schedule to switch running terminal
-        if(schedule_time<2){
+        if(schedule_time<0){
             schedule_time++;
         }else{
             send_eoi(0);
@@ -614,24 +600,24 @@ void schedule(){
     flush_tlb();
     if( next_main_terminal == main_terminal )goto finish_schedule_terminal;
     if( next_main_terminal == display_terminal && main_terminal != display_terminal ){
-        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_8kb );
+        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_4kb );
         set_video_page();
         map_B8_B9_table(0xB8);
         goto finish_schedule_terminal;
     }
     if( next_main_terminal != display_terminal && main_terminal == display_terminal){
-        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_8kb );
+        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_4kb );
         set_invisible_video_page(next_main_terminal);
         flush_tlb();
-        strncpy_( vidpointer, (0xBA + next_main_terminal)*size_4kb, size_8kb );
+        strncpy_( vidpointer, (0xBA + next_main_terminal)*size_4kb, size_4kb );
         map_B8_B9_table( ((8+next_main_terminal)*size_4MB+184*size_4kb)/size_4kb );
         goto finish_schedule_terminal;
     }
     if (next_main_terminal != display_terminal && main_terminal != display_terminal){
-        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_8kb );
+        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_4kb );
         set_invisible_video_page(next_main_terminal);
         flush_tlb();
-        strncpy_( vidpointer, (0xBA + next_main_terminal)*size_4kb, size_8kb );
+        strncpy_( vidpointer, (0xBA + next_main_terminal)*size_4kb, size_4kb );
         map_B8_B9_table( ((8+next_main_terminal)*size_4MB+184*size_4kb)/size_4kb );
         goto finish_schedule_terminal;
     }

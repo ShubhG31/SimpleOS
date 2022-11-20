@@ -116,7 +116,7 @@ void idt_initialization(){
  * Function: represents 19 different exceptions and prints it based on the exception it is and has a constant while loop looping through */
 
 extern void divide_by_zero(){
-    clear();
+    clear(get_display_terminal());
     printf("Exception: Division by Zero\n");
     system_halt((uint8_t)HALT_error);
    

@@ -23,23 +23,23 @@
 
 #define empty_mem 0x20
 
-static int screen_x;
-static int screen_y;
+static int screen_x[3]={0,0,0};
+static int screen_y[3]={0,0,0};
 static char* video_mem = (char *)VIDEO;
 
-/* void clear(void);
+/* void clear(int display_terminal);
  * Inputs: void
  * Return Value: none
  * Function: Clears video memory */
-void clear(void) {
+void clear(int dis_terminal) {
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
-    screen_x = 0;
-    screen_y = 0;
-    update_cursor(screen_x, screen_y);
+    screen_x[dis_terminal] = 0;
+    screen_y[dis_terminal] = 0;
+    update_cursor(screen_x[dis_terminal], screen_y[dis_terminal]);
 }
 
 /* Standard printf().
@@ -190,10 +190,11 @@ static char scroll_buf[2*(NUM_ROWS*NUM_COLS)];
 void putc(uint8_t c) {
     // added to terminal scroll
     int i;
+    int dis_terminal=get_display_terminal();
     // checks if the character is a new line or line carriage 
      if(c == '\n' || c == '\r') {
         // if newline and y is at the end 
-        if(c== '\n' && screen_y == NUM_ROWS-1){
+        if(c== '\n' && screen_y[dis_terminal] == NUM_ROWS-1){
 
             // copy memory to a buffer 
             memcpy(scroll_buf,video_mem+(NUM_COLS*2),OLD_videomem_scroll);
@@ -208,41 +209,41 @@ void putc(uint8_t c) {
             // copy buffer to video memory
             memcpy(video_mem,scroll_buf, NEW_videomem_scroll);
             // set screen_x to 0
-            screen_x = 0;
+            screen_x[dis_terminal] = 0;
         }
         else{
             // else set screen_y to next row
-            screen_y = (screen_y + 1); // fixes the first character to show up
+            screen_y[dis_terminal] = (screen_y[dis_terminal] + 1); // fixes the first character to show up
             // set x to first character in row
-            screen_x = 0;
+            screen_x[dis_terminal] = 0;
         }
     }
     //  when backspace is pressed
     else if(c == BS_ascii){
-            if(screen_x==0 && screen_y==0){
+            if(screen_x[dis_terminal]==0 && screen_y[dis_terminal]==0){
                 return;
             }
-             if( screen_x-1 < 0 && screen_y-1>0){
-                screen_y--;
-                screen_x = NUM_COLS;
+             if( screen_x[dis_terminal]-1 < 0 && screen_y[dis_terminal]-1>0){
+                screen_y[dis_terminal]--;
+                screen_x[dis_terminal] = NUM_COLS;
              }
              // set memory to space 
-             *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x-1) << 1)) = ' ';
+             *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]-1) << 1)) = ' ';
              // decrement x value 
-             screen_x--;
+             screen_x[dis_terminal]--;
     }
     else if(c == tab_ascii){
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
-        screen_x++;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
-        screen_x++;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = ' ';
-        screen_x++;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1)) = ' ';
+        screen_x[dis_terminal]++;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1)) = ' ';
+        screen_x[dis_terminal]++;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1)) = ' ';
+        screen_x[dis_terminal]++;
     }
     
     else {
             // when at the bottom right corner, then scroll
-            if(screen_x >= NUM_COLS && screen_y == NUM_ROWS-1){
+            if(screen_x[dis_terminal] >= NUM_COLS && screen_y[dis_terminal] == NUM_ROWS-1){
                 // copy the video memory to buffer 
                 memcpy(scroll_buf,video_mem+(NUM_COLS*2),OLD_videomem_scroll);
                 // go through colomns and set new video memory to clear end row
@@ -255,27 +256,27 @@ void putc(uint8_t c) {
                 // copy buffer to video memory
                 memcpy(video_mem,scroll_buf, NEW_videomem_scroll);
                 // set x to starting value in row 
-                screen_x = 0;
+                screen_x[dis_terminal] = 0;
                 // set y to last row on screen
-                screen_y = NUM_ROWS-1;
+                screen_y[dis_terminal] = NUM_ROWS-1;
             }else{
-                if(screen_x == NUM_COLS){
+                if(screen_x[dis_terminal] == NUM_COLS){
                     // set y to next row
-                    screen_y ++;
+                    screen_y[dis_terminal] ++;
                     // set x to starting value in row
-                    screen_x = 0;
+                    screen_x[dis_terminal] = 0;
                 }
             }
         // set the value of video memory to character 
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1)) = c;
         // set the value of video memory to color 
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1) + 1) = ATTRIB;
         // set x to next value in column 
-        screen_x++;
+        screen_x[dis_terminal]++;
         
     }
     // sets the value of the cursor after character has been outputted on screen
-    update_cursor(screen_x, screen_y);
+    update_cursor(screen_x[dis_terminal], screen_y[dis_terminal]);
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
@@ -586,4 +587,9 @@ void update_cursor(int screenx, int screeny)
 	outb(cursor_port_mask2,cursor_port);
     // 8 is NOT a MAGIC NUMBER
 	outb((uint8_t) ((i >> 8) & cursor_mask),cursor_port2); // 8 is set to help change the mask 
+}
+
+
+void update_cursor_after_switch(int dis_terminal){
+    update_cursor(screen_x[dis_terminal],screen_y[dis_terminal]);
 }

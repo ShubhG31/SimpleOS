@@ -197,7 +197,7 @@ void put_number(int x){
 void test_dir_driver(){
     int fd,i,j,re;
     char buf[name_length];
-    clear();
+    clear(0);
     fd=dir_open(".");
     puts("return value of dir_open:");
     put_number(fd);
@@ -235,7 +235,7 @@ void test_file_driver(){
     char buf[60000];            // we pick up this number just for test cases not for functionality
     // char ch[32]={"frame1.txt"};
     // test_show_frame();
-    clear();
+    clear(0);
     // fd=file_open((uint8_t*)ch);
     // fd=file_open("verylargetextwithverylongname.tx");
     // fd=file_open("frame1.txt");
@@ -297,7 +297,7 @@ void test_file_driver(){
 void test_file_driver_small_file(){
     int fd,i,re;
     char buf[60000];        //we pick up this number just to store data we read, it is controlled by user so it is not a fixed number
-    clear();
+    clear(0);
     // fd=file_open("frame1.txt");
     fd=file_open("frame0.txt");
     // fd=file_open("frame2.txt");
@@ -342,7 +342,7 @@ void test_file_driver_small_file(){
 void test_file_driver_large_file(){
     int fd,i,re;
     char buf[60000];        //we pick up this number just to store data we read, it is controlled by user so it is not a fixed number
-    clear();
+    clear(0);
     fd=file_open("verylargetextwithverylongname.tx");
     // fd=file_open("hello");
     // fd=file_open("fish");       //dont exist
@@ -386,7 +386,7 @@ void test_file_driver_large_file(){
 void test_file_driver_executable_file(){
     int fd,i,re;
     char buf[60000];             //we pick up this number just to store data we read, it is controlled by user so it is not a fixed number
-    clear();
+    clear(0);
     // fd=file_open("ls");
     fd=file_open("grep");
     puts("return value of file_open:");
@@ -431,7 +431,7 @@ void test_file_driver_executable_file(){
 void test_file_driver_read_twice(){
     int fd,i,re;
     char buf[60000];            //we pick up this number just to store data we read, it is controlled by user so it is not a fixed number
-    clear();
+    clear(0);
     fd=file_open("verylargetextwithverylongname.tx");
     puts("return value of file_open:");
     put_number(fd);
@@ -485,7 +485,7 @@ void test_file_driver_read_twice(){
  */ 
 void test_show_files(){
     int i,j;
-    clear();
+    clear(0);
     for( i=0; i<dir_count; i++){
         for( j=0;j<name_length;j++ ){
             // printf("%c",*((char*)(dentry+i*dentry_size+j)));
@@ -510,7 +510,7 @@ void test_show_frame(){
     // char ch[32]="verylargetextwithverylongname.tx";
     char ch[32]="ls";
     char buf[20000];             //we pick up this number just to store data we read, it is controlled by user so it is not a fixed number
-    clear();
+    clear(0);
     re=read_dentry_by_name ((uint8_t*)ch,(&test));
     puts("open_file: ");
     put_number(re);

@@ -31,7 +31,7 @@ void entry(unsigned long magic, unsigned long addr) {
     multiboot_info_t *mbi;
 
     /* Clear the screen. */
-    clear();
+    clear(0);
 
     /* Am I booted by a Multiboot-compliant boot loader? */
     if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {

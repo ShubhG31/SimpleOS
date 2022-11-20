@@ -5,6 +5,7 @@
 #include "lib.h"
 #include "Terminal.h"
 #include "system_call.h"
+#include "paging.h"
 
 #define keyboard_port 0x60 
 #define keyboard_irq_num 0x01
