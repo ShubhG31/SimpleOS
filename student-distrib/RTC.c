@@ -19,7 +19,7 @@
 #define TOP_4BITS 0xF0
 #define PASS 1
 #define FAIL 0
-static int8_t flag = 0;
+static int8_t flag[3] = {0,0,0};
 static int idx;
 static volatile uint16_t Hz_rate[3];
 static uint16_t Hz_counter[3];
@@ -42,7 +42,7 @@ void RTC_init(){
     outb(inb(INDEX_NUM) & VALUE ,INDEX_NUM);
     inb(READandWRITE);
     Hz_rate[0] = Hz_rate[1] = Hz_rate[2] = MAX_FREQ;
-    Hz_counter[0] = Hz_counter[1] = Hz_counter[2] = MAX_FREQ/Hz_rate[0];
+    Hz_counter[0] = Hz_counter[1] = Hz_counter[2] = MAX_FREQ/Hz_rate[get_main_terminal()];
     sti();
     enable_irq(RTC_itr_num);
     // 
@@ -73,8 +73,8 @@ int32_t RTC_open(const uint8_t* filename){
    (you will not need spinlocks. Why?) inputs not used
  */
 int32_t RTC_read(int32_t fd, void* buf, int32_t nbytes){
-    flag = 0;
-    while(!flag){
+    flag[get_main_terminal()] = 0;
+    while(!flag[get_main_terminal()]){
     //    printf("flag = 0\n");
     }
     // printf("flag = 0\n");
@@ -144,11 +144,12 @@ extern void RTC_handle(){
     outb(REGISTER_C, INDEX_NUM);
     inb(READandWRITE);
     cli();
-    idx=get_main_terminal();
-    Hz_counter[idx]--;
-    if(Hz_counter[idx] == 0){ 
-        flag = 1;
-        Hz_counter[idx] = MAX_FREQ/Hz_rate[idx];
+    for(idx=0;idx<3;idx++){
+        Hz_counter[idx]--;
+        if(Hz_counter[idx] <= 0){ 
+            flag[idx] = 1;
+            Hz_counter[idx] = MAX_FREQ/Hz_rate[idx];
+        }
     }
     sti();
     send_eoi(RTC_itr_num);
