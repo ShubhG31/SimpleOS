@@ -71,6 +71,7 @@ static int caps_lock_flag = 0;
 static int shift_flag = 0;
 static int ctrl_flag = 0;
 static int alt_flag = 0;
+static int alt1_flag = 0, alt2_flag = 0;
 //ALL MAGIC NUMBER LABELS
 
 static int keyboard_keycodes[keys];
@@ -131,21 +132,29 @@ void keyboard_helper(){
     int curr_terminal = get_display_terminal();     // everything we type is put into the display terminal buffer
 
     // if alt is pressed 
-    if(scan_code == alt_pressed){
-        alt_flag = 1;
-        // puts("tab pressed");
+    if(scan_code == alt_pressed) alt1_flag = 1;
+
+    if(scan_code == alt_pressed2) alt2_flag = 1;
+
+    // this is to deal with the edge case that i press alt1 and dont release and press alt2
+    // and then release alt2, the alt2_flag will never be raised (seemingly)
+    if(scan_code == alt_pressed || scan_code == alt_pressed2){
         send_eoi(keyboard_irq_num);
         sti();
         return;
     }
 
-    if(scan_code == alt_released){
-        alt_flag = 0;
-        // puts("tab released");
+    if(scan_code == alt_released) alt1_flag = 0;
+
+    if(scan_code == alt_released2) alt2_flag = 0;
+
+    if(scan_code == alt_released || scan_code == alt_released2){
         send_eoi(keyboard_irq_num);
         sti();
         return;
     }
+
+    alt_flag = alt1_flag | alt2_flag;
 
     if(alt_flag == 1 && scan_code == f1_pressed){
         switch_terminal(1);
