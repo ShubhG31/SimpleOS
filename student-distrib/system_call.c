@@ -79,7 +79,8 @@ int system_halt(uint8_t status){
     }
     // clear the page that was used for now complete process
     if(pid<3){
-        // fd_init();                                                          ////// something wrong here about updating the process_usage
+        // fd_init();
+                                                               ////// something wrong here about updating the process_usage
         processor_usage^=(1<<pid);
         const uint8_t* command = (uint8_t*) "shell";
         system_execute(command);//return status;
@@ -219,7 +220,7 @@ void executeable_parse(uint8_t* command){
 
 int system_execute(const uint8_t* command){
     // cli();
-    if(pid>=5){
+    if(find_next_pid()==-1){
         puts("Too Many Programs are being run\n");
         return 0;
     }
@@ -330,7 +331,7 @@ int system_execute(const uint8_t* command){
     // sti();
     if(pid<3){
         puts("Now you are opening terminal ");
-        put_number(flag_open_three_shell);putc('\n');
+        put_number(main_terminal+1);putc('\n');
     }
     IRET_prepare(eip);          //eip address may change, may need to modify it
 
@@ -506,7 +507,7 @@ void clear_vid_map(){
 }
 
 int switch_terminal(int next_display_terminal){
-    // cli();
+    cli();
     next_display_terminal-=1;
     flush_tlb();
     // if next_display_terminal
@@ -544,7 +545,7 @@ done_switch_terminal:
     update_cursor_after_switch(display_terminal);
     flush_tlb();
     // puts("finish switch terminal\n");
-    // sti();
+    sti();
     return 0;
 }
 
