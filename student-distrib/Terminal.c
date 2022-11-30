@@ -86,7 +86,7 @@ void copy_buffer(char* keyboard){
     // copy over buffer to line buffer for terminal
     strncpy(line,keyboard,strlen(keyboard));
     // new line flag is set to high 
-    int curr_terminal=get_main_terminal();
+    int curr_terminal=get_display_terminal();
     newline_flag_terminal[curr_terminal] = 1;
     return;
 }
