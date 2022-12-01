@@ -259,6 +259,16 @@ void keyboard_helper(){
         goto end;
     }
 
+    // if ctrl is pressed and c is pressed, The ALARM signal should be sent to the currently-executing task TODO
+    if (ctrl_flag==1 && keyboard_keycodes[scan_code]=='c'){
+        // clear screen
+        clear(get_display_terminal());
+        // send end of interupt signal
+        // send_eoi(keyboard_irq_num); 
+        // return;
+        goto end;
+    }
+
     // if buffer location is less than allowed value of 127 and pressed key is allowed then execute
     if(buffer_cur_location[curr_terminal] < max_characters && keyboard_keycodes[scan_code] != print_screen){
        if(shift_flag){

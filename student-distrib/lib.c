@@ -6,7 +6,10 @@
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
-#define ATTRIB      0x2//0x7
+#define ATTRIB      0xF2    //0x7
+#define ATTRIBT1    0x02
+#define ATTRIBT2    0xF3
+#define ATTRIBT3    0xC4    //0xE4 or 0xC4
 
 #define BS_ascii 8
 
@@ -25,6 +28,7 @@
 
 static int screen_x[3]={0,0,0};
 static int screen_y[3]={0,0,0};
+static char for_back_color[3] = {ATTRIBT1,ATTRIBT2,ATTRIBT3};
 static char* video_mem = (char *)VIDEO;
 
 /* void clear(int display_terminal);
@@ -35,7 +39,8 @@ void clear(int dis_terminal) {
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
-        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+        *(uint8_t *)(video_mem + (i << 1) + 1) = for_back_color[dis_terminal];
+        // *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
     screen_x[dis_terminal] = 0;
     screen_y[dis_terminal] = 0;
@@ -208,7 +213,8 @@ void putc_user_code(uint8_t c) {
                 // set the last row to empty character
                 *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = empty_mem;
                 // set the value of color
-                *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
+                *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = for_back_color[dis_terminal];
+                // *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
             }
             // copy buffer to video memory
             memcpy(video_mem,scroll_buf, NEW_videomem_scroll);
@@ -255,7 +261,8 @@ void putc_user_code(uint8_t c) {
                     // set the last row to empty character
                     *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = empty_mem;
                     // set the value of color
-                    *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
+                    *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = for_back_color[dis_terminal];
+                    // *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
                 }
                 // copy buffer to video memory
                 memcpy(video_mem,scroll_buf, NEW_videomem_scroll);
@@ -274,7 +281,8 @@ void putc_user_code(uint8_t c) {
         // set the value of video memory to character 
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1)) = c;
         // set the value of video memory to color 
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1) + 1) = for_back_color[dis_terminal];
+        // *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1) + 1) = ATTRIB;
         // set x to next value in column 
         screen_x[dis_terminal]++;
         
@@ -307,7 +315,8 @@ void putc(uint8_t c) {
                 // set the last row to empty character
                 *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = empty_mem;
                 // set the value of color
-                *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
+                *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = for_back_color[dis_terminal];
+                // *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
             }
             // copy buffer to video memory
             memcpy(video_mem,scroll_buf, NEW_videomem_scroll);
@@ -354,7 +363,8 @@ void putc(uint8_t c) {
                     // set the last row to empty character
                     *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = empty_mem;
                     // set the value of color
-                    *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
+                    *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = for_back_color[dis_terminal];
+                    // *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
                 }
                 // copy buffer to video memory
                 memcpy(video_mem,scroll_buf, NEW_videomem_scroll);
@@ -373,7 +383,8 @@ void putc(uint8_t c) {
         // set the value of video memory to character 
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1)) = c;
         // set the value of video memory to color 
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1) + 1) = for_back_color[dis_terminal];
+        // *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1) + 1) = ATTRIB;
         // set x to next value in column 
         screen_x[dis_terminal]++;
         
