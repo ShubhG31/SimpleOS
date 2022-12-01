@@ -30,6 +30,7 @@ static int screen_x[3]={0,0,0};
 static int screen_y[3]={0,0,0};
 static char for_back_color[3] = {ATTRIBT1,ATTRIBT2,ATTRIBT3};
 static char* video_mem = (char *)VIDEO;
+static int inital_flag_full_color[3] = {1, 1, 1};
 
 /* void clear(int display_terminal);
  * Inputs: void
@@ -199,6 +200,7 @@ void putc_user_code(uint8_t c) {
     // added to terminal scroll
     cli();
     int i;
+    int j;
     int dis_terminal=get_main_terminal();
     // checks if the character is a new line or line carriage 
      if(c == '\n' || c == '\r') {
@@ -207,7 +209,16 @@ void putc_user_code(uint8_t c) {
 
             // copy memory to a buffer 
             memcpy(scroll_buf,video_mem+(NUM_COLS*2),OLD_videomem_scroll);
-
+            /*
+            if(inital_flag_full_color[dis_terminal]){
+                inital_flag_full_color[dis_terminal] = 0;
+                for(j=0;j<NUM_ROWS;j++){
+                    for(i=0;i<NUM_COLS;i++){
+                        *(scroll_buf+((NUM_COLS*(j)+i)<<1)+1) = for_back_color[dis_terminal];
+                    }    
+                } 
+            }
+            */
             // go through colomns and set new video memory to clear end row
             for(i=0;i<NUM_COLS;i++){
                 // set the last row to empty character
@@ -256,6 +267,16 @@ void putc_user_code(uint8_t c) {
             if(screen_x[dis_terminal] >= NUM_COLS && screen_y[dis_terminal] == NUM_ROWS-1){
                 // copy the video memory to buffer 
                 memcpy(scroll_buf,video_mem+(NUM_COLS*2),OLD_videomem_scroll);
+                /*
+                    if(inital_flag_full_color[dis_terminal]){
+                    inital_flag_full_color[dis_terminal] = 0;
+                    for(j=0;j<NUM_ROWS;j++){
+                        for(i=0;i<NUM_COLS;i++){
+                            *(scroll_buf+((NUM_COLS*(j)+i)<<1)+1) = for_back_color[dis_terminal];
+                            }    
+                        } 
+                    }
+                */
                 // go through colomns and set new video memory to clear end row
                 for(i=0;i<NUM_COLS;i++){
                     // set the last row to empty character
@@ -301,6 +322,7 @@ void putc(uint8_t c) {
     // added to terminal scroll
     cli();
     int i;
+    int j;
     int dis_terminal=get_display_terminal();
     // checks if the character is a new line or line carriage 
      if(c == '\n' || c == '\r') {
@@ -309,7 +331,16 @@ void putc(uint8_t c) {
 
             // copy memory to a buffer 
             memcpy(scroll_buf,video_mem+(NUM_COLS*2),OLD_videomem_scroll);
-
+            /*
+                if(inital_flag_full_color[dis_terminal]){
+                inital_flag_full_color[dis_terminal] = 0;
+                for(j=0;j<NUM_ROWS;j++){
+                    for(i=0;i<NUM_COLS;i++){
+                        *(scroll_buf+((NUM_COLS*(j)+i)<<1)+1) = for_back_color[dis_terminal];
+                        }    
+                    } 
+                }
+            */
             // go through colomns and set new video memory to clear end row
             for(i=0;i<NUM_COLS;i++){
                 // set the last row to empty character
@@ -358,6 +389,16 @@ void putc(uint8_t c) {
             if(screen_x[dis_terminal] >= NUM_COLS && screen_y[dis_terminal] == NUM_ROWS-1){
                 // copy the video memory to buffer 
                 memcpy(scroll_buf,video_mem+(NUM_COLS*2),OLD_videomem_scroll);
+                /*
+                if(inital_flag_full_color[dis_terminal]){
+                inital_flag_full_color[dis_terminal] = 0;
+                for(j=0;j<NUM_ROWS;j++){
+                    for(i=0;i<NUM_COLS;i++){
+                        *(scroll_buf+((NUM_COLS*(j)+i)<<1)+1) = for_back_color[dis_terminal];
+                        }    
+                    } 
+                }
+                */
                 // go through colomns and set new video memory to clear end row
                 for(i=0;i<NUM_COLS;i++){
                     // set the last row to empty character
