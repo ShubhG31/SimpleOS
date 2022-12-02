@@ -40,8 +40,7 @@ void clear(int dis_terminal) {
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
-        *(uint8_t *)(video_mem + (i << 1) + 1) = for_back_color[dis_terminal];
-        // *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
     screen_x[dis_terminal] = 0;
     screen_y[dis_terminal] = 0;
@@ -299,28 +298,17 @@ void putc_user_code(uint8_t c) {
                     screen_x[dis_terminal] = 0;
                 }
             }
-<<<<<<< HEAD
-=======
         
->>>>>>> origin/han_3_5
         if(inital_flag_full_color[dis_terminal]){
             inital_flag_full_color[dis_terminal] = 0;
             for(j=0;j<NUM_ROWS;j++){
                 for(i=0;i<NUM_COLS;i++){
-<<<<<<< HEAD
-                    *(scroll_buf+((NUM_COLS*(j)+i)<<1)+1) = for_back_color[dis_terminal];
-                    *(uint8_t *)(video_mem + ((NUM_COLS * i + screen_x[dis_terminal]) << 1) + 1) = for_back_color[dis_terminal];
-                }    
-            } 
-        }
-=======
                     // *(scroll_buf+((NUM_COLS*(j)+i)<<1)+1) = for_back_color[dis_terminal];
                     *(uint8_t *)(video_mem + ((NUM_COLS * j + i) << 1) + 1) = for_back_color[dis_terminal];
                 }    
             } 
         }
 
->>>>>>> origin/han_3_5
         // set the value of video memory to character 
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1)) = c;
         // set the value of video memory to color 

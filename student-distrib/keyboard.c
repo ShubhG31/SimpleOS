@@ -176,7 +176,7 @@ void keyboard_helper(){
         return;
     }
     
-    if(get_executing_status(curr_terminal)==1){
+    if(get_executing_status(curr_terminal)==1){ // when we get into the user code it is 1, we ban the keyboard to type anything instead of using terminal read
         send_eoi(keyboard_irq_num);
         sti();
         return;

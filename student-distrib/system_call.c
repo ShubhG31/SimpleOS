@@ -338,7 +338,7 @@ int system_execute(const uint8_t* command){
         puts("Now you are opening terminal ");
         put_number(main_terminal+1);putc('\n');
     }else{
-        executing_status[main_terminal]=1;
+        executing_status[main_terminal]=1;  // everytime we run user code we block the keyboards
     }
     IRET_prepare(eip);          //eip address may change, may need to modify it
 
@@ -479,6 +479,7 @@ int system_getargs(uint8_t* buf, int32_t nbytes){
     if(len==0||len>nbytes)return -1;
     //copying the argument into PCB
     strcpy((int8_t*)buf,pcb_t->arg);
+    
     return 0;
 } 
 
@@ -494,8 +495,8 @@ int system_vidmap(uint8_t** screen_start){
     // *screen_start = (uint8_t*)set_video_page();
     *screen_start = (uint8_t*)(36*4*1024*1024+184*4*1024);
 
-    puts("main_terminal:");put_number(main_terminal);putc('\n');
-    puts("display_terminal:");put_number(display_terminal);putc('\n');
+    // puts("main_terminal:");put_number(main_terminal);putc('\n');
+    // puts("display_terminal:");put_number(display_terminal);putc('\n');
 
     // if the new user video is not displaying, reset the pointer
     // if( main_terminal != display_terminal ){
@@ -561,7 +562,6 @@ done_switch_terminal:
 }
 
 void schedule(){
-    cli();
     next_main_terminal = (main_terminal+1)%3;
     next_pid = terminal[next_main_terminal].pid;
     register uint32_t saved_ebp asm("ebp");
@@ -588,6 +588,7 @@ void schedule(){
         main_terminal=next_main_terminal;
         
         flag_open_three_shell++;
+        sti();
         const uint8_t* command = (uint8_t*) "shell";
         system_execute(command);//return status;
         return;
@@ -655,7 +656,6 @@ finish_schedule_terminal:
     flush_tlb();
 
     update_cursor_after_switch(display_terminal);
-    sti();
     send_eoi(0);
     return;
 }

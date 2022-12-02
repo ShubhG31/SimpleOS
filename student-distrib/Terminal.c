@@ -28,6 +28,7 @@ uint32_t terminal_read(int32_t fd, void *buf, int32_t nbytes){
         i++;
     }
     ((char*)buf)[i] = line[i];
+    i++;
     // puts(buf);
     // clear line buffer
     memset(line,0,strlen(line));
