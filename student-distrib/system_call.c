@@ -562,6 +562,7 @@ done_switch_terminal:
 }
 
 void schedule(){
+    cli();
     next_main_terminal = (main_terminal+1)%3;
     next_pid = terminal[next_main_terminal].pid;
     register uint32_t saved_ebp asm("ebp");
@@ -656,6 +657,7 @@ finish_schedule_terminal:
     flush_tlb();
 
     update_cursor_after_switch(display_terminal);
+    sti();
     send_eoi(0);
     return;
 }
