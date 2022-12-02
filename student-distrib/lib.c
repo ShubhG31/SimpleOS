@@ -758,3 +758,4 @@ void update_cursor(int screenx, int screeny)
 void update_cursor_after_switch(int dis_terminal){
     update_cursor(screen_x[dis_terminal],screen_y[dis_terminal]);
 }
+//testing the push
