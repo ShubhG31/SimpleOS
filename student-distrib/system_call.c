@@ -15,6 +15,7 @@ int phy_mem_loc, main_terminal, display_terminal, flag_open_three_shell;
 int empty_vid_map[1024];
 int next_main_terminal, next_pid;
 int schedule_time;
+int executing_status[3]={0,0,0};
 
 typedef int32_t (*open_type)(uint8_t*);
 typedef int32_t (*close_type)(uint32_t);
@@ -51,6 +52,9 @@ int get_main_terminal(){
 }
 int get_display_terminal(){
     return display_terminal;
+}
+int get_executing_status(int terminal_){
+    return executing_status[terminal_];
 }
 void fd_init(){         // need to be run after booting part
     // last_pid=-1;
@@ -93,6 +97,7 @@ int system_halt(uint8_t status){
     // update pid
     processor_usage^=(1<<pid);
     old_pid=pid;
+    executing_status[main_terminal]=0;
 
     terminal[main_terminal].pid=pcb_t->parent_id;
     pid=pcb_t->parent_id;
@@ -332,6 +337,8 @@ int system_execute(const uint8_t* command){
     if(pid<3){
         puts("Now you are opening terminal ");
         put_number(main_terminal+1);putc('\n');
+    }else{
+        executing_status[main_terminal]=1;
     }
     IRET_prepare(eip);          //eip address may change, may need to modify it
 
@@ -358,6 +365,8 @@ int system_read(int32_t fd, void* buf, int32_t nbytes){
         terminal[pid].send_eoi=1;
         send_eoi(0);
     }
+
+    if(fd==0)executing_status[main_terminal]=0;
     
     re = ((((struct files_command*)(fd_box.opt_table_pointer))->read)((int32_t)fd,(void*)buf,(int32_t)nbytes));
     if(re!=-1){
@@ -365,6 +374,8 @@ int system_read(int32_t fd, void* buf, int32_t nbytes){
         pcb_t=(struct PCB_table*)get_pcb_pointer();
         pcb_t->fdt[fd].file_pos+=re;
     }
+
+    if(fd==0)executing_status[main_terminal]=1;
     return re;
 }
 
@@ -550,6 +561,7 @@ done_switch_terminal:
 }
 
 void schedule(){
+    cli();
     next_main_terminal = (main_terminal+1)%3;
     next_pid = terminal[next_main_terminal].pid;
     register uint32_t saved_ebp asm("ebp");
@@ -643,6 +655,7 @@ finish_schedule_terminal:
     flush_tlb();
 
     update_cursor_after_switch(display_terminal);
+    sti();
     send_eoi(0);
     return;
 }

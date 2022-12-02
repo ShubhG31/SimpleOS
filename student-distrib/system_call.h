@@ -100,4 +100,5 @@ extern void schedule();
 extern int video_map_switch();
 extern int switch_terminal(int next_display_terminal);
 extern void flush_tlb();
+extern int get_executing_status(int terminal_);
 #endif

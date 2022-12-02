@@ -72,6 +72,7 @@ static int shift_flag = 0;
 static int ctrl_flag = 0;
 static int alt_flag = 0;
 static int alt1_flag = 0, alt2_flag = 0;
+int enter_flags[3]={0,0,0};
 //ALL MAGIC NUMBER LABELS
 
 static int keyboard_keycodes[keys];
@@ -174,6 +175,13 @@ void keyboard_helper(){
         sti();
         return;
     }
+    
+    if(get_executing_status(curr_terminal)==1){
+        send_eoi(keyboard_irq_num);
+        sti();
+        return;
+    }
+
     // if locaton is 0 and if pressed key is backspace  
     if( buffer_cur_location[curr_terminal] == 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
         // return end of interupt 
@@ -202,7 +210,10 @@ void keyboard_helper(){
     if( keyboard_keycodes[scan_code] == keyboard_keycodes[enter]){
 
         // if the display one is not running terminal, we should not let the enter pressed
-        if(get_main_terminal()!=get_display_terminal())goto end;
+        // if(get_main_terminal()!=get_display_terminal()){
+        //     enter_flags[get_display_terminal()]=1;
+        //     goto end;
+        // }
 
         // put new line into the buffer 
         buffer[curr_terminal][buffer_cur_location[curr_terminal]] = '\n';
@@ -392,4 +403,8 @@ void keyboard_init_irq(){
     init_keycodes();
     enable_irq(keyboard_irq_num);
     return;
+}
+
+int get_enter_flag(int terminal_){
+    return enter_flags[terminal_];
 }

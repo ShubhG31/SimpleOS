@@ -18,4 +18,6 @@ extern void keyboard_handler();
 
 void keyboard_helper();
 
+extern int get_enter_flag(int terminal_);
+
 #endif // _KEYBOARD_
