@@ -363,6 +363,7 @@ int system_read(int32_t fd, void* buf, int32_t nbytes){
     // this is because system_read is the first part of shell code that will use interrupt
     if( pid<3 && terminal[pid].send_eoi==0 ) {
         terminal[pid].send_eoi=1;
+        sti();
         send_eoi(0);
     }
 
@@ -589,7 +590,7 @@ void schedule(){
         main_terminal=next_main_terminal;
         
         flag_open_three_shell++;
-        sti();
+        // sti();
         const uint8_t* command = (uint8_t*) "shell";
         system_execute(command);//return status;
         return;
