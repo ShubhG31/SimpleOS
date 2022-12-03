@@ -11,6 +11,7 @@
 #define keyboard_irq_num 0x01
 
 extern char buffer[3][128];
+extern char past_entries[3][5][128];
 // volatile static int newline_flag = 0; 
 
 void keyboard_init_irq(); // intialize the keyboard

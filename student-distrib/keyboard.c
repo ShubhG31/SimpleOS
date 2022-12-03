@@ -4,6 +4,8 @@
 // ALL MAGIC NUMBER LABELS
 #define print_screen 0xE0
 #define keycode_0 0xB
+#define up_arrow 0x48
+#define down_arrow 0x50
 #define Ascii_0 48
 #define Q 0x10
 #define A 0x1E
@@ -66,6 +68,7 @@
 #define f3_pressed 0x3D
 
 #define max_characters 127
+#define copy_size 128
 
 static int caps_lock_flag = 0;
 static int shift_flag = 0;
@@ -78,6 +81,9 @@ int enter_flags[3]={0,0,0};
 static int keyboard_keycodes[keys];
 static char special_num_char[10]=")!@#$%^&*(";
 char buffer[3][128] = {{0},{0},{0}};
+char past_entries[3][5][128] = {{{0},{0},{0},{0},{0}},{{0},{0},{0},{0},{0}},{{0},{0},{0},{0},{0}}};
+static unsigned int past_entries_buffer_cur_location[3][5] = {{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}};
+static unsigned int loc_in_past_entries[3] = {-1,-1,-1};
 static unsigned int buffer_cur_location[3] = {0};
 
 /* void init_keycodes();
@@ -214,6 +220,31 @@ void keyboard_helper(){
         //     enter_flags[get_display_terminal()]=1;
         //     goto end;
         // }
+        // int i;
+        if(buffer_cur_location[curr_terminal] != 0){
+            // for(i=0;i<keys;i++){
+            //     past_entries[curr_terminal]
+            // }
+            // past_entries[curr_terminal][4] = past_entries[curr_terminal][3];
+            // past_entries[curr_terminal][3] = past_entries[curr_terminal][2];
+            // past_entries[curr_terminal][2] = past_entries[curr_terminal][1];
+            // past_entries[curr_terminal][1] = past_entries[curr_terminal][0];
+            // past_entries[curr_terminal][0] = buffer[curr_terminal];
+
+            memcpy(past_entries[curr_terminal][4], past_entries[curr_terminal][3], copy_size);
+            memcpy(past_entries[curr_terminal][3], past_entries[curr_terminal][2], copy_size);
+            memcpy(past_entries[curr_terminal][2], past_entries[curr_terminal][1], copy_size);
+            memcpy(past_entries[curr_terminal][1], past_entries[curr_terminal][0], copy_size);
+            memcpy(past_entries[curr_terminal][0], buffer[curr_terminal], copy_size);
+
+            past_entries_buffer_cur_location[curr_terminal][4] = past_entries_buffer_cur_location[curr_terminal][3];
+            past_entries_buffer_cur_location[curr_terminal][3] = past_entries_buffer_cur_location[curr_terminal][2];
+            past_entries_buffer_cur_location[curr_terminal][2] = past_entries_buffer_cur_location[curr_terminal][1];
+            past_entries_buffer_cur_location[curr_terminal][1] = past_entries_buffer_cur_location[curr_terminal][0];
+            past_entries_buffer_cur_location[curr_terminal][0] = buffer_cur_location[curr_terminal];
+        }
+
+        loc_in_past_entries[curr_terminal] = -1;
 
         // put new line into the buffer 
         buffer[curr_terminal][buffer_cur_location[curr_terminal]] = '\n';
@@ -229,6 +260,39 @@ void keyboard_helper(){
         goto end;
         // send_eoi(keyboard_irq_num);
         // return;
+    }
+
+    int temp;
+    if(scan_code == up_arrow && loc_in_past_entries[curr_terminal] != 4){
+        int temp;
+        loc_in_past_entries[curr_terminal] += 1;
+        temp = strlen(&past_entries[curr_terminal][loc_in_past_entries[curr_terminal]]);
+        putc(temp);
+        memcpy(buffer[curr_terminal], past_entries[curr_terminal][loc_in_past_entries[curr_terminal]], temp);
+        // buffer[curr_terminal] = past_entries[curr_terminal][loc_in_past_entries[curr_terminal]];
+        buffer_cur_location[curr_terminal] = past_entries_buffer_cur_location[curr_terminal][loc_in_past_entries[curr_terminal]];
+        int j;
+        for(j = 0; j < 128; j++){
+            putc(buffer[curr_terminal][j]);
+        }
+
+    }
+    
+    else if(scan_code == down_arrow && loc_in_past_entries[curr_terminal] != 0){
+        putc(keyboard_keycodes[enter]);
+        loc_in_past_entries[curr_terminal] -= 1;
+    }
+    
+    else if(scan_code == down_arrow && loc_in_past_entries[curr_terminal] != -1){
+        loc_in_past_entries[curr_terminal] -= 1;
+        memcpy(buffer[curr_terminal], past_entries[curr_terminal][loc_in_past_entries[curr_terminal]], copy_size);
+        // buffer[curr_terminal] = past_entries[curr_terminal][loc_in_past_entries[curr_terminal]];
+        buffer_cur_location[curr_terminal] = past_entries_buffer_cur_location[curr_terminal][loc_in_past_entries[curr_terminal]];
+        int j;
+        for(j = 0; j < 128; j++){
+            putc(buffer[curr_terminal][j]);
+        }
+
     }
     
     // if scan code is shift key then set flag to high 

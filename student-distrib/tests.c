@@ -94,17 +94,17 @@ int dereferencing_null_test(){
  * Coverage: Lets the user test terminal, with Terminal_read and Terminal_write functions that echos typed strings 
  * Files: Terminal.h/S
  */
-int terminal_test(){
+// int terminal_test(){
 
-	while(1){
-		puts("391OS>");
-		char buf[500] = {0};
-		int i;
-		i = terminal_read(0,(void *)buf,0);
-		terminal_write(0,(void*)buf,i);
-		putc('\n');
-	}
-}
+// 	while(1){
+// 		puts("391OS>");
+// 		char buf[500] = {0};
+// 		int i;
+// 		i = terminal_read(0,(void *)buf,0);
+// 		terminal_write(0,(void*)buf,i);
+// 		putc('\n');
+// 	}
+// }
 
 /* Terminal Oen Test
  * 
