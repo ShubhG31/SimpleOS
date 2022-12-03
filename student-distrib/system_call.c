@@ -658,7 +658,7 @@ finish_schedule_terminal:
     flush_tlb();
 
     update_cursor_after_switch(display_terminal);
-    sti();
+    // sti();
     send_eoi(0);
     return;
 }
