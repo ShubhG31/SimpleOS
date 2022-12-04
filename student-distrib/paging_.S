@@ -26,8 +26,8 @@ EnablePaging:
     pushl %ebp
     movl %esp, %ebp
     movl %cr4, %eax
-    orl $0x00000010, %eax
-    movl %eax, %cr4 #cr4 tells that paging is set up
+    orl $0x00000010, %eax       # or'ing the 2nd bit of cr4 
+    movl %eax, %cr4             # cr4 tells that paging is set up
     movl %cr0, %eax
     orl $0x80000000, %eax #enabling teh bit for paging in cr4 8MB
     movl %eax, %cr0
