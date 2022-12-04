@@ -49,40 +49,67 @@ int idt_test(){
 	return result;
 }
 
-// keyboard handler test
+/* Keyboard Handler Test
+ * 
+ * Asserts that first 10 IDT entries are not NULL
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: load keyboard handler then asm volatile value
+ * Files: idt.c/h
+ */
 int keyboard_handler_test(){
 	// checks the keyboard handler 
 		asm volatile("int $0x21;");
 		return 0;
 }
 
-// checks the divide by 0 exception
+/* Divide by Zero Test
+ * 
+ * Checks the divide by zero exception and returns pass if success
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: n value then divide by zero exception
+ * Files: idt.c/h
+ */
 int divide_0_test(){
-	// checks the divide by 0 exception
 		int n = 0;
 		n = 1/n;
 		return PASS;
 }
 
-// Tests dereferencing video memory address
+/* Deferencing Video Memory Address Test
+ * 
+ * Tests to see if video memory address are being dereferenced
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: video memory address and pointer
+ * Files: paging.c/h
+ */
 int dereferencing_vm_test(){
-	// Tests dereferencing video memory address
 		int i;
 		int *j = (int*)VIDEO;//0xB8000;
 		i = (int)*j;
 		return PASS;
 }
 
-// Tests page fault when dereferencing null pointer 
+/* Page Fault Test
+ * 
+ * Tests if a page fault occurs when dereferencing the null pointer
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: null pointer to dereference
+ * Files: paging.c/h
+ */
 int dereferencing_null_test(){
-	// Tests page fault when dereferencing null pointer 
 		int *j, i;
 		j = NULL;
 		i = *j;
 		return PASS;
 }
-
-// add more tests here
 
 /* Checkpoint 2 tests */
 
@@ -106,7 +133,7 @@ int terminal_test(){
 	}
 }
 
-/* Terminal Oen Test
+/* Terminal Open Test
  * 
  * Inputs: None
  * Outputs: PASS/FAIL
@@ -178,15 +205,16 @@ int terminal_read_test(){
 	}
 	return result;
 }
-// RTC test section----------------------------------------------------------
-/* RTC open and close Test
+
+/* RTC Open and Close Test
  * 
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
- * Coverage: Checks all possible frequencies that RTC can be set to
+ * Coverage: Checks all possible frequencies that RTC can be set to and makes sure it successfully opens and closes
  * Files: RTC.h/S
  */
+
 int RTC_open_test(){
 	uint8_t* filename = 0;
     // printf("%d",RTC_open(filename));
@@ -197,14 +225,16 @@ int RTC_close_test(){
     // printf("%d",RTC_open(filename));
 	return RTC_open(filename);
 }
+
 /* RTC Write and Read Test
  * 
  * Inputs: None
  * Outputs: PASS/FAIL
  * Side Effects: None
- * Coverage: Checks all possible frequencies that RTC can be set to
+ * Coverage: Checks all possible frequencies that RTC can be set to and makes sure RTC successfully writes and reads
  * Files: RTC.h/S
  */
+
 int RTC_write_and_read_test(){
 	int i;
 	int count = 80;//used for when characters should go on a new line
@@ -233,7 +263,6 @@ int RTC_write_and_read_test(){
 	RTC_write(NULL, NULL, NULL);//checking if we pass NULL into the write
 	return PASS;
 }
-// ----------------------------------------------------------------------------
 
 
 /* Checkpoint 3 tests */
@@ -251,8 +280,6 @@ void launch_tests(){
 	// TEST_OUTPUT("divide_0_test", divide_0_test());
 	// TEST_OUTPUT("dereferencing_vm_test", dereferencing_vm_test());
 	// TEST_OUTPUT("dereferencing_null_test", dereferencing_null_test());
-	
-
 
 	/* Checkpoint 2 tests*/
 
