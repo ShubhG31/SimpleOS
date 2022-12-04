@@ -7,7 +7,7 @@
 
 # uses address of the page directory
 # registers used: eax
-# function: loads the page directory in the cr3 register
+# function: loads the page directory in the cr3 register 
 
 LoadPagingDirectory:
     pushl %ebp
@@ -20,16 +20,16 @@ LoadPagingDirectory:
 
 # uses address of the page directory like before
 # registers used: eax 
-# function: enables paging, specifically setting registers and bits to enable paging
+# function: enables paging, specifically setting registers and bits to enable paging. setting up something in cr4 to know that the paging process has been set up
 
 EnablePaging:
     pushl %ebp
     movl %esp, %ebp
     movl %cr4, %eax
     orl $0x00000010, %eax
-    movl %eax, %cr4
+    movl %eax, %cr4 #cr4 tells that paging is set up
     movl %cr0, %eax
-    orl $0x80000000, %eax
+    orl $0x80000000, %eax #enabling teh bit for paging in cr4 8MB
     movl %eax, %cr0
     movl %ebp, %esp
     popl %ebp
