@@ -136,7 +136,7 @@ int32_t set_video_page(){
     page_directory[36].G=0;
     page_directory[36].AVL=0;
     page_directory[36].offset_31_12=0;      // pointing to 0 MB 4M-page
-    return 36*4*1024*1024+184*4*1024;
+    return 36*4*1024*1024+184*4*1024;       // the virtual address that user code will use to get, 0xB8 offset in 132MB pages (virtual address)
 }
 
 /*
