@@ -1,5 +1,13 @@
 #include "pit.h"
 
+/*
+ * pit_initialize
+ *   DESCRIPTION: initialize the pit interruption
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 
 void pit_initialize(){
 
