@@ -91,12 +91,17 @@ extern void paging_init(){
     return;
 }
 
-/* Inputs: void
- * Return Value: initialization of paging including the page directory as shown in documents
- * Function: initializing the page table with the right status of 0 or 1 */
-
+/*
+ * set_new_page
+ *   DESCRIPTION: set new page for user code
+ *   INPUTS: phy_mem_loc: the physical memory that the user code will be load to
+ *   OUTPUTS: none
+ *   RETURN VALUE: 1 for success
+ *   SIDE EFFECTS: none
+ */
 int32_t set_new_page(int phy_mem_loc){
-    page_directory[32].present=1;         // page table is present
+    // we set the new page in vertual memory 128MB, which is the 128/4=32 elements in page_directory
+    page_directory[32].present=1;         // page table is present     
     page_directory[32].RW=1;  // changed 
     page_directory[32].US = 1; //changed
     page_directory[32].PWT=0; //
@@ -110,7 +115,16 @@ int32_t set_new_page(int phy_mem_loc){
     return 1; 
 }
 
+/*
+ * set_video_page
+ *   DESCRIPTION: set video page for user code
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: 36*4*1024*1024+184*4*1024 virtual memory address for user to access video address
+ *   SIDE EFFECTS: none
+ */
 int32_t set_video_page(){
+    // 36 is simply what we randomly choose as the virtual address for video memory
     page_directory[36].present=1;         // page table is present
     page_directory[36].RW=1;  
     page_directory[36].US = 1; //changed
@@ -121,28 +135,52 @@ int32_t set_video_page(){
     page_directory[36].ps=1;               // When 1, tells us that the pages are 4MB 
     page_directory[36].G=0;
     page_directory[36].AVL=0;
-    page_directory[36].offset_31_12=0;
+    page_directory[36].offset_31_12=0;      // pointing to 0 MB 4M-page
     return 36*4*1024*1024+184*4*1024;
 }
 
+/*
+ * set_invisible_video_page
+ *   DESCRIPTION: set video page for main_terminal 0/1/2
+ *   INPUTS: main_terminal: the main_terminal we remap the video memory to
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 int set_invisible_video_page(int main_terminal){
     page_directory[36].present=1;         // page table is present
     page_directory[36].RW=1;  
     page_directory[36].US = 1; //changed
-    page_directory[36].PWT=0; //
+    page_directory[36].PWT=0; 
     page_directory[36].PCD=0;
     page_directory[36].A=0;
     page_directory[36].avl_=0;
     page_directory[36].ps=1;               // When 1, tells us that the pages are 4MB 
     page_directory[36].G=0;
     page_directory[36].AVL=0;
-    page_directory[36].offset_31_12=(main_terminal+8)<<10;
-    return 0;
+    page_directory[36].offset_31_12=(main_terminal+8)<<10; // we are mapping to 32/36/40 MB 4M-page
+    return 0;  
 }
+/*
+ * map_B8_B9_table
+ *   DESCRIPTION: remap 0xB8000 page to off physical memory
+ *   INPUTS: off: the physical memory we are going to map to
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 int map_B8_B9_table(int off){
     page_table[ENTRIES].offset_31_12=off;   //
     return 0;
 }
+/*
+ * get_B8_B9_table
+ *   DESCRIPTION: get physical memory which virtual memory 0xB8000 page is mapping to
+ *   INPUTS: off: the physical memory we are going to map to
+ *   OUTPUTS: none
+ *   RETURN VALUE: physical memory which virtual memory 0xB8000 page is mapping to
+ *   SIDE EFFECTS: none
+ */
 int get_B8_B9_table(){
     return page_table[ENTRIES].offset_31_12;
 }
