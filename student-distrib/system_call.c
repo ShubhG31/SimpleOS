@@ -22,6 +22,7 @@ typedef int32_t (*close_type)(uint32_t);
 typedef int32_t (*write_type)(int32_t,void*,int32_t);
 typedef int32_t (*read_type)(int32_t,void*,int32_t);
 
+//provides a struct for file systems open, close, read & write
 struct files_command{
     open_type open;
     close_type close;
@@ -29,19 +30,25 @@ struct files_command{
     write_type write;
 };
 
+//provides files for rtc, directory, file and terminal commands
 static struct files_command RTC_commands={(open_type)&RTC_open, (close_type)&RTC_close, (read_type)&RTC_read, (write_type)&RTC_write};
 static struct files_command dir_commands={(open_type)&dir_open, (close_type)&dir_close, (read_type)&dir_read, (write_type)&dir_write};
 static struct files_command file_commands={(open_type)&file_open, (close_type)&file_close, (read_type)&file_read, (write_type)&file_write};
 static struct files_command terminal_commands={(open_type)&terminal_open, (close_type)&terminal_close, (read_type)&terminal_read, (write_type)&terminal_write};
 
+//struct for pcb related things
 struct PCB_table* pcb_t;
 struct PCB_table pcb_box;
+//struct for file descriptor
 struct file_descriptor fd_box;
 
+//struct for terminal with esp, ebp, pid and end of interrupt
 struct terminal_t{
     int saved_esp, saved_ebp, pid;
     int send_eoi;
 };
+
+//struct for the three terminals as implemented in checkpoint 4/5
 struct terminal_t terminal[3];
 
 /*
