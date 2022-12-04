@@ -84,9 +84,9 @@ extern void paging_init(){
         page_table[i].offset_31_12=i;   //
     }
     // printf("after the wacky loop\n");
-    LoadPagingDirectory((unsigned int*)page_directory);
+    LoadPagingDirectory((unsigned int*)page_directory); //pushing the memory location of the page directory into cr3 and passing the page_directory parameters in
     // printf("-----------------------------\n");
-    EnablePaging();
+    EnablePaging(); //setting up something in cr4 to know that paging process has been set up
     // printf("finish enable ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
     return;
 }
