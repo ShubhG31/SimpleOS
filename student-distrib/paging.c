@@ -148,6 +148,7 @@ int32_t set_video_page(){
  *   SIDE EFFECTS: none
  */
 int set_invisible_video_page(int main_terminal){
+    // 36 is simply what we randomly choose as the virtual address for video memory
     page_directory[36].present=1;         // page table is present
     page_directory[36].RW=1;  
     page_directory[36].US = 1; //changed
