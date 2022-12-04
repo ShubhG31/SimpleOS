@@ -395,6 +395,14 @@ void keyboard_init_irq(){
     return;
 }
 
+/*
+ * get_enter_flag
+ *   DESCRIPTION: get the enter flag from system_call
+ *   INPUTS: terminal_: the number of terminal 0/1/2
+ *   OUTPUTS: enter_flag of terminal_: if the flag is 1 it means we cannot type anymore(code is running)
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 int get_enter_flag(int terminal_){
     return enter_flags[terminal_];
 }
