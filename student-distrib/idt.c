@@ -79,6 +79,9 @@ void idt_initialization(){
     Setting up the first 19 exceptions in IDT, these are not magic numbers
     */
 
+    //basically sets up the memory location/address and dereferences it, giving the index as well
+    //there are technically 256 interrupts but we only assign the first 20
+
     SET_IDT_ENTRY(idt[0], divide_by_zero);
     SET_IDT_ENTRY(idt[1], single_step_int);
     SET_IDT_ENTRY(idt[2], non_maskable_int);  
