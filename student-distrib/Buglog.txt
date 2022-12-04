@@ -56,3 +56,13 @@
 
 ## Nov. 13th
     (14) strncpy will not add an '\0' in the end, we need to manually add it
+
+## Nov. 26th
+    (15) The terminal shows up with really random color and characters. The reason is: there is only 4kb for the showing terminal instead of 8kb
+
+## Nov. 26th
+    (16) When we change the paging, and try to copy the old terminal to its backup address, it is still showing the old one and looks weird. The reason is that we need to flush TLB. If we don't do that, the terminal will use TLB and directly get the old physical address.
+
+## Nov. 26th
+    (17) When we pingpong in one file, other terminal shows the newline as well so it is keeping scrolling down. Fixed: we need to use three sets of variables to save cursor places for showing terminals.
+
