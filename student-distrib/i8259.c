@@ -12,6 +12,7 @@
 #define irq2num 0x4
 #define eoisignal 7
 #define eoinum 0x2
+#define irqs 8
 // ALL MAGIC NUMBER LABELS
 
 /* Interrupt masks to determine which interrupts are enabled and disabled */
@@ -69,7 +70,7 @@ void enable_irq(uint32_t irq_num) {
         return;
     }
     // Primary PIC interupt is set
-    if(irq_num<8){
+    if(irq_num<irqs){
         port = MASTER_8259_PORT+1;
     }
     // Secondary PIC interupt is set 
@@ -97,15 +98,15 @@ void disable_irq(uint32_t irq_num) {
     uint16_t port;
     uint16_t value; 
     // Primary PIC interupt is set
-    if(irq_num<8){
-        port = MASTER_8259_PORT+1;
+    if(irq_num<irqs){
+        port = MASTER_8259_PORT+1; // increment to the next port
     }
     // Secondary PIC interupt is set 
     else{
         port = SLAVE_8259_PORT+1;
         irq_num -= primary;
     }
-    value = inb(port) | (1 << irq_num);
+    value = inb(port) | (1 << irq_num); // or the bit that is related to the irq number 
     outb (value, port);
 }
 

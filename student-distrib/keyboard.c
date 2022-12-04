@@ -67,6 +67,12 @@
 
 #define max_characters 127
 
+#define max_terminals 3
+#define vidmem_physical 0xB8
+#define buffer_size 128
+#define special_buffer 10
+
+
 static int caps_lock_flag = 0;
 static int shift_flag = 0;
 static int ctrl_flag = 0;
@@ -76,9 +82,9 @@ int enter_flags[3]={0,0,0};
 //ALL MAGIC NUMBER LABELS
 
 static int keyboard_keycodes[keys];
-static char special_num_char[10]=")!@#$%^&*(";
-char buffer[3][128] = {{0},{0},{0}};
-static unsigned int buffer_cur_location[3] = {0};
+static char special_num_char[special_buffer]=")!@#$%^&*(";
+char buffer[max_terminals][buffer_size] = {{0},{0},{0}};
+static unsigned int buffer_cur_location[max_terminals] = {0};
 
 /* void init_keycodes();
  * Inputs: none
@@ -191,7 +197,7 @@ void keyboard_helper(){
     }
 
     B8_B9_backup=get_B8_B9_table();
-    map_B8_B9_table(0xB8);
+    map_B8_B9_table(vidmem_physical);
     flush_tlb();
 
     // if buffer location is greater than 0 and if backspace is pressed
