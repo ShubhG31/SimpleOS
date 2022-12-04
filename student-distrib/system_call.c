@@ -44,18 +44,58 @@ struct terminal_t{
 };
 struct terminal_t terminal[3];
 
+/*
+ * get_pid
+ *   DESCRIPTION: return the pid that is running right now
+ *   INPUTS: none
+ *   OUTPUTS: the pid that is running right now
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 int get_pid(){
     return pid;
 }
+/*
+ * get_main_terminal
+ *   DESCRIPTION: return the main_terminal that is running right now
+ *   INPUTS: none
+ *   OUTPUTS: the main_terminal that is running right now
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 int get_main_terminal(){
     return main_terminal;
 }
+/*
+ * get_display_terminal
+ *   DESCRIPTION: return the display_terminal that is running right now
+ *   INPUTS: none
+ *   OUTPUTS: the display_terminal that is running right now
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 int get_display_terminal(){
     return display_terminal;
 }
+/*
+ * get_executing_status
+ *   DESCRIPTION: return the executing status for the asking terminal
+ *   INPUTS: none
+ *   OUTPUTS: the executing status for the asking terminal
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 int get_executing_status(int terminal_){
     return executing_status[terminal_];
 }
+/*
+ * fd_init
+ *   DESCRIPTION: initialize some global variable for system call
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 void fd_init(){         // need to be run after booting part
     // last_pid=-1;
     display_terminal=0;
@@ -509,16 +549,37 @@ int system_vidmap(uint8_t** screen_start){
     return 0;
 }
 
+/*
+ * strncpy_
+ *   DESCRIPTION: rewrite strncpy
+ *   INPUTS: dest: the dest pointer to copy to
+ *          source: the source pointer to copy from
+ *          nbytes: the number of bytes we are copying
+ *   OUTPUTS: none
+ */
 void strncpy_(int dest, int source, uint32_t nbytes){
     // strncpy((int8_t*)dest, (int8_t*)source, nbytes);
     memcpy((int8_t*)dest, (int8_t*)source, nbytes);
     return;
 }
+/*
+ * clear_vid_map
+ *   DESCRIPTION: clear the whole video (set to be 0)
+ *   INPUTS: none
+ *   OUTPUTS: none
+ */
 void clear_vid_map(){
     strncpy_( (0xB8)*size_4kb, (int)empty_vid_map, size_4kb);
     return;
 }
-
+/*
+ * switch_terminal
+ *   DESCRIPTION: swtiching the display terminal to the next_display_terminal
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 int switch_terminal(int next_display_terminal){
     cli();
     next_display_terminal-=1;
@@ -561,7 +622,14 @@ done_switch_terminal:
     sti();
     return 0;
 }
-
+/*
+ * schedule
+ *   DESCRIPTION: swtiching the running terminal to the next_main_terminal
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 void schedule(){
     cli();
     next_main_terminal = (main_terminal+1)%3;
@@ -684,6 +752,14 @@ int get_pcb_pointer(){
     return addr_8MB-size_8kb*(pid+1);       // pid starts at 0 (0 -> move 1*8kb, 1-> move 2*8kb)
 }
 
+/*
+ * find_next_pid
+ *   DESCRIPTION: go over the pid option to find one which is vacent now
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: vacant pid, -1 for none is free
+ *   SIDE EFFECTS: none
+ */
 int find_next_pid(){
     int i;
     for(i=0;i<6;i++){
@@ -691,6 +767,14 @@ int find_next_pid(){
     }
     return -1;
 }
+/*
+ * flush_tlb
+ *   DESCRIPTION: flush the tlb
+ *   INPUTS: none
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 void flush_tlb(){
     asm volatile(
         "movl %cr3, %edx \n"
