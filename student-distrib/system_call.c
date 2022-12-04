@@ -312,6 +312,7 @@ int system_execute(const uint8_t* command){
     //     // switch_terminal(pid+1);
     //     terminal[pid].send_eoi=0;
     // }
+    // pid<3 means are the every first three shell terminals
     if(pid<3) main_terminal=pid;
 
     terminal[main_terminal].pid=pid;
@@ -320,7 +321,7 @@ int system_execute(const uint8_t* command){
     int eip = (buf[27]<<24)|(buf[26]<<16)|(buf[25]<<8)|(buf[24]); // using bytes 27-24 of the user program to set the EIP to user program
     // puts(command);
     //Set up pagings
-    phy_mem_loc=8+pid*4;
+    phy_mem_loc=8+pid*4;        // start in 8MB + 4MB*pid to get the virtual address 
     set_new_page(phy_mem_loc);
     // phy_mem_loc+=4;
     
@@ -337,6 +338,7 @@ int system_execute(const uint8_t* command){
     register uint32_t saved_ebp asm("ebp");
     register uint32_t saved_esp asm("esp");
 
+    // pid<3 means they are very first 3 shell terminals
     if(pid<3){
         pcb_box.parent_id=pid;
     } else {
@@ -576,6 +578,7 @@ void strncpy_(int dest, int source, uint32_t nbytes){
  *   OUTPUTS: none
  */
 void clear_vid_map(){
+    // clear the physcial address of VGA showing terminal at 0xB8000
     strncpy_( (0xB8)*size_4kb, (int)empty_vid_map, size_4kb);
     return;
 }
@@ -595,10 +598,10 @@ int switch_terminal(int next_display_terminal){
     if( next_display_terminal == display_terminal )goto done_switch_terminal;
     
     if( next_display_terminal == main_terminal && display_terminal != main_terminal ){
-        map_B8_B9_table(0xB8);
+        map_B8_B9_table(0xB8);      // 0xB8 is the displaying terminal
         flush_tlb();
-        strncpy_( (0xBA + display_terminal)*size_4kb, (0xB8)*size_4kb, size_4kb );
-        strncpy_( (0xB8)*size_4kb, vidpointer, size_4kb );
+        strncpy_( (0xBA + display_terminal)*size_4kb, (0xB8)*size_4kb, size_4kb );  // 0xBA is starting address of backup address
+        strncpy_( (0xB8)*size_4kb, vidpointer, size_4kb );  // 0xB8 is the displaying terminal
         set_video_page();
         goto done_switch_terminal;
     }
@@ -607,18 +610,18 @@ int switch_terminal(int next_display_terminal){
         set_invisible_video_page(main_terminal);
         flush_tlb();
         // map_B8_B9_table(0xB8);           // no need because this one is already displaying
-        strncpy_( vidpointer, (0xB8)*size_4kb, size_4kb );
-        strncpy_( (0xB8)*size_4kb, (0xBA + next_display_terminal)*size_4kb, size_4kb);        
-        map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );
+        strncpy_( vidpointer, (0xB8)*size_4kb, size_4kb );      // 0xB8 is the displaying terminal
+        strncpy_( (0xB8)*size_4kb, (0xBA + next_display_terminal)*size_4kb, size_4kb);        // 0xBA is starting address of backup address
+        map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );  //184=0xB4 address
         goto done_switch_terminal;
     }
 
     if( next_display_terminal != main_terminal && display_terminal != main_terminal ){
-        map_B8_B9_table(0xB8);
+        map_B8_B9_table(0xB8);      // 0xB8 is the displaying terminal
         flush_tlb();
-        strncpy_( (0xBA + display_terminal)*size_4kb, (0xB8)*size_4kb, size_4kb );
-        strncpy_( (0xB8)*size_4kb, (0xBA + next_display_terminal)*size_4kb, size_4kb );
-        map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );     
+        strncpy_( (0xBA + display_terminal)*size_4kb, (0xB8)*size_4kb, size_4kb );      // 0xBA is starting address of backup address
+        strncpy_( (0xB8)*size_4kb, (0xBA + next_display_terminal)*size_4kb, size_4kb ); // 0xBA is starting address of backup address
+        map_B8_B9_table( ((8+main_terminal)*size_4MB+184*size_4kb)/size_4kb );     //184=0xB4 address
         goto done_switch_terminal;
     }
 done_switch_terminal:
@@ -657,8 +660,8 @@ void schedule(){
 
         set_video_page();
         if(flag_open_three_shell!=0){
-            strncpy_( (0xBA + main_terminal)*size_4kb, (0xB8)*size_4kb, size_4kb );
-            strncpy_( (0xB8)*size_4kb, (0xBA + next_main_terminal)*size_4kb, size_4kb );
+            strncpy_( (0xBA + main_terminal)*size_4kb, (0xB8)*size_4kb, size_4kb );         // 0xB8 is the displaying terminal
+            strncpy_( (0xB8)*size_4kb, (0xBA + next_main_terminal)*size_4kb, size_4kb );    // 0xBA is starting address of backup address
         }
         // clear_vid_map();
         display_terminal=next_main_terminal;
@@ -693,24 +696,24 @@ void schedule(){
     flush_tlb();
     if( next_main_terminal == main_terminal )goto finish_schedule_terminal;
     if( next_main_terminal == display_terminal && main_terminal != display_terminal ){
-        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_4kb );
+        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_4kb );       // 0xBA is starting address of backup address
         set_video_page();
-        map_B8_B9_table(0xB8);
+        map_B8_B9_table(0xB8);      // 0xB8 is the displaying terminal
         goto finish_schedule_terminal;
     }
     if( next_main_terminal != display_terminal && main_terminal == display_terminal){
-        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_4kb );
+        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_4kb );       // 0xBA is starting address of backup address
         set_invisible_video_page(next_main_terminal);
         flush_tlb();
-        strncpy_( vidpointer, (0xBA + next_main_terminal)*size_4kb, size_4kb );
+        strncpy_( vidpointer, (0xBA + next_main_terminal)*size_4kb, size_4kb );      // 0xBA is starting address of backup address
         map_B8_B9_table( ((8+next_main_terminal)*size_4MB+184*size_4kb)/size_4kb );
         goto finish_schedule_terminal;
     }
     if (next_main_terminal != display_terminal && main_terminal != display_terminal){
-        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_4kb );
+        strncpy_( (0xBA + main_terminal)*size_4kb, vidpointer, size_4kb );       // 0xBA is starting address of backup address
         set_invisible_video_page(next_main_terminal);
         flush_tlb();
-        strncpy_( vidpointer, (0xBA + next_main_terminal)*size_4kb, size_4kb );
+        strncpy_( vidpointer, (0xBA + next_main_terminal)*size_4kb, size_4kb );      // 0xBA is starting address of backup address
         map_B8_B9_table( ((8+next_main_terminal)*size_4MB+184*size_4kb)/size_4kb );
         goto finish_schedule_terminal;
     }
