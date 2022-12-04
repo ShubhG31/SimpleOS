@@ -15,9 +15,6 @@ int head;
  *   SIDE EFFECTS: none
  */
 int file_sys_init(){
-    
-    // might need to change in future checkpoint, no need to change starting iterate point
-    // because we will set the use[i]=1 to avoid using it
     return 0;
 }
 /* ---------------------------- DIR ----------------------------*/
@@ -170,8 +167,7 @@ int file_read(int32_t fd, void* buf, int32_t nbytes){
     // printf("I got the file read\n");
     return re;
 }
-////////////////////////////////////////////////////////////////////////NEED UPDATE
-// update the offset in the open function!!!!!!!!!!!!!!!!
+
 
 /*
  * file_write
