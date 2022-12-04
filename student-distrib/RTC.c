@@ -95,6 +95,7 @@ int32_t RTC_write(int32_t fd, const void* buf, int32_t nbytes){
     buffer_rate =*((int*)buf);
     //printf("buffer_rate = %d\n",buffer_rate);
     //if statement check if buf int is between 0-1024 and power of 2
+    // 1024Hz is maximum frequency written in OSDev
     if((buffer_rate > 1024 || !((buffer_rate != 0) && ((buffer_rate & (buffer_rate - 1)) == 0)))){
         return -1;//invalid input
     }else{
@@ -144,7 +145,7 @@ extern void RTC_handle(){
     outb(REGISTER_C, INDEX_NUM);
     inb(READandWRITE);
     cli();
-    for(idx=0;idx<3;idx++){
+    for(idx=0;idx<3;idx++){     // 3: we have 3 terminals to control
         Hz_counter[idx]--;
         if(Hz_counter[idx] <= 0){ 
             flag[idx] = 1;
