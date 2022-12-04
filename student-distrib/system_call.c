@@ -106,7 +106,7 @@ int get_executing_status(int terminal_){
 void fd_init(){         // need to be run after booting part
     // last_pid=-1;
     display_terminal=0;
-    main_terminal=-1; //for debug only                                                /////////////////////////////////////////// remember to delete
+    main_terminal=-1; 
     pid=-1;
     processor_usage=0;
     flag_open_three_shell=0;
@@ -129,7 +129,7 @@ int system_halt(uint8_t status){
         status_ = HALT_error;
     }
     // clear the page that was used for now complete process
-    if(pid<3){
+    if(pid<3){      // if pid<3 they are every first 3 shell terminals
         // fd_init();
                                                                ////// something wrong here about updating the process_usage
         processor_usage^=(1<<pid);
@@ -383,6 +383,7 @@ int system_execute(const uint8_t* command){
     // eip 
 
     // sti();
+    // pid<3 means are the every first three shell terminals
     if(pid<3){
         puts("Now you are opening terminal ");
         put_number(main_terminal+1);putc('\n');
