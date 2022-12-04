@@ -767,14 +767,16 @@ int find_next_pid(){
     }
     return -1;
 }
+
 /*
- * flush_tlb
- *   DESCRIPTION: flush the tlb
+ * void flush_tlb()
+ *   DESCRIPTION: writes the assembly function to flush the tlb
  *   INPUTS: none
  *   OUTPUTS: none
  *   RETURN VALUE: none
  *   SIDE EFFECTS: none
  */
+
 void flush_tlb(){
     asm volatile(
         "movl %cr3, %edx \n"
