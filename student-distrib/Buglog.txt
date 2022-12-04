@@ -66,3 +66,6 @@
 ## Nov. 26th
     (17) When we pingpong in one file, other terminal shows the newline as well so it is keeping scrolling down. Fixed: we need to use three sets of variables to save cursor places for showing terminals.
 
+## Dec. 04th
+    (18) When we were testing the right shifting, we found that it was not working. We realized that the alt_pressed variable label that we have had the same value as the right shift pressed label that we had. We updated the alt pressed scan code to make sure we were using the right one and that it did not overlap with the right shift scancode. 
+
