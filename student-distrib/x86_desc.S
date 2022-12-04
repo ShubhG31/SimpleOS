@@ -91,7 +91,7 @@ gdt_bottom:
 # specifies the size of the gdt and has a pointer to the gdt 
     .align 16 
 ldt:
-    .rept 4
+    .rept 4 # loading up/allocating space in the ram for ldt
     .quad 0
     .endr
 ldt_bottom:
