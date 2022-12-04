@@ -148,6 +148,14 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
     return 0;  // we should return before, if everything works well, so here return -1 for any trouble
 }
 
+/*
+ * int32_t file_sys_test_cases ()
+ *   DESCRIPTION: functions to test with different test cases for the file drivers and file systems
+ *   INPUTS: different function calls for the different files (large, small, executable, etc.)
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */ 
 
 // blank test cases now
 int32_t file_sys_test_cases (){
