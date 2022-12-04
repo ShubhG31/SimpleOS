@@ -189,6 +189,8 @@ static char scroll_buf[2*(NUM_ROWS*NUM_COLS)];
  * Return Value: void
  *  Function: Output a character to the console only user code will call this,
  *            the difference is that this one will only change main_terminal cursor
+ *            THIS FUNCTION IS CALLED ONLY BY THE USER CODE which is used by system_write.
+ *            We use fd to identify whether user code are using it!!!!!
  */
 void putc_user_code(uint8_t c) {
     // added to terminal scroll
@@ -288,7 +290,9 @@ void putc_user_code(uint8_t c) {
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
  * Return Value: void
- *  Function: Output a character to the console */
+ *  Function: Output a character to the console 
+ *              THIS IS ONLY USED BY OUR KEYBOARD TO PRINT INTO DISPLAY TERMINAL.
+ */
 void putc(uint8_t c) {
     // added to terminal scroll
     cli();
@@ -693,7 +697,14 @@ void update_cursor(int screenx, int screeny)
 	outb((uint8_t) ((i >> 8) & cursor_mask),cursor_port2); // 8 is set to help change the mask 
 }
 
-
+/*
+ * update_cursor_after_switch
+ *   DESCRIPTION: update the cursor for displaying terminal
+ *   INPUTS: dis_terminal: the displaying terminal that we are going to update 0/1/2
+ *   OUTPUTS: none
+ *   RETURN VALUE: none
+ *   SIDE EFFECTS: none
+ */
 void update_cursor_after_switch(int dis_terminal){
     update_cursor(screen_x[dis_terminal],screen_y[dis_terminal]);
 }
