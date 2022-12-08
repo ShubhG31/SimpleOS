@@ -85,7 +85,7 @@ static int alt_flag = 0;
 static int alt1_flag = 0, alt2_flag = 0;
 static int arg_flag;
 int enter_flags[3]={0,0,0};
-int arrow_flag = 0;
+// int arrow_flag = 0;
 int len_prev_command = 0;
 //ALL MAGIC NUMBER LABELS
 
@@ -239,17 +239,26 @@ void keyboard_helper(){
         arg_flag = sys_para_flag_status();
         if(buffer_cur_location[curr_terminal] != 0 && arg_flag == 0){
 
-            memcpy(past_entries[curr_terminal][4], past_entries[curr_terminal][3], copy_size);
-            memcpy(past_entries[curr_terminal][3], past_entries[curr_terminal][2], copy_size);
-            memcpy(past_entries[curr_terminal][2], past_entries[curr_terminal][1], copy_size);
-            memcpy(past_entries[curr_terminal][1], past_entries[curr_terminal][0], copy_size);
-            memcpy(past_entries[curr_terminal][0], buffer[curr_terminal], copy_size);
-
             past_entries_buffer_cur_location[curr_terminal][4] = past_entries_buffer_cur_location[curr_terminal][3];
+            memcpy(past_entries[curr_terminal][4], past_entries[curr_terminal][3], strlen((int8_t*)past_entries[curr_terminal][3]));
+
             past_entries_buffer_cur_location[curr_terminal][3] = past_entries_buffer_cur_location[curr_terminal][2];
+            memcpy(past_entries[curr_terminal][3], past_entries[curr_terminal][2], strlen((int8_t*)past_entries[curr_terminal][2]));
+            
             past_entries_buffer_cur_location[curr_terminal][2] = past_entries_buffer_cur_location[curr_terminal][1];
+            memcpy(past_entries[curr_terminal][2], past_entries[curr_terminal][1], strlen((int8_t*)past_entries[curr_terminal][1]));
+            
             past_entries_buffer_cur_location[curr_terminal][1] = past_entries_buffer_cur_location[curr_terminal][0];
+            memcpy(past_entries[curr_terminal][1], past_entries[curr_terminal][0], strlen((int8_t*)past_entries[curr_terminal][0]));
+            
             past_entries_buffer_cur_location[curr_terminal][0] = buffer_cur_location[curr_terminal];
+            memcpy(past_entries[curr_terminal][0], buffer[curr_terminal], strlen((int8_t*)buffer[curr_terminal]));
+
+            // past_entries_buffer_cur_location[curr_terminal][4] = past_entries_buffer_cur_location[curr_terminal][3];
+            // past_entries_buffer_cur_location[curr_terminal][3] = past_entries_buffer_cur_location[curr_terminal][2];
+            // past_entries_buffer_cur_location[curr_terminal][2] = past_entries_buffer_cur_location[curr_terminal][1];
+            // past_entries_buffer_cur_location[curr_terminal][1] = past_entries_buffer_cur_location[curr_terminal][0];
+            // past_entries_buffer_cur_location[curr_terminal][0] = buffer_cur_location[curr_terminal];
         }
         set_sys_para_flag_zero();
 
@@ -274,7 +283,7 @@ void keyboard_helper(){
     // int temp;
     if(scan_code == up_arrow && loc_in_past_entries[curr_terminal] != 4){
         int j;
-        if(arrow_flag){
+        // if(arrow_flag){
             // putc('{');
             for(j = 0; j < len_prev_command; j++){
                 putc(BS_ascii); // print backspace 
@@ -283,8 +292,8 @@ void keyboard_helper(){
                 // decrement the location since backspace is pressed
                 buffer_cur_location[curr_terminal]--;
             }    
-        }
-        arrow_flag = 1;
+        // }
+        // arrow_flag = 1;
         loc_in_past_entries[curr_terminal] += 1;
         memcpy(buffer[curr_terminal], past_entries[curr_terminal][loc_in_past_entries[curr_terminal]], copy_size);
         // buffer[curr_terminal] = past_entries[curr_terminal][loc_in_past_entries[curr_terminal]];
@@ -315,7 +324,7 @@ void keyboard_helper(){
     
     else if(scan_code == down_arrow && loc_in_past_entries[curr_terminal] != -1){
         int j;
-        if(arrow_flag){
+        // if(arrow_flag){
             // putc('{');
             for(j = 0; j < len_prev_command; j++){
                 putc(BS_ascii); // print backspace 
@@ -324,8 +333,8 @@ void keyboard_helper(){
                 // decrement the location since backspace is pressed
                 buffer_cur_location[curr_terminal]--;
                 }
-            }    
-        arrow_flag = 1;
+            // }    
+        // arrow_flag = 1;
         loc_in_past_entries[curr_terminal] -= 1;
         memcpy(buffer[curr_terminal], past_entries[curr_terminal][loc_in_past_entries[curr_terminal]], copy_size);
         // buffer[curr_terminal] = past_entries[curr_terminal][loc_in_past_entries[curr_terminal]];
@@ -519,14 +528,14 @@ int get_enter_flag(int terminal_){
 }
 
 int prev_arrow_pressed(){
-    int temp = 0;
-    if(arrow_flag){
-        temp = 1;
-    }else{
-        temp = 0;
-    }
-    arrow_flag = 0;
-    return temp;
+    // int temp = 0;
+    // if(arrow_flag){
+    //     temp = 1;
+    // }else{
+    //     temp = 0;
+    // }
+    // arrow_flag = 0;
+    // return temp;
 }
 
 int len_prev(){
