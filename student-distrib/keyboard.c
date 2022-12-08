@@ -1,5 +1,5 @@
 #include "keyboard.h"
-
+#include "lib.h"
 
 // ALL MAGIC NUMBER LABELS
 #define print_screen 0xE0
@@ -83,6 +83,7 @@ static int shift_flag = 0;
 static int ctrl_flag = 0;
 static int alt_flag = 0;
 static int alt1_flag = 0, alt2_flag = 0;
+static int arg_flag;
 int enter_flags[3]={0,0,0};
 int arrow_flag = 0;
 int len_prev_command = 0;
@@ -234,7 +235,9 @@ void keyboard_helper(){
         //     goto end;
         // }
         len_prev_command = 0;
-        if(buffer_cur_location[curr_terminal] != 0){
+        // arg_flag = 0;
+        arg_flag = sys_para_flag_status();
+        if(buffer_cur_location[curr_terminal] != 0 && arg_flag == 0){
 
             memcpy(past_entries[curr_terminal][4], past_entries[curr_terminal][3], copy_size);
             memcpy(past_entries[curr_terminal][3], past_entries[curr_terminal][2], copy_size);
@@ -248,6 +251,7 @@ void keyboard_helper(){
             past_entries_buffer_cur_location[curr_terminal][1] = past_entries_buffer_cur_location[curr_terminal][0];
             past_entries_buffer_cur_location[curr_terminal][0] = buffer_cur_location[curr_terminal];
         }
+        set_sys_para_flag_zero();
 
         loc_in_past_entries[curr_terminal] = -1;
 

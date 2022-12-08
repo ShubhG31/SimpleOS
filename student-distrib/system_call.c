@@ -16,6 +16,7 @@ int empty_vid_map[1024];
 int next_main_terminal, next_pid;
 int schedule_time;
 int executing_status[3]={0,0,0};
+int paramter_flag = 0;
 
 typedef int32_t (*open_type)(uint8_t*);
 typedef int32_t (*close_type)(uint32_t);
@@ -437,6 +438,7 @@ int system_read(int32_t fd, void* buf, int32_t nbytes){
 
 int system_write(int32_t fd, const void* buf, int32_t nbytes){
     // puts(" i fucking finish everything before here\n");
+    paramter_flag = 1;
     int re;
     if(fd<0||fd>7)return -1;
     if(fd==0)return -1; //stdin does not handle terminal write

@@ -9,6 +9,10 @@
 #include "system_call.h"
 #include "keyboard.h"
 
+extern int sys_para_flag_status();
+
+extern void set_sys_para_flag_zero();
+
 int32_t printf(int8_t *format, ...);
 void putc(uint8_t c);
 void putc_user_code(uint8_t c);

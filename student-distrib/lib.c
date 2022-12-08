@@ -33,6 +33,17 @@ static char for_back_color[3] = {ATTRIBT2,ATTRIBT1,ATTRIBT3};
 static char* video_mem = (char *)VIDEO;
 static int inital_flag_full_color[3] = {1, 1, 1};
 
+int sys_para_flag = 0;
+uint8_t prev_c;
+
+int sys_para_flag_status(){
+    return sys_para_flag;
+}
+
+void set_sys_para_flag_zero(){
+    sys_para_flag = 0;
+}
+
 /* void clear(int display_terminal);
  * Inputs: void
  * Return Value: none
@@ -201,6 +212,12 @@ static char scroll_buf[2*(NUM_ROWS*NUM_COLS)];
 void putc_user_code(uint8_t c) {
     // added to terminal scroll
     cli();
+    if(prev_c == '>' && c == ' '){
+        sys_para_flag = 0;
+    }else{
+        sys_para_flag = 1;
+    }
+    prev_c = c;
     int i;
     int j;
     int dis_terminal=get_main_terminal();
