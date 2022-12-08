@@ -6,7 +6,10 @@
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
-#define ATTRIB      0x2//0x7
+#define ATTRIB      0xF2    //0x7
+#define ATTRIBT1    0x02
+#define ATTRIBT2    0xF3
+#define ATTRIBT3    0xC4    //0xE4 or 0xC4
 
 #define BS_ascii 8
 
@@ -23,9 +26,23 @@
 
 #define empty_mem 0x20
 
+// static int temp2 = 0;
 static int screen_x[3]={0,0,0};
 static int screen_y[3]={0,0,0};
+static char for_back_color[3] = {ATTRIBT2,ATTRIBT1,ATTRIBT3};
 static char* video_mem = (char *)VIDEO;
+static int inital_flag_full_color[3] = {1, 1, 1};
+
+int sys_para_flag = 0;
+uint8_t prev_c;
+
+int sys_para_flag_status(){
+    return sys_para_flag;
+}
+
+void set_sys_para_flag_zero(){
+    sys_para_flag = 0;
+}
 
 /* void clear(int display_terminal);
  * Inputs: void
@@ -35,7 +52,7 @@ void clear(int dis_terminal) {
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
-        *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
+        *(uint8_t *)(video_mem + (i << 1) + 1) = for_back_color[dis_terminal];;
     }
     screen_x[dis_terminal] = 0;
     screen_y[dis_terminal] = 0;
@@ -195,7 +212,14 @@ static char scroll_buf[2*(NUM_ROWS*NUM_COLS)];
 void putc_user_code(uint8_t c) {
     // added to terminal scroll
     cli();
+    if(prev_c == '>' && c == ' '){
+        sys_para_flag = 0;
+    }else{
+        sys_para_flag = 1;
+    }
+    prev_c = c;
     int i;
+    int j;
     int dis_terminal=get_main_terminal();
     // checks if the character is a new line or line carriage 
      if(c == '\n' || c == '\r') {
@@ -205,12 +229,21 @@ void putc_user_code(uint8_t c) {
             // copy memory to a buffer 
             memcpy(scroll_buf,video_mem+(NUM_COLS*2),OLD_videomem_scroll);
 
+            if(inital_flag_full_color[dis_terminal]){
+                inital_flag_full_color[dis_terminal] = 0;
+                for(j=0;j<NUM_ROWS;j++){
+                    for(i=0;i<NUM_COLS;i++){
+                        *(scroll_buf+((NUM_COLS*(j)+i)<<1)+1) = for_back_color[dis_terminal];
+                    }    
+                } 
+            }
+
             // go through colomns and set new video memory to clear end row
             for(i=0;i<NUM_COLS;i++){
                 // set the last row to empty character
                 *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = empty_mem;
                 // set the value of color
-                *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
+                *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = for_back_color[dis_terminal];
             }
             // copy buffer to video memory
             memcpy(video_mem,scroll_buf, NEW_videomem_scroll);
@@ -252,12 +285,22 @@ void putc_user_code(uint8_t c) {
             if(screen_x[dis_terminal] >= NUM_COLS && screen_y[dis_terminal] == NUM_ROWS-1){
                 // copy the video memory to buffer 
                 memcpy(scroll_buf,video_mem+(NUM_COLS*2),OLD_videomem_scroll);
+                
+                 if(inital_flag_full_color[dis_terminal]){
+                    inital_flag_full_color[dis_terminal] = 0;
+                    for(j=0;j<NUM_ROWS;j++){
+                        for(i=0;i<NUM_COLS;i++){
+                            *(scroll_buf+((NUM_COLS*(j)+i)<<1)+1) = for_back_color[dis_terminal];
+                            }    
+                        } 
+                    }
+
                 // go through colomns and set new video memory to clear end row
                 for(i=0;i<NUM_COLS;i++){
                     // set the last row to empty character
                     *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = empty_mem;
                     // set the value of color
-                    *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
+                    *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = for_back_color[dis_terminal];
                 }
                 // copy buffer to video memory
                 memcpy(video_mem,scroll_buf, NEW_videomem_scroll);
@@ -273,10 +316,21 @@ void putc_user_code(uint8_t c) {
                     screen_x[dis_terminal] = 0;
                 }
             }
+
+        if(inital_flag_full_color[dis_terminal]){
+            inital_flag_full_color[dis_terminal] = 0;
+            for(j=0;j<NUM_ROWS;j++){
+                for(i=0;i<NUM_COLS;i++){
+                    // *(scroll_buf+((NUM_COLS*(j)+i)<<1)+1) = for_back_color[dis_terminal];
+                    *(uint8_t *)(video_mem + ((NUM_COLS * j + i) << 1) + 1) = for_back_color[dis_terminal];
+                }    
+            } 
+        }
+
         // set the value of video memory to character 
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1)) = c;
         // set the value of video memory to color 
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1) + 1) = for_back_color[dis_terminal];
         // set x to next value in column 
         screen_x[dis_terminal]++;
         
@@ -297,7 +351,14 @@ void putc(uint8_t c) {
     // added to terminal scroll
     cli();
     int i;
+    int j;
+    int old_x_value;
+    int arrow_pressed = 0;
     int dis_terminal=get_display_terminal();
+    // if(prev_arrow_pressed()){
+    //         old_x_value = screen_x[dis_terminal];
+    //         arrow_pressed = 1;
+    //     }
     // checks if the character is a new line or line carriage 
      if(c == '\n' || c == '\r') {
         // if newline and y is at the end 
@@ -306,12 +367,21 @@ void putc(uint8_t c) {
             // copy memory to a buffer 
             memcpy(scroll_buf,video_mem+(NUM_COLS*2),OLD_videomem_scroll);
 
+            if(inital_flag_full_color[dis_terminal]){
+                inital_flag_full_color[dis_terminal] = 0;
+                for(j=0;j<NUM_ROWS;j++){
+                    for(i=0;i<NUM_COLS;i++){
+                        *(scroll_buf+((NUM_COLS*(j)+i)<<1)+1) = for_back_color[dis_terminal];
+                        }    
+                    } 
+                }
+
             // go through colomns and set new video memory to clear end row
             for(i=0;i<NUM_COLS;i++){
                 // set the last row to empty character
                 *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = empty_mem;
                 // set the value of color
-                *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
+                *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = for_back_color[dis_terminal];
             }
             // copy buffer to video memory
             memcpy(video_mem,scroll_buf, NEW_videomem_scroll);
@@ -353,12 +423,24 @@ void putc(uint8_t c) {
             if(screen_x[dis_terminal] >= NUM_COLS && screen_y[dis_terminal] == NUM_ROWS-1){
                 // copy the video memory to buffer 
                 memcpy(scroll_buf,video_mem+(NUM_COLS*2),OLD_videomem_scroll);
+
+
+                if(inital_flag_full_color[dis_terminal]){
+                inital_flag_full_color[dis_terminal] = 0;
+                for(j=0;j<NUM_ROWS;j++){
+                    for(i=0;i<NUM_COLS;i++){
+                        *(scroll_buf+((NUM_COLS*(j)+i)<<1)+1) = for_back_color[dis_terminal];
+                        }    
+                    } 
+                }
+
                 // go through colomns and set new video memory to clear end row
                 for(i=0;i<NUM_COLS;i++){
                     // set the last row to empty character
                     *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)) = empty_mem;
                     // set the value of color
-                    *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = ATTRIB;
+                    *(scroll_buf+((NUM_COLS*(NUM_ROWS-1)+i)<<1)+1) = for_back_color[dis_terminal];
+                
                 }
                 // copy buffer to video memory
                 memcpy(video_mem,scroll_buf, NEW_videomem_scroll);
@@ -374,16 +456,30 @@ void putc(uint8_t c) {
                     screen_x[dis_terminal] = 0;
                 }
             }
+
+            if(inital_flag_full_color[dis_terminal]){
+            inital_flag_full_color[dis_terminal] = 0;
+            for(j=0;j<NUM_ROWS;j++){
+                for(i=0;i<NUM_COLS;i++){
+                    // *(scroll_buf+((NUM_COLS*(j)+i)<<1)+1) = for_back_color[dis_terminal];
+                    *(uint8_t *)(video_mem + ((NUM_COLS * j + i) << 1) + 1) = for_back_color[dis_terminal];
+                }    
+            } 
+        }
+
         // set the value of video memory to character 
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1)) = c;
         // set the value of video memory to color 
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1) + 1) = ATTRIB;
+        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y[dis_terminal] + screen_x[dis_terminal]) << 1) + 1) = for_back_color[dis_terminal];
         // set x to next value in column 
         screen_x[dis_terminal]++;
         
     }
     // sets the value of the cursor after character has been outputted on screen
     update_cursor(screen_x[dis_terminal], screen_y[dis_terminal]);
+    // if(arrow_pressed){
+    //         screen_x[dis_terminal] = old_x_value;
+    //     }
     sti();
 }
 
