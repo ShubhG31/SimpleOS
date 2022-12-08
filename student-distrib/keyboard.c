@@ -212,6 +212,9 @@ void keyboard_helper(){
 
     // if buffer location is greater than 0 and if backspace is pressed
     if( buffer_cur_location[curr_terminal] > 0 && keyboard_keycodes[scan_code] == keyboard_keycodes[backspace]){
+        if(len_prev_command != 0){
+            len_prev_command--;
+        }
             putc(BS_ascii); // print backspace 
             // set current location of buffer current index to 0
             buffer[curr_terminal][buffer_cur_location[curr_terminal]] = 0;
@@ -230,6 +233,7 @@ void keyboard_helper(){
         //     enter_flags[get_display_terminal()]=1;
         //     goto end;
         // }
+        len_prev_command = 0;
         if(buffer_cur_location[curr_terminal] != 0){
 
             memcpy(past_entries[curr_terminal][4], past_entries[curr_terminal][3], copy_size);
@@ -265,38 +269,75 @@ void keyboard_helper(){
     
     // int temp;
     if(scan_code == up_arrow && loc_in_past_entries[curr_terminal] != 4){
+        int j;
+        if(arrow_flag){
+            // putc('{');
+            for(j = 0; j < len_prev_command; j++){
+                putc(BS_ascii); // print backspace 
+                // set current location of buffer current index to 0
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]] = 0;
+                // decrement the location since backspace is pressed
+                buffer_cur_location[curr_terminal]--;
+            }    
+        }
         arrow_flag = 1;
         loc_in_past_entries[curr_terminal] += 1;
         memcpy(buffer[curr_terminal], past_entries[curr_terminal][loc_in_past_entries[curr_terminal]], copy_size);
         // buffer[curr_terminal] = past_entries[curr_terminal][loc_in_past_entries[curr_terminal]];
-        buffer_cur_location[curr_terminal] = past_entries_buffer_cur_location[curr_terminal][loc_in_past_entries[curr_terminal]];
-        int j;
         for(j = 0; j < 128; j++){
             if(((buffer[curr_terminal][j])=='\n') || ((buffer[curr_terminal][j])==0))break;
             putc(buffer[curr_terminal][j]);
         }
         // memcpy(len_prev_command, j, 4); //Getting a page fault error
         len_prev_command = j;
+        // buffer_cur_location[curr_terminal] = past_entries_buffer_cur_location[curr_terminal][loc_in_past_entries[curr_terminal]];
+        buffer_cur_location[curr_terminal] += j;
         
 
     }
     
-    else if(scan_code == down_arrow && loc_in_past_entries[curr_terminal] != 0){
-        putc(keyboard_keycodes[enter]);
-        loc_in_past_entries[curr_terminal] -= 1;
-    }
+    // else if(scan_code == down_arrow && loc_in_past_entries[curr_terminal] != 0){
+    //     int j;
+    //     for(j = 0; j < len_prev_command; j++){
+    //             putc(BS_ascii); // print backspace 
+    //             // set current location of buffer current index to 0
+    //             buffer[curr_terminal][buffer_cur_location[curr_terminal]] = 0;
+    //             // decrement the location since backspace is pressed
+    //             buffer_cur_location[curr_terminal]--;
+    //         }
+    //     // putc(keyboard_keycodes[enter]);
+    //     loc_in_past_entries[curr_terminal] -= 1;
+    // }
     
     else if(scan_code == down_arrow && loc_in_past_entries[curr_terminal] != -1){
+        int j;
+        if(arrow_flag){
+            // putc('{');
+            for(j = 0; j < len_prev_command; j++){
+                putc(BS_ascii); // print backspace 
+                // set current location of buffer current index to 0
+                buffer[curr_terminal][buffer_cur_location[curr_terminal]] = 0;
+                // decrement the location since backspace is pressed
+                buffer_cur_location[curr_terminal]--;
+                }
+            }    
+        arrow_flag = 1;
         loc_in_past_entries[curr_terminal] -= 1;
         memcpy(buffer[curr_terminal], past_entries[curr_terminal][loc_in_past_entries[curr_terminal]], copy_size);
         // buffer[curr_terminal] = past_entries[curr_terminal][loc_in_past_entries[curr_terminal]];
         buffer_cur_location[curr_terminal] = past_entries_buffer_cur_location[curr_terminal][loc_in_past_entries[curr_terminal]];
-        int j;
         for(j = 0; j < 128; j++){
+            if(((buffer[curr_terminal][j])=='\n') || ((buffer[curr_terminal][j])==0))break;
             putc(buffer[curr_terminal][j]);
         }
+        // memcpy(len_prev_command, j, 4); //Getting a page fault error
+        len_prev_command = j;
+        // buffer_cur_location[curr_terminal] = past_entries_buffer_cur_location[curr_terminal][loc_in_past_entries[curr_terminal]];
+        buffer_cur_location[curr_terminal] += j;
 
     }
+
+
 
     // if scan code is shift key then set flag to high 
     if(scan_code == l_shift_keycode_pressed || scan_code == r_shift_keycode_pressed){
