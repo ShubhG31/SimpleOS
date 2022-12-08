@@ -21,4 +21,8 @@ void keyboard_helper();
 
 extern int get_enter_flag(int terminal_);
 
+extern int prev_arrow_pressed();
+
+extern int len_prev();
+
 #endif // _KEYBOARD_

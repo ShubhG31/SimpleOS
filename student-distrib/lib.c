@@ -26,6 +26,7 @@
 
 #define empty_mem 0x20
 
+// static int temp2 = 0;
 static int screen_x[3]={0,0,0};
 static int screen_y[3]={0,0,0};
 static char for_back_color[3] = {ATTRIBT2,ATTRIBT1,ATTRIBT3};
@@ -334,7 +335,13 @@ void putc(uint8_t c) {
     cli();
     int i;
     int j;
+    int old_x_value;
+    int arrow_pressed = 0;
     int dis_terminal=get_display_terminal();
+    if(prev_arrow_pressed()){
+            old_x_value = screen_x[dis_terminal];
+            arrow_pressed = 1;
+        }
     // checks if the character is a new line or line carriage 
      if(c == '\n' || c == '\r') {
         // if newline and y is at the end 
@@ -453,6 +460,9 @@ void putc(uint8_t c) {
     }
     // sets the value of the cursor after character has been outputted on screen
     update_cursor(screen_x[dis_terminal], screen_y[dis_terminal]);
+    if(arrow_pressed){
+            screen_x[dis_terminal] = old_x_value;
+        }
     sti();
 }
 

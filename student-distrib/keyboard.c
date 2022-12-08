@@ -84,6 +84,8 @@ static int ctrl_flag = 0;
 static int alt_flag = 0;
 static int alt1_flag = 0, alt2_flag = 0;
 int enter_flags[3]={0,0,0};
+int arrow_flag = 0;
+int len_prev_command = 0;
 //ALL MAGIC NUMBER LABELS
 
 static int keyboard_keycodes[keys];
@@ -261,19 +263,21 @@ void keyboard_helper(){
         // return;
     }
     
-    int temp;
+    // int temp;
     if(scan_code == up_arrow && loc_in_past_entries[curr_terminal] != 4){
-        int temp;
+        arrow_flag = 1;
         loc_in_past_entries[curr_terminal] += 1;
-        temp = strlen(&past_entries[curr_terminal][loc_in_past_entries[curr_terminal]]);
-        putc(temp);
-        memcpy(buffer[curr_terminal], past_entries[curr_terminal][loc_in_past_entries[curr_terminal]], temp);
+        memcpy(buffer[curr_terminal], past_entries[curr_terminal][loc_in_past_entries[curr_terminal]], copy_size);
         // buffer[curr_terminal] = past_entries[curr_terminal][loc_in_past_entries[curr_terminal]];
         buffer_cur_location[curr_terminal] = past_entries_buffer_cur_location[curr_terminal][loc_in_past_entries[curr_terminal]];
         int j;
         for(j = 0; j < 128; j++){
+            if(((buffer[curr_terminal][j])=='\n') || ((buffer[curr_terminal][j])==0))break;
             putc(buffer[curr_terminal][j]);
         }
+        // memcpy(len_prev_command, j, 4); //Getting a page fault error
+        len_prev_command = j;
+        
 
     }
     
@@ -467,4 +471,19 @@ void keyboard_init_irq(){
  */
 int get_enter_flag(int terminal_){
     return enter_flags[terminal_];
+}
+
+int prev_arrow_pressed(){
+    int temp = 0;
+    if(arrow_flag){
+        temp = 1;
+    }else{
+        temp = 0;
+    }
+    arrow_flag = 0;
+    return temp;
+}
+
+int len_prev(){
+    return len_prev_command;
 }
